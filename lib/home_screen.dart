@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hustlecoin/state/all_states.dart';
 import 'app_colors.dart';
 import 'shop.dart';
 import 'leaderboard.dart';
@@ -48,14 +50,14 @@ class _PressableWidgetState extends State<PressableWidget> {
   }
 }
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _activeNavIndex = 0;
 
   void _onNavItemTapped(int index) {
@@ -100,6 +102,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userState = ref.watch(userControllerProvider);
+    final user = userState.value;
+
+    if (userState.isLoading || user == null) {
+      return const Scaffold(
+        backgroundColor: AppColors.angolaBlack,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -122,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: SafeArea(
             child: Column(
               children: [
-                _buildTopBar(),
+                _buildTopBar(user),
                 const Text(
                   'Hustle Coin',
                   style: TextStyle(
@@ -133,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     shadows: [Shadow(blurRadius: 4, color: Colors.black87)],
                   ),
                 ),
-                Expanded(child: _buildGameArea()),
+                Expanded(child: _buildGameArea(user)),
                 _buildUpgradesSection(),
               ],
             ),
@@ -144,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(User user) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
       child: Row(
@@ -177,19 +189,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: AppColors.textLight,
                     ),
                   ),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '1,250 HC',
-                        style: TextStyle(
+                        '${user.hcBalance} HC',
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       Text(
-                        '≈ Kz 12,507',
-                        style: TextStyle(
+                        '≈ Kz ${user.kzBalance}',
+                        style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.textGrey,
                         ),
@@ -268,7 +280,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // NEW: Helper widget for the Daily Reward button
   Widget _buildDailyRewardButton() {
     return PressableWidget(
       onTap: () {
@@ -278,7 +289,6 @@ class _HomeScreenState extends State<HomeScreen> {
       scaleFactor: 0.9,
       borderRadius: BorderRadius.circular(30), // Approximates the star shape
       child: Container(
-        // Slightly increased padding for a bigger size
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
         decoration: ShapeDecoration(
           shape: StarBorder(
@@ -316,7 +326,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildGameArea() {
+  Widget _buildGameArea(User user) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15.0),
       child: Stack(
@@ -326,7 +336,8 @@ class _HomeScreenState extends State<HomeScreen> {
             alignment: Alignment.topCenter,
             child: Padding(
               padding: const EdgeInsets.only(top: 20.0),
-              child: _buildStatsContainer(),
+              // *** FIX: Replaced method call with new widget ***
+              child: _StatsContainer(user: user),
             ),
           ),
           Positioned(
@@ -379,7 +390,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          // The main TAP button remains centered using Stack alignment
           PressableWidget(
             onTap: () {},
             borderRadius: BorderRadius.circular(80),
@@ -416,174 +426,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          // New Daily Reward button positioned below the center button
-          // using Positioned to avoid affecting the central alignment of the TAP button
-          Positioned(
-            bottom:
-                120, // Adjust this value to control how far below the center it sits
-            child: _buildDailyRewardButton(),
-          ),
+          Positioned(bottom: 120, child: _buildDailyRewardButton()),
         ],
       ),
-    );
-  }
-
-  Widget _buildStatsContainer() {
-    const textShadow = [
-      Shadow(color: Colors.black87, blurRadius: 4, offset: Offset(1, 1)),
-    ];
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'HUSTLE LEVEL',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textGrey,
-                  shadows: textShadow,
-                ),
-              ),
-              const Text(
-                'Taxi Driver',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: AppColors.textLight,
-                  fontWeight: FontWeight.w700,
-                  height: 1.1,
-                  shadows: textShadow,
-                ),
-              ),
-              const Text(
-                'Level 8',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textGrey,
-                  shadows: textShadow,
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                '🔥 Daily Streak',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textGrey,
-                  fontWeight: FontWeight.w600,
-                  shadows: textShadow,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 15),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              const Text(
-                'NEXT LEVEL',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textGrey,
-                  shadows: textShadow,
-                ),
-              ),
-              const SizedBox(height: 4),
-              _GlassEffectContainer(
-                borderRadius: BorderRadius.circular(6),
-                child: Container(
-                  width: double.infinity,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.4),
-                        spreadRadius: 0,
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: LinearProgressIndicator(
-                      value: 1500 / 2500,
-                      backgroundColor: Colors.transparent,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppColors.angolaYellow,
-                      ),
-                      minHeight: 12,
-                      color: AppColors.angolaRed,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                '1500 / 2500 HC',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: AppColors.textGrey,
-                  shadows: textShadow,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.orange.withOpacity(0.3),
-                          blurRadius: 10,
-                        ),
-                      ],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: PressableWidget(
-                      onTap: () {},
-                      child: ElevatedButton(
-                        onPressed: null,
-                        style: ElevatedButton.styleFrom(
-                          disabledBackgroundColor: AppColors.orange,
-                          disabledForegroundColor: AppColors.angolaBlack,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 6,
-                          ),
-                          textStyle: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                          ),
-                        ),
-                        child: const Text('500 HC'),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    'Upgrade Level',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textGrey,
-                      shadows: textShadow,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 
@@ -707,12 +552,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildBottomNavBar() {
     return _GlassEffectContainer(
-      // Use ClipRRect to contain the InkWell's splash effect within the rounded corners
-      borderRadius: BorderRadius.zero, // The container itself is rectangular
+      borderRadius: BorderRadius.zero,
       child: ClipRRect(
-        // Assuming your _GlassEffectContainer might have rounded corners you want to respect.
-        // If not, this ClipRRect is still good practice.
-        // Let's assume the top corners are rounded for a typical bottom bar.
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20.0)),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
@@ -737,18 +578,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ? [const Shadow(color: AppColors.glowYellow, blurRadius: 10)]
         : <Shadow>[];
 
-    // 1. Use Expanded to make each item take up equal space in the Row.
-    //    This makes the entire area tappable.
     return Expanded(
       child: InkWell(
-        // 2. Use InkWell for the Material ripple effect.
         onTap: () => _onNavItemTapped(index),
-        // 3. Make the ripple effect circular.
         customBorder: const CircleBorder(),
         splashColor: AppColors.angolaYellow.withOpacity(0.15),
         highlightColor: AppColors.angolaYellow.withOpacity(0.1),
         child: Padding(
-          // This padding is just for visual spacing inside the tappable area.
           padding: const EdgeInsets.symmetric(vertical: 4.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -769,6 +605,202 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+// *** NEW: Extracted widget to solve the error and improve performance ***
+class _StatsContainer extends ConsumerWidget {
+  final User user;
+  const _StatsContainer({required this.user});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final levelStatusAsync = ref.watch(levelStatusProvider);
+    const textShadow = [
+      Shadow(color: Colors.black87, blurRadius: 4, offset: Offset(1, 1)),
+    ];
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'HUSTLE LEVEL',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textGrey,
+                  shadows: textShadow,
+                ),
+              ),
+              Text(
+                user.currentHustle,
+                style: const TextStyle(
+                  fontSize: 20,
+                  color: AppColors.textLight,
+                  fontWeight: FontWeight.w700,
+                  height: 1.1,
+                  shadows: textShadow,
+                ),
+              ),
+              Text(
+                'Level ${user.level}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textGrey,
+                  shadows: textShadow,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '🔥 Daily Streak: ${user.dailyStreak}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textGrey,
+                  fontWeight: FontWeight.w600,
+                  shadows: textShadow,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 15),
+        Expanded(
+          child: levelStatusAsync.when(
+            data: (status) {
+              if (status == null) {
+                return const Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'NEXT LEVEL',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textGrey,
+                        shadows: textShadow,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text("Stats loading..."),
+                  ],
+                );
+              }
+              final progress = status.hcEarnedInLevelProgress.toDouble();
+              final required = status.hcEarnedInLevelRequired.toDouble();
+              final progressValue = required > 0
+                  ? (progress / required).clamp(0.0, 1.0)
+                  : 0.0;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text(
+                    'NEXT LEVEL',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textGrey,
+                      shadows: textShadow,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  _GlassEffectContainer(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      width: double.infinity,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.4),
+                            spreadRadius: 0,
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: progressValue,
+                          backgroundColor: Colors.transparent,
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            AppColors.angolaYellow,
+                          ),
+                          minHeight: 12,
+                          color: AppColors.angolaRed,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${status.hcEarnedInLevelProgress} / ${status.hcEarnedInLevelRequired} HC',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textGrey,
+                      shadows: textShadow,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.orange.withOpacity(0.3),
+                              blurRadius: 10,
+                            ),
+                          ],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: PressableWidget(
+                          onTap: () {},
+                          child: ElevatedButton(
+                            onPressed: null,
+                            style: ElevatedButton.styleFrom(
+                              disabledBackgroundColor: AppColors.orange,
+                              disabledForegroundColor: AppColors.angolaBlack,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 6,
+                              ),
+                              textStyle: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                            ),
+                            child: Text('${status.upgradeFee} HC'),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'Upgrade Level',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textGrey,
+                          shadows: textShadow,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+            loading: () =>
+                const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            error: (e, st) => const Center(child: Text("Error")),
+          ),
+        ),
+      ],
     );
   }
 }
