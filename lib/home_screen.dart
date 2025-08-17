@@ -1,7 +1,10 @@
+// lib/home_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/state/all_states.dart';
+import 'dart:async'; // For Timer
 import 'app_colors.dart';
 import 'shop.dart';
 import 'leaderboard.dart';
@@ -55,6 +58,79 @@ class HomeScreen extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+// Task state management
+final taskStateProvider = StateProvider.family<TaskState, String>((
+  ref,
+  taskId,
+) {
+  // Check if the task is on cooldown
+  final user = ref.watch(userControllerProvider).value;
+  if (user == null) return TaskState.disabled;
+
+  if (user.taskCooldowns.containsKey(taskId)) {
+    final cooldownExpiry = user.taskCooldowns[taskId]!;
+    if (DateTime.now().isBefore(cooldownExpiry)) {
+      return TaskState.cooldown;
+    }
+  }
+
+  return TaskState.available;
+});
+
+// Task controller to handle task completion
+class TaskController {
+  final WidgetRef ref;
+  final String taskId;
+
+  TaskController(this.ref, this.taskId);
+
+  bool get isOnCooldown {
+    final taskState = ref.read(taskStateProvider(taskId));
+    return taskState == TaskState.cooldown;
+  }
+
+  bool get isAvailable {
+    final taskState = ref.read(taskStateProvider(taskId));
+    return taskState == TaskState.available;
+  }
+
+  Duration? get remainingCooldown {
+    final user = ref.read(userControllerProvider).value;
+    if (user == null || !user.taskCooldowns.containsKey(taskId)) return null;
+
+    final cooldownExpiry = user.taskCooldowns[taskId]!;
+    if (DateTime.now().isAfter(cooldownExpiry)) return null;
+
+    return cooldownExpiry.difference(DateTime.now());
+  }
+
+  Future<void> completeTask({Map<String, dynamic>? payload = const {}}) async {
+    if (!isAvailable) return;
+
+    // Set task to loading state. The state will automatically update to
+    // cooldown or available after the user data is refetched.
+    ref.read(taskStateProvider(taskId).notifier).state = TaskState.loading;
+
+    try {
+      await ref
+          .read(userControllerProvider.notifier)
+          .completeTask(taskId, payload: payload);
+    } catch (e) {
+      // The UserController handles refetching even on failure.
+      // We just need to catch the error here so it doesn't propagate
+      // as an unhandled exception in the UI.
+      print('Task completion failed, but user state will be updated: $e');
+    }
+  }
+}
+
+enum TaskState {
+  available, // Task can be performed
+  loading, // Task is being processed
+  cooldown, // Task is on cooldown
+  disabled, // Task is disabled (e.g. user not logged in)
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
@@ -281,11 +357,56 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildDailyRewardButton() {
-    return PressableWidget(
-      onTap: () {
-        // TODO: Handle Daily Reward action
-        print("Daily Reward claimed!");
+    return Consumer(
+      builder: (context, ref, child) {
+        final taskState = ref.watch(taskStateProvider('daily_check_in'));
+        final taskController = TaskController(ref, 'daily_check_in');
+
+        return _buildDailyRewardTaskButton(taskState, taskController);
       },
+    );
+  }
+
+  Widget _buildDailyRewardTaskButton(
+    TaskState taskState,
+    TaskController taskController,
+  ) {
+    // Determine button text based on state
+    String buttonText = 'Daily Reward';
+    if (taskState == TaskState.loading) {
+      buttonText = 'Loading...';
+    } else if (taskState == TaskState.cooldown) {
+      final remainingTime = taskController.remainingCooldown;
+      if (remainingTime != null) {
+        // If cooldown time is large (like a day), show hours remaining
+        if (remainingTime.inHours > 0) {
+          final hours = remainingTime.inHours;
+          buttonText = '$hours hrs left';
+        } else {
+          // For shorter times, show minutes:seconds
+          final minutes = remainingTime.inMinutes.remainder(60);
+          final seconds = remainingTime.inSeconds.remainder(60);
+          buttonText = '$minutes:${seconds.toString().padLeft(2, '0')}';
+        }
+      }
+    }
+
+    // Determine if button is disabled
+    final bool isDisabled =
+        taskState == TaskState.cooldown ||
+        taskState == TaskState.loading ||
+        taskState == TaskState.disabled;
+
+    // Determine UI appearance based on state
+    final Color gradientStartColor = isDisabled
+        ? AppColors.angolaYellow.withOpacity(0.5)
+        : AppColors.angolaYellow;
+    final Color gradientEndColor = isDisabled
+        ? AppColors.orange.withOpacity(0.5)
+        : AppColors.orange;
+
+    return PressableWidget(
+      onTap: isDisabled ? null : () => taskController.completeTask(),
       scaleFactor: 0.9,
       borderRadius: BorderRadius.circular(30), // Approximates the star shape
       child: Container(
@@ -300,28 +421,58 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               width: 1,
             ),
           ),
-          gradient: const LinearGradient(
-            colors: [AppColors.angolaYellow, AppColors.orange],
+          gradient: LinearGradient(
+            colors: [gradientStartColor, gradientEndColor],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           shadows: [
             BoxShadow(
-              color: AppColors.glowYellow.withOpacity(0.7),
+              color: AppColors.glowYellow.withOpacity(isDisabled ? 0.3 : 0.7),
               blurRadius: 15,
               spreadRadius: -2,
             ),
           ],
         ),
-        child: const Text(
-          'Daily Reward',
-          style: TextStyle(
-            color: AppColors.angolaBlack,
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
-            letterSpacing: 0.5,
-          ),
-        ),
+        child: taskState == TaskState.loading
+            ?
+              // Show loading indicator when in loading state
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.angolaBlack.withOpacity(0.7),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    buttonText,
+                    style: const TextStyle(
+                      color: AppColors.angolaBlack,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              )
+            :
+              // Regular text for other states
+              Text(
+                buttonText,
+                style: const TextStyle(
+                  color: AppColors.angolaBlack,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                  letterSpacing: 0.5,
+                ),
+              ),
       ),
     );
   }
@@ -348,19 +499,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _actionButton(FontAwesomeIcons.handPointer, 'Daily Tap'),
+                  _buildDailyTapButton(),
                   const SizedBox(height: 15),
                   _actionButton(FontAwesomeIcons.circlePlay, 'Watch Ad'),
                   const SizedBox(height: 15),
-                  _actionButton(
-                    FontAwesomeIcons.brain,
-                    'Quiz',
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const QuizScreen()),
-                      );
-                    },
-                  ),
+                  _buildQuizButton(),
                 ],
               ),
             ),
@@ -390,45 +533,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ),
-          PressableWidget(
-            onTap: () {},
-            borderRadius: BorderRadius.circular(80),
-            child: _GlassEffectContainer(
-              isCircle: true,
-              child: SizedBox(
-                width: 160,
-                height: 160,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FaIcon(
-                      FontAwesomeIcons.coins,
-                      size: 50,
-                      color: AppColors.angolaYellow,
-                      shadows: [
-                        Shadow(
-                          color: AppColors.glowYellow.withOpacity(0.8),
-                          blurRadius: 15,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'TAP',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 18,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          _buildMainTapButton(),
           Positioned(bottom: 120, child: _buildDailyRewardButton()),
         ],
       ),
+    );
+  }
+
+  Widget _buildMainTapButton() {
+    return Consumer(
+      builder: (context, ref, child) {
+        final taskState = ref.watch(taskStateProvider('quick_tap'));
+        final taskController = TaskController(ref, 'quick_tap');
+        return _MainTapButton(
+          taskState: taskState,
+          taskController: taskController,
+        );
+      },
+    );
+  }
+
+  Widget _buildDailyTapButton() {
+    return Consumer(
+      builder: (context, ref, child) {
+        final taskState = ref.watch(taskStateProvider('daily_tap'));
+        final taskController = TaskController(ref, 'daily_tap');
+
+        return _DailyTapButton(
+          taskState: taskState,
+          taskController: taskController,
+        );
+      },
+    );
+  }
+
+  Widget _buildQuizButton() {
+    return Consumer(
+      builder: (context, ref, child) {
+        // Watch the state directly from the provider.
+        final taskState = ref.watch(taskStateProvider('quiz_game'));
+        final taskController = TaskController(ref, 'quiz_game');
+
+        return _QuizButton(
+          taskState: taskState,
+          taskController: taskController,
+        );
+      },
     );
   }
 
@@ -801,6 +951,464 @@ class _StatsContainer extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// Daily Tap Button Widget
+class _DailyTapButton extends StatefulWidget {
+  final TaskState taskState;
+  final TaskController taskController;
+
+  const _DailyTapButton({
+    required this.taskState,
+    required this.taskController,
+  });
+
+  @override
+  State<_DailyTapButton> createState() => _DailyTapButtonState();
+}
+
+class _DailyTapButtonState extends State<_DailyTapButton> {
+  Timer? _cooldownTimer;
+  Duration? _remainingTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateRemainingTime();
+
+    // Start the timer if on cooldown
+    if (widget.taskState == TaskState.cooldown) {
+      _startCooldownTimer();
+    }
+  }
+
+  @override
+  void didUpdateWidget(_DailyTapButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.taskState != oldWidget.taskState) {
+      _updateRemainingTime();
+
+      // Start or cancel timer based on the new state
+      if (widget.taskState == TaskState.cooldown) {
+        _startCooldownTimer();
+      } else {
+        _cooldownTimer?.cancel();
+      }
+    }
+  }
+
+  void _updateRemainingTime() {
+    if (widget.taskState == TaskState.cooldown) {
+      setState(() {
+        _remainingTime = widget.taskController.remainingCooldown;
+      });
+    } else {
+      _remainingTime = null;
+    }
+  }
+
+  void _startCooldownTimer() {
+    _cooldownTimer?.cancel();
+    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() {
+          _remainingTime = widget.taskController.remainingCooldown;
+
+          // Cancel timer if cooldown has expired
+          if (_remainingTime == null || _remainingTime!.inSeconds <= 0) {
+            _cooldownTimer?.cancel();
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _cooldownTimer?.cancel();
+    super.dispose();
+  }
+
+  String get _buttonText {
+    switch (widget.taskState) {
+      case TaskState.loading:
+        return 'LOADING';
+      case TaskState.cooldown:
+        final minutes = _remainingTime?.inMinutes.remainder(60) ?? 0;
+        final seconds = _remainingTime?.inSeconds.remainder(60) ?? 0;
+        return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+      default:
+        return 'DAILY TAP';
+    }
+  }
+
+  Color get _textColor {
+    switch (widget.taskState) {
+      case TaskState.available:
+        return AppColors.textLight;
+      case TaskState.cooldown:
+        return AppColors.angolaYellow;
+      default:
+        return AppColors.textGrey;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDisabled =
+        widget.taskState == TaskState.cooldown ||
+        widget.taskState == TaskState.loading ||
+        widget.taskState == TaskState.disabled;
+
+    return PressableWidget(
+      onTap: isDisabled ? null : () => widget.taskController.completeTask(),
+      borderRadius: BorderRadius.circular(16),
+      child: _GlassEffectContainer(
+        borderRadius: BorderRadius.circular(16),
+        child: SizedBox(
+          width: 64,
+          height: 64,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Content
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (widget.taskState == TaskState.loading)
+                    const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.angolaYellow,
+                        ),
+                      ),
+                    )
+                  else
+                    FaIcon(
+                      FontAwesomeIcons.handPointer,
+                      size: 24,
+                      color: isDisabled
+                          ? AppColors.textGrey.withOpacity(0.5)
+                          : AppColors.textGrey,
+                    ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _buttonText,
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w600,
+                      color: _textColor,
+                    ),
+                  ),
+                ],
+              ),
+
+              // Cooldown overlay
+              if (widget.taskState == TaskState.cooldown &&
+                  _remainingTime != null)
+                CircularProgressIndicator(
+                  value:
+                      1 -
+                      (_remainingTime!.inSeconds /
+                          (widget.taskController.isOnCooldown
+                              ? widget
+                                        .taskController
+                                        .remainingCooldown!
+                                        .inSeconds +
+                                    _remainingTime!.inSeconds
+                              : _remainingTime!.inSeconds)),
+                  strokeWidth: 2,
+                  backgroundColor: Colors.transparent,
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    AppColors.angolaYellow,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+//
+//
+//
+//
+
+class _QuizButton extends StatefulWidget {
+  final TaskState taskState;
+  final TaskController taskController;
+
+  const _QuizButton({required this.taskState, required this.taskController});
+
+  @override
+  State<_QuizButton> createState() => _QuizButtonState();
+}
+
+class _QuizButtonState extends State<_QuizButton> {
+  Timer? _cooldownTimer;
+  Duration? _remainingTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateRemainingTime();
+
+    // Start the timer if on cooldown
+    if (widget.taskState == TaskState.cooldown) {
+      _startCooldownTimer();
+    }
+  }
+
+  @override
+  void didUpdateWidget(_QuizButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.taskState != oldWidget.taskState) {
+      _updateRemainingTime();
+
+      // Start or cancel timer based on the new state
+      if (widget.taskState == TaskState.cooldown) {
+        _startCooldownTimer();
+      } else {
+        _cooldownTimer?.cancel();
+      }
+    }
+  }
+
+  void _updateRemainingTime() {
+    if (widget.taskState == TaskState.cooldown) {
+      setState(() {
+        _remainingTime = widget.taskController.remainingCooldown;
+      });
+    } else {
+      _remainingTime = null;
+    }
+  }
+
+  void _startCooldownTimer() {
+    _cooldownTimer?.cancel();
+    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() {
+          _remainingTime = widget.taskController.remainingCooldown;
+
+          // Cancel timer if cooldown has expired
+          if (_remainingTime == null || _remainingTime!.inSeconds <= 0) {
+            _cooldownTimer?.cancel();
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _cooldownTimer?.cancel();
+    super.dispose();
+  }
+
+  String get _buttonText {
+    switch (widget.taskState) {
+      case TaskState.loading:
+        return 'LOADING';
+      case TaskState.cooldown:
+        final minutes = _remainingTime?.inMinutes.remainder(60) ?? 0;
+        final seconds = _remainingTime?.inSeconds.remainder(60) ?? 0;
+        return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+      default:
+        return 'QUIZ';
+    }
+  }
+
+  Color get _textColor {
+    switch (widget.taskState) {
+      case TaskState.available:
+        return AppColors.textLight;
+      case TaskState.cooldown:
+        return AppColors.angolaYellow;
+      default:
+        return AppColors.textGrey;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDisabled =
+        widget.taskState == TaskState.cooldown ||
+        widget.taskState == TaskState.loading ||
+        widget.taskState == TaskState.disabled;
+
+    return PressableWidget(
+      onTap: isDisabled
+          ? null
+          : () async {
+              await Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const QuizScreen()));
+
+              Map<String, dynamic> payload = globalQuizResult?.toJson() ?? {};
+              widget.taskController.completeTask(payload: payload);
+            },
+      borderRadius: BorderRadius.circular(16),
+      child: _GlassEffectContainer(
+        borderRadius: BorderRadius.circular(16),
+        child: SizedBox(
+          width: 64,
+          height: 64,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Content
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (widget.taskState == TaskState.loading)
+                    const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.angolaYellow,
+                        ),
+                      ),
+                    )
+                  else
+                    FaIcon(
+                      FontAwesomeIcons.handPointer,
+                      size: 24,
+                      color: isDisabled
+                          ? AppColors.textGrey.withOpacity(0.5)
+                          : AppColors.textGrey,
+                    ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _buttonText,
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w600,
+                      color: _textColor,
+                    ),
+                  ),
+                ],
+              ),
+
+              // Cooldown overlay
+              if (widget.taskState == TaskState.cooldown &&
+                  _remainingTime != null)
+                CircularProgressIndicator(
+                  value:
+                      1 -
+                      (_remainingTime!.inSeconds /
+                          (widget.taskController.isOnCooldown
+                              ? widget
+                                        .taskController
+                                        .remainingCooldown!
+                                        .inSeconds +
+                                    _remainingTime!.inSeconds
+                              : _remainingTime!.inSeconds)),
+                  strokeWidth: 2,
+                  backgroundColor: Colors.transparent,
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    AppColors.angolaYellow,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+//
+//
+//
+//
+//
+//
+//
+
+// Main Tap Button Widget
+class _MainTapButton extends StatelessWidget {
+  final TaskState taskState;
+  final TaskController taskController;
+
+  const _MainTapButton({required this.taskState, required this.taskController});
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDisabled =
+        taskState == TaskState.cooldown ||
+        taskState == TaskState.loading ||
+        taskState == TaskState.disabled;
+
+    return PressableWidget(
+      onTap: isDisabled
+          ? null
+          : () {
+              taskController.completeTask();
+            },
+      borderRadius: BorderRadius.circular(80),
+      child: _GlassEffectContainer(
+        isCircle: true,
+        child: SizedBox(
+          width: 160,
+          height: 160,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (taskState == TaskState.loading)
+                const SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 4,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColors.angolaYellow,
+                    ),
+                  ),
+                )
+              else
+                FaIcon(
+                  FontAwesomeIcons.coins,
+                  size: 50,
+                  color: isDisabled
+                      ? AppColors.textGrey.withOpacity(0.5)
+                      : AppColors.angolaYellow,
+                  shadows: isDisabled
+                      ? []
+                      : [
+                          Shadow(
+                            color: AppColors.glowYellow.withOpacity(0.8),
+                            blurRadius: 15,
+                          ),
+                        ],
+                ),
+              const SizedBox(height: 10),
+              Text(
+                'TAP',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  letterSpacing: 1,
+                  color: isDisabled
+                      ? AppColors.textGrey.withOpacity(0.5)
+                      : AppColors.textLight,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

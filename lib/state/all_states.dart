@@ -6,6 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Hacky global variable to store quiz results
+QuizResult? globalQuizResult;
+
 // ==========================================================================
 // 1. DART MODELS (Matching the Backend API)
 // ==========================================================================
@@ -223,6 +226,19 @@ class QuizQuestion {
       question: json['question'],
       options: List<String>.from(json['options']),
     );
+  }
+}
+
+@immutable
+class QuizResult {
+  final String quizId;
+  final int answerIndex;
+
+  const QuizResult({required this.quizId, required this.answerIndex});
+
+  // toJson
+  Map<String, dynamic> toJson() {
+    return {'quizId': quizId, 'answerIndex': answerIndex};
   }
 }
 
@@ -500,7 +516,11 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
   ApiRepository get _api => _ref.read(apiRepositoryProvider);
 
   Future<void> _fetchUser() async {
-    state = const AsyncValue.loading();
+    // If we already have a user, don't go into a full loading state for a simple refresh.
+    // This prevents UI flashes and errors in dependent providers that rely on user data.
+    if (state.value == null) {
+      state = const AsyncValue.loading();
+    }
     try {
       final user = await _api.getMe();
       state = AsyncValue.data(user);
@@ -530,7 +550,19 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
     String taskId, {
     Map<String, dynamic>? payload,
   }) async {
-    await _handleAction(() => _api.completeTask(taskId, payload: payload));
+    try {
+      await _api.completeTask(taskId, payload: payload);
+    } catch (e) {
+      // We still want to refetch user data even if the task "fails"
+      // because a failure might still result in a cooldown being applied.
+      print("Action failed but refetching user: $e");
+    } finally {
+      // Always refetch user data to get the latest balance and cooldowns.
+      await _fetchUser();
+
+      // print new user state for debugging
+      print("New user state: ${state.value!.taskCooldowns}");
+    }
   }
 
   Future<void> purchaseItem(String itemId, {int quantity = 1}) async {

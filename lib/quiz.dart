@@ -1,10 +1,13 @@
+// lib/quiz.dart
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'app_colors.dart'; // Assuming you have this file from the previous steps
+import 'package:hustlecoin/state/all_states.dart';
+import 'app_colors.dart';
 
-// --- Reusable Helper Widgets ---
+// --- Reusable Helper Widgets (copied from your original for completeness) ---
 
-// High-performance "smoky glass" container without blur
 class _GlassEffectContainer extends StatelessWidget {
   final Widget child;
   final BorderRadius borderRadius;
@@ -37,7 +40,6 @@ class _GlassEffectContainer extends StatelessWidget {
   }
 }
 
-// Lightweight press feedback widget
 class PressableWidget extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -78,41 +80,12 @@ class _PressableWidgetState extends State<PressableWidget> {
 
 // --- Main Quiz Screen Widget ---
 
-class QuizScreen extends StatefulWidget {
+class QuizScreen extends ConsumerWidget {
   const QuizScreen({super.key});
 
   @override
-  State<QuizScreen> createState() => _QuizScreenState();
-}
-
-class _QuizScreenState extends State<QuizScreen> {
-  // State to track the selected option. null means no option is selected.
-  int? _selectedOptionIndex;
-
-  // Hardcoded quiz data for this example
-  final String question = 'What is the capital city of Angola?';
-  final List<String> options = [
-    'A) Lobito',
-    'B) Luanda',
-    'C) Huambo',
-    'D) Benguela',
-  ];
-
-  void _selectOption(int index) {
-    setState(() {
-      _selectedOptionIndex = index;
-    });
-  }
-
-  void _submitAnswer() {
-    if (_selectedOptionIndex != null) {
-      // Logic to check answer, give rewards, etc.
-      print('Submitted answer: ${options[_selectedOptionIndex!]}');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final quizAsync = ref.watch(quizQuestionProvider);
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -133,21 +106,33 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
           ),
           child: SafeArea(
-            child: Column(children: [_buildHeader(context), _buildContent()]),
+            child: Column(
+              children: [
+                _buildHeader(context, ref),
+                Expanded(
+                  child: quizAsync.when(
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) => Center(child: Text('Error: $err')),
+                    data: (quiz) => _QuizContent(quiz: quiz),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    // This header is identical to the one in ShopScreen
+  Widget _buildHeader(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(userControllerProvider).value;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
       child: Row(
         children: [
           PressableWidget(
-            onTap: () => Navigator.of(context).pop(),
+            onTap: () => Navigator.of(context).pop(), // Pop without a result
             child: const _GlassEffectContainer(
               borderRadius: BorderRadius.all(Radius.circular(12)),
               child: SizedBox(
@@ -187,19 +172,22 @@ class _QuizScreenState extends State<QuizScreen> {
                     color: AppColors.textLight,
                   ),
                 ),
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '1,250 HC',
-                      style: TextStyle(
+                      '${user?.hcBalance ?? 0} HC',
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
-                      '≈ Kz 12,507',
-                      style: TextStyle(fontSize: 11, color: AppColors.textGrey),
+                      '≈ Kz ${user?.kzBalance ?? 0}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textGrey,
+                      ),
                     ),
                   ],
                 ),
@@ -210,81 +198,109 @@ class _QuizScreenState extends State<QuizScreen> {
       ),
     );
   }
+}
 
-  Widget _buildContent() {
+class _QuizContent extends StatefulWidget {
+  final QuizQuestion quiz;
+  const _QuizContent({required this.quiz});
+
+  @override
+  State<_QuizContent> createState() => _QuizContentState();
+}
+
+class _QuizContentState extends State<_QuizContent> {
+  int? _selectedOptionIndex;
+
+  void _selectOption(int index) {
+    setState(() {
+      _selectedOptionIndex = index;
+    });
+  }
+
+  // CHANGED: This function is now incredibly simple.
+  void _submitAnswer() {
+    if (_selectedOptionIndex == null) return;
+
+    // Create the result object
+    final result = QuizResult(
+      quizId: widget.quiz.quizId,
+      answerIndex: _selectedOptionIndex!,
+    );
+
+    // Store the result globally (hack)
+    globalQuizResult = result;
+
+    // Pop the screen and pass the result back to HomeScreen
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     bool isButtonEnabled = _selectedOptionIndex != null;
 
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Question Box
-            _GlassEffectContainer(
-              borderRadius: BorderRadius.circular(16),
-              padding: const EdgeInsets.all(20),
-              child: Text(
-                question,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  height: 1.4,
-                ),
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _GlassEffectContainer(
+            borderRadius: BorderRadius.circular(16),
+            padding: const EdgeInsets.all(20),
+            child: Text(
+              widget.quiz.question,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                height: 1.4,
               ),
             ),
-            const SizedBox(height: 25),
-
-            // Options
-            ...options.asMap().entries.map((entry) {
-              int index = entry.key;
-              String optionText = entry.value;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 15.0),
-                child: _buildOptionCard(optionText, index),
-              );
-            }),
-
-            const Spacer(), // Pushes the button towards the bottom if there's space
-            // Submit Button
-            AnimatedOpacity(
-              opacity: isButtonEnabled ? 1.0 : 0.5,
-              duration: const Duration(milliseconds: 200),
-              child: PressableWidget(
-                onTap: isButtonEnabled ? _submitAnswer : null,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    gradient: const LinearGradient(
-                      colors: [AppColors.angolaYellow, AppColors.angolaRed],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+          ),
+          const SizedBox(height: 25),
+          ...widget.quiz.options.asMap().entries.map((entry) {
+            int index = entry.key;
+            String optionText = entry.value;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 15.0),
+              child: _buildOptionCard(optionText, index),
+            );
+          }),
+          const Spacer(),
+          AnimatedOpacity(
+            opacity: isButtonEnabled ? 1.0 : 0.5,
+            duration: const Duration(milliseconds: 200),
+            child: PressableWidget(
+              onTap: isButtonEnabled ? _submitAnswer : null,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: const LinearGradient(
+                    colors: [AppColors.angolaYellow, AppColors.angolaRed],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  child: const Text(
-                    'Submit Answer',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
+                ),
+                child: const Text(
+                  'Submit Answer',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildOptionCard(String text, int index) {
     bool isSelected = _selectedOptionIndex == index;
-
     return PressableWidget(
       onTap: () => _selectOption(index),
       child: _GlassEffectContainer(
@@ -309,3 +325,6 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 }
+
+// global quiz result variable
+QuizResult? quizResult;
