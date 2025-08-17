@@ -1,14 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hustlecoin/leaderboard.dart';
-import 'home_screen.dart';
-import 'signup.dart';
-import 'shop.dart';
-import 'quiz.dart';
-import 'edit_profile.dart';
 import 'start.dart';
-import 'login.dart';
-import 'land_map.dart';
 import 'app_colors.dart';
 
 void main() {
@@ -28,8 +20,7 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
         useMaterial3: true,
       ),
-      home:
-          LandMapScreen(), // LeaderboardScreen(), // StartScreen(), // EditProfileScreen(), // QuizScreen(), // ShopScreen(), // SignUpScreen(), // HomeScreen(),
+      home: const StartScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

@@ -168,7 +168,7 @@ class ShopScreen extends StatelessWidget {
         children: [
           PressableWidget(
             onTap: () {
-              // Add navigation logic, e.g., Navigator.pop(context);
+              Navigator.of(context).pop();
             },
             child: const _GlassEffectContainer(
               borderRadius: BorderRadius.all(Radius.circular(12)),

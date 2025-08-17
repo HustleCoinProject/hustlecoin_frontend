@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'app_colors.dart'; // Assuming you have this file from previous steps
+import 'app_colors.dart';
+import 'login.dart';
 
 // --- Main Start Screen Widget ---
 
@@ -168,11 +169,9 @@ class _StartScreenState extends State<StartScreen>
 
     return GestureDetector(
       onTap: () {
-        // --- NAVIGATION LOGIC GOES HERE ---
-        // For example, to go to your SignUpScreen:
-        // Navigator.of(context).pushReplacement(
-        //   MaterialPageRoute(builder: (_) => const SignUpScreen()),
-        // );
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
       },
       child: AnimatedBuilder(
         animation: _glowController,

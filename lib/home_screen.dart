@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'app_colors.dart';
+import 'shop.dart';
+import 'leaderboard.dart';
+import 'edit_profile.dart';
+import 'quiz.dart';
+import 'land_map.dart';
 
 // A custom, lightweight widget for press feedback.
 class PressableWidget extends StatefulWidget {
@@ -54,9 +59,43 @@ class _HomeScreenState extends State<HomeScreen> {
   int _activeNavIndex = 0;
 
   void _onNavItemTapped(int index) {
-    setState(() {
-      _activeNavIndex = index;
-    });
+    // Navigate to different screens based on the index
+    switch (index) {
+      case 0:
+        // Home - already here, just update the state
+        setState(() {
+          _activeNavIndex = 0;
+        });
+        break;
+      case 1:
+        // Stats/Leaderboard
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (_) => LeaderboardScreen()))
+            .then((_) {
+              // Reset to home when returning
+              setState(() {
+                _activeNavIndex = 0;
+              });
+            });
+        break;
+      case 2:
+        // Profile
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (_) => const EditProfileScreen()))
+            .then((_) {
+              // Reset to home when returning
+              setState(() {
+                _activeNavIndex = 0;
+              });
+            });
+        break;
+      case 3:
+        // Settings - no page created yet, just update state
+        setState(() {
+          _activeNavIndex = index;
+        });
+        break;
+    }
   }
 
   @override
@@ -254,7 +293,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 15),
                   _actionButton(FontAwesomeIcons.circlePlay, 'Watch Ad'),
                   const SizedBox(height: 15),
-                  _actionButton(FontAwesomeIcons.brain, 'Quiz'),
+                  _actionButton(
+                    FontAwesomeIcons.brain,
+                    'Quiz',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const QuizScreen()),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -267,7 +314,17 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _actionButton(FontAwesomeIcons.mapMarkedAlt, 'Land'),
+                  _actionButton(
+                    FontAwesomeIcons.mapMarkedAlt,
+                    'Land',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const LandMapScreen(),
+                        ),
+                      );
+                    },
+                  ),
                   const SizedBox(height: 15),
                   _actionButton(FontAwesomeIcons.calendarAlt, 'Events'),
                 ],
@@ -474,9 +531,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _actionButton(IconData icon, String label) {
+  Widget _actionButton(IconData icon, String label, {VoidCallback? onTap}) {
     return PressableWidget(
-      onTap: () {},
+      onTap: onTap ?? () {},
       borderRadius: BorderRadius.circular(16),
       child: _GlassEffectContainer(
         borderRadius: BorderRadius.circular(16),
@@ -514,13 +571,27 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(width: 8),
           _upgradeItem(FontAwesomeIcons.key, 'Keys'),
           const SizedBox(width: 8),
-          _upgradeItem(FontAwesomeIcons.store, 'Shop', isShop: true),
+          _upgradeItem(
+            FontAwesomeIcons.store,
+            'Shop',
+            isShop: true,
+            onTap: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const ShopScreen()));
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _upgradeItem(IconData icon, String label, {bool isShop = false}) {
+  Widget _upgradeItem(
+    IconData icon,
+    String label, {
+    bool isShop = false,
+    VoidCallback? onTap,
+  }) {
     Widget content;
     if (isShop) {
       content = Container(
@@ -553,7 +624,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     return Expanded(
       child: PressableWidget(
-        onTap: () {},
+        onTap: onTap ?? () {},
         borderRadius: BorderRadius.circular(12),
         child: content,
       ),
@@ -580,16 +651,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildBottomNavBar() {
     return _GlassEffectContainer(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _navItem(FontAwesomeIcons.house, 'Home', 0),
-            _navItem(FontAwesomeIcons.chartLine, 'Stats', 1),
-            _navItem(FontAwesomeIcons.userCircle, 'Profile', 2),
-            _navItem(FontAwesomeIcons.cog, 'Settings', 3),
-          ],
+      // Use ClipRRect to contain the InkWell's splash effect within the rounded corners
+      borderRadius: BorderRadius.zero, // The container itself is rectangular
+      child: ClipRRect(
+        // Assuming your _GlassEffectContainer might have rounded corners you want to respect.
+        // If not, this ClipRRect is still good practice.
+        // Let's assume the top corners are rounded for a typical bottom bar.
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20.0)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _navItem(FontAwesomeIcons.house, 'Home', 0),
+              _navItem(FontAwesomeIcons.chartLine, 'Stats', 1),
+              _navItem(FontAwesomeIcons.userCircle, 'Profile', 2),
+              _navItem(FontAwesomeIcons.cog, 'Settings', 3),
+            ],
+          ),
         ),
       ),
     );
@@ -601,28 +680,37 @@ class _HomeScreenState extends State<HomeScreen> {
     final shadows = isActive
         ? [const Shadow(color: AppColors.glowYellow, blurRadius: 10)]
         : <Shadow>[];
-    return PressableWidget(
-      onTap: () => _onNavItemTapped(index),
-      borderRadius: BorderRadius.circular(8),
-      scaleFactor: 1.1,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FaIcon(icon, size: 22, color: color, shadows: shadows),
-            const SizedBox(height: 4),
-            Text(
-              label.toUpperCase(),
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
-                color: color,
-                shadows: shadows,
+
+    // 1. Use Expanded to make each item take up equal space in the Row.
+    //    This makes the entire area tappable.
+    return Expanded(
+      child: InkWell(
+        // 2. Use InkWell for the Material ripple effect.
+        onTap: () => _onNavItemTapped(index),
+        // 3. Make the ripple effect circular.
+        customBorder: const CircleBorder(),
+        splashColor: AppColors.angolaYellow.withOpacity(0.15),
+        highlightColor: AppColors.angolaYellow.withOpacity(0.1),
+        child: Padding(
+          // This padding is just for visual spacing inside the tappable area.
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FaIcon(icon, size: 22, color: color, shadows: shadows),
+              const SizedBox(height: 4),
+              Text(
+                label.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                  color: color,
+                  shadows: shadows,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

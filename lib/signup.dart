@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'app_colors.dart'; // Assuming you have this file from the previous step
+import 'app_colors.dart';
+import 'home_screen.dart';
 
 // --- Reusable Widgets (can be moved to their own files later) ---
 
@@ -222,7 +223,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _buildActionButton(
           text: 'Create Account',
           onTap: () {
-            // Final account creation logic goes here
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
+            );
           },
         ),
         const SizedBox(height: 10),

@@ -1,7 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'app_colors.dart'; // Assuming you have this file from previous steps
+import 'app_colors.dart';
+import 'signup.dart';
+import 'home_screen.dart';
 
 // --- Reusable Helper Widgets ---
 
@@ -143,7 +145,9 @@ class LoginScreen extends StatelessWidget {
                     _buildActionButton(
                       text: 'Log In',
                       onTap: () {
-                        // Handle login logic
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (_) => const HomeScreen()),
+                        );
                       },
                     ),
                     const SizedBox(height: 30),
@@ -248,8 +252,9 @@ class LoginScreen extends StatelessWidget {
             ),
             recognizer: TapGestureRecognizer()
               ..onTap = () {
-                // Navigate to SignUpScreen
-                // Example: Navigator.of(context).push(MaterialPageRoute(builder: (_) => SignUpScreen()));
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => const SignUpScreen()));
               },
           ),
         ],
