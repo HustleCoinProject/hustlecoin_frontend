@@ -268,6 +268,54 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // NEW: Helper widget for the Daily Reward button
+  Widget _buildDailyRewardButton() {
+    return PressableWidget(
+      onTap: () {
+        // TODO: Handle Daily Reward action
+        print("Daily Reward claimed!");
+      },
+      scaleFactor: 0.9,
+      borderRadius: BorderRadius.circular(30), // Approximates the star shape
+      child: Container(
+        // Slightly increased padding for a bigger size
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+        decoration: ShapeDecoration(
+          shape: StarBorder(
+            points: 10,
+            innerRadiusRatio: 0.7,
+            pointRounding: 0.3,
+            side: BorderSide(
+              color: AppColors.angolaYellow.withOpacity(0.5),
+              width: 1,
+            ),
+          ),
+          gradient: const LinearGradient(
+            colors: [AppColors.angolaYellow, AppColors.orange],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          shadows: [
+            BoxShadow(
+              color: AppColors.glowYellow.withOpacity(0.7),
+              blurRadius: 15,
+              spreadRadius: -2,
+            ),
+          ],
+        ),
+        child: const Text(
+          'Daily Reward',
+          style: TextStyle(
+            color: AppColors.angolaBlack,
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildGameArea() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15.0),
@@ -331,6 +379,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+          // The main TAP button remains centered using Stack alignment
           PressableWidget(
             onTap: () {},
             borderRadius: BorderRadius.circular(80),
@@ -366,6 +415,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+          ),
+          // New Daily Reward button positioned below the center button
+          // using Positioned to avoid affecting the central alignment of the TAP button
+          Positioned(
+            bottom:
+                120, // Adjust this value to control how far below the center it sits
+            child: _buildDailyRewardButton(),
           ),
         ],
       ),

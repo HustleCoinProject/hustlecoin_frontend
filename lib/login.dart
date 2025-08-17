@@ -1,6 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hustlecoin/state/all_states.dart';
 import 'app_colors.dart';
 import 'signup.dart';
 import 'home_screen.dart';
@@ -77,11 +79,36 @@ class _PressableWidgetState extends State<PressableWidget> {
 
 // --- Main Login Screen Widget ---
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Example: Add controllers for your text fields
+    final usernameController = TextEditingController();
+    final passwordController = TextEditingController();
+
+    // Listen for the user state to change to navigate upon successful login
+    ref.listen<AsyncValue<User?>>(userControllerProvider, (previous, next) {
+      // Check if the new state has a user object and the old one didn't
+      if (next is AsyncData && next.value != null) {
+        // Navigate to the HomeScreen and remove all previous routes (like LoginScreen)
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (route) => false, // This predicate removes all routes below
+        );
+      }
+    });
+
+    // Listen for loading/error states to give feedback
+    ref.listen<AsyncValue>(authControllerProvider, (_, state) {
+      if (state.hasError) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(state.error.toString())));
+      }
+    });
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -128,11 +155,13 @@ class LoginScreen extends StatelessWidget {
                     _buildInputField(
                       icon: FontAwesomeIcons.user,
                       hintText: 'Email or Username',
+                      controller: usernameController,
                     ),
                     const SizedBox(height: 20),
                     _buildInputField(
                       icon: FontAwesomeIcons.lock,
                       hintText: 'Password',
+                      controller: passwordController,
                       obscureText: true,
                     ),
                     const SizedBox(height: 5),
@@ -144,9 +173,19 @@ class LoginScreen extends StatelessWidget {
                     // Login Button
                     _buildActionButton(
                       text: 'Log In',
-                      onTap: () {
-                        Navigator.of(context).pushReplacement(
+                      onTap: () async {
+                        /*Navigator.of(context).pushReplacement(
                           MaterialPageRoute(builder: (_) => const HomeScreen()),
+                        );*/
+                        // Call the login method from the provider
+                        await ref
+                            .read(authControllerProvider.notifier)
+                            .login(
+                              usernameController.text,
+                              passwordController.text,
+                            );
+                        print(
+                          "Fetching user with token: ${ref.read(authControllerProvider).value}",
                         );
                       },
                     ),
@@ -170,10 +209,12 @@ class LoginScreen extends StatelessWidget {
     required IconData icon,
     required String hintText,
     bool obscureText = false,
+    required TextEditingController? controller,
   }) {
     return _GlassEffectContainer(
       borderRadius: BorderRadius.circular(12),
       child: TextField(
+        controller: controller,
         obscureText: obscureText,
         style: const TextStyle(color: AppColors.textLight, fontSize: 16),
         decoration: InputDecoration(
