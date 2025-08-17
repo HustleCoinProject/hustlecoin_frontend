@@ -1,0 +1,259 @@
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'app_colors.dart'; // Assuming you have this file from previous steps
+
+// --- Reusable Helper Widgets ---
+
+// High-performance "smoky glass" container without blur
+class _GlassEffectContainer extends StatelessWidget {
+  final Widget child;
+  final BorderRadius borderRadius;
+  final EdgeInsetsGeometry padding;
+
+  const _GlassEffectContainer({
+    required this.child,
+    this.borderRadius = BorderRadius.zero,
+    this.padding = EdgeInsets.zero,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: AppColors.glassBg,
+        borderRadius: borderRadius,
+        border: Border.all(color: AppColors.glassBorder, width: 1),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+
+// Lightweight press feedback widget
+class PressableWidget extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+  final double scaleFactor;
+
+  const PressableWidget({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.scaleFactor = 0.97,
+  });
+
+  @override
+  State<PressableWidget> createState() => _PressableWidgetState();
+}
+
+class _PressableWidgetState extends State<PressableWidget> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) {
+        setState(() => _isPressed = false);
+        widget.onTap?.call();
+      },
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: AnimatedScale(
+        scale: _isPressed ? widget.scaleFactor : 1.0,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+// --- Main Login Screen Widget ---
+
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/Taxi Driver.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment.center,
+              radius: 1.0,
+              colors: [
+                const Color(0xFF101010).withOpacity(0.4),
+                const Color(0xFF101010).withOpacity(0.9),
+              ],
+            ),
+          ),
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: SizedBox(
+                width: 380,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Title and Subtitle
+                    const Text(
+                      'Welcome Back!',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    const Text(
+                      'Log in to continue your hustle.',
+                      style: TextStyle(color: AppColors.textGrey, fontSize: 16),
+                    ),
+                    const SizedBox(height: 30),
+
+                    // Input Fields
+                    _buildInputField(
+                      icon: FontAwesomeIcons.user,
+                      hintText: 'Email or Username',
+                    ),
+                    const SizedBox(height: 20),
+                    _buildInputField(
+                      icon: FontAwesomeIcons.lock,
+                      hintText: 'Password',
+                      obscureText: true,
+                    ),
+                    const SizedBox(height: 5),
+
+                    // Forgot Password Link
+                    _buildForgotPasswordLink(),
+                    const SizedBox(height: 20),
+
+                    // Login Button
+                    _buildActionButton(
+                      text: 'Log In',
+                      onTap: () {
+                        // Handle login logic
+                      },
+                    ),
+                    const SizedBox(height: 30),
+
+                    // Sign Up Link
+                    _buildSignUpLink(context),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- Helper methods for building UI components ---
+
+  Widget _buildInputField({
+    required IconData icon,
+    required String hintText,
+    bool obscureText = false,
+  }) {
+    return _GlassEffectContainer(
+      borderRadius: BorderRadius.circular(12),
+      child: TextField(
+        obscureText: obscureText,
+        style: const TextStyle(color: AppColors.textLight, fontSize: 16),
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          hintText: hintText,
+          hintStyle: const TextStyle(color: AppColors.textGrey),
+          prefixIcon: Icon(icon, color: AppColors.textGrey, size: 18),
+          contentPadding: const EdgeInsets.symmetric(vertical: 15.0),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForgotPasswordLink() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        GestureDetector(
+          onTap: () {
+            // Handle forgot password logic
+          },
+          child: const Text(
+            'Forgot Password?',
+            style: TextStyle(color: AppColors.textGrey, fontSize: 14),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton({
+    required String text,
+    required VoidCallback onTap,
+  }) {
+    return PressableWidget(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 15),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: const LinearGradient(
+            colors: [AppColors.angolaYellow, AppColors.angolaRed],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignUpLink(BuildContext context) {
+    return RichText(
+      text: TextSpan(
+        style: const TextStyle(
+          color: AppColors.textGrey,
+          fontSize: 14,
+          fontFamily: 'Poppins',
+        ),
+        children: [
+          const TextSpan(text: "Don't have an account? "),
+          TextSpan(
+            text: 'Sign Up',
+            style: const TextStyle(
+              color: AppColors.angolaYellow,
+              fontWeight: FontWeight.w600,
+            ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                // Navigate to SignUpScreen
+                // Example: Navigator.of(context).push(MaterialPageRoute(builder: (_) => SignUpScreen()));
+              },
+          ),
+        ],
+      ),
+    );
+  }
+}
