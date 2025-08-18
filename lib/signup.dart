@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'app_colors.dart';
 import 'home_screen.dart';
+import 'login.dart';
+import 'state/all_states.dart';
 
 // --- Reusable Widgets (can be moved to their own files later) ---
 
@@ -75,27 +79,31 @@ class _PressableWidgetState extends State<PressableWidget> {
 
 // --- Main Sign Up Screen Widget ---
 
-class SignUpScreen extends StatefulWidget {
+class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
 
   @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
+  ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
+class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   // Controller for the main 2-step PageView
   late final PageController _stepController;
   // Controller for the hustle carousel PageView
   late final PageController _hustleController;
 
+  // Form controllers
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
   String _selectedLang = 'EN';
   int _selectedHustleIndex = 0;
-
-  final List<Map<String, String>> hustles = [
-    {'name': 'Taxi Driver', 'image': 'assets/images/Taxi Driver.png'},
-    {'name': 'Street Vendor', 'image': 'assets/images/Street Vendor.png'},
-    {'name': 'Delivery Rider', 'image': 'assets/images/Delivery Rider.png'},
-  ];
+  List<Map<String, String>> _level1Hustles = [];
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -105,17 +113,121 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ..addListener(() {
         setState(() {
           // Update the index when the page settles
-          if (_hustleController.page!.round() != _selectedHustleIndex) {
+          if (_hustleController.page != null &&
+              _hustleController.page!.round() != _selectedHustleIndex) {
             _selectedHustleIndex = _hustleController.page!.round();
           }
         });
       });
+
+    // Fetch level 1 hustles when the widget initializes
+    _fetchLevel1Hustles();
+  }
+
+  Future<void> _fetchLevel1Hustles() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final apiRepo = ApiRepository(); // Create instance without auth token
+      final allHustles = await apiRepo.getAllHustles();
+
+      // Extract level 1 hustles
+      final level1HustleNames = allHustles['1'] ?? [];
+
+      setState(() {
+        _level1Hustles = level1HustleNames
+            .map((name) => {'name': name, 'image': 'assets/images/$name.png'})
+            .toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to load available hustles: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _registerUser() {
+    // Form validation
+    if (_usernameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
+        _confirmPasswordController.text.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please fill all required fields';
+      });
+      return;
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      setState(() {
+        _errorMessage = 'Passwords do not match';
+      });
+      return;
+    }
+
+    if (_level1Hustles.isEmpty) {
+      setState(() {
+        _errorMessage = 'No hustles available to select';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    // Get the selected hustle
+    final selectedHustle = _level1Hustles[_selectedHustleIndex]['name'] ?? '';
+
+    // Create an instance of ApiRepository
+    final apiRepo = ApiRepository();
+
+    // Use Future.delayed to avoid the "Future<void> Function()?" error with onTap
+    Future.delayed(Duration.zero, () async {
+      try {
+        // Register the user
+        await apiRepo.register(
+          _emailController.text,
+          _passwordController.text,
+          _usernameController.text,
+          selectedHustle,
+          _selectedLang.toLowerCase(),
+        );
+
+        // Update auth state - this will handle login and token storage
+        await ref
+            .read(authControllerProvider.notifier)
+            .login(_usernameController.text, _passwordController.text);
+
+        // Navigate to home screen
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+          );
+        }
+      } catch (e) {
+        setState(() {
+          _errorMessage = 'Registration failed: $e';
+          _isLoading = false;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     _stepController.dispose();
     _hustleController.dispose();
+    _usernameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -153,10 +265,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: SizedBox(
                 height: MediaQuery.of(context).size.height * 0.85,
-                child: PageView(
-                  controller: _stepController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [_buildStep1(), _buildStep2()],
+                child: Column(
+                  children: [
+                    // Show error message if any
+                    if (_errorMessage != null)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 20),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 15,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.red.withOpacity(0.6),
+                          ),
+                        ),
+                        child: Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: Colors.white),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+
+                    // Main content
+                    Expanded(
+                      child: PageView(
+                        controller: _stepController,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: [_buildStep1(), _buildStep2()],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -176,25 +317,62 @@ class _SignUpScreenState extends State<SignUpScreen> {
           style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 30),
-        _buildInputField(icon: FontAwesomeIcons.user, hintText: 'Username'),
+        _buildInputField(
+          icon: FontAwesomeIcons.user,
+          hintText: 'Username',
+          controller: _usernameController,
+        ),
         const SizedBox(height: 20),
-        _buildInputField(icon: FontAwesomeIcons.envelope, hintText: 'Email'),
+        _buildInputField(
+          icon: FontAwesomeIcons.envelope,
+          hintText: 'Email',
+          controller: _emailController,
+        ),
         const SizedBox(height: 20),
         _buildInputField(
           icon: FontAwesomeIcons.lock,
           hintText: 'Password',
           obscureText: true,
+          controller: _passwordController,
         ),
         const SizedBox(height: 20),
         _buildInputField(
           icon: FontAwesomeIcons.checkCircle,
           hintText: 'Confirm Password',
           obscureText: true,
+          controller: _confirmPasswordController,
         ),
         const SizedBox(height: 20),
         _buildLanguageSelector(),
         const SizedBox(height: 20),
         _buildActionButton(text: 'Next', onTap: () => _goToStep(1)),
+        const SizedBox(height: 20),
+        // Already have account link
+        RichText(
+          text: TextSpan(
+            style: const TextStyle(
+              color: AppColors.textGrey,
+              fontSize: 14,
+              fontFamily: 'Poppins',
+            ),
+            children: [
+              const TextSpan(text: "Already have an account? "),
+              TextSpan(
+                text: 'Login',
+                style: const TextStyle(
+                  color: AppColors.angolaYellow,
+                  fontWeight: FontWeight.w600,
+                ),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    );
+                  },
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -209,28 +387,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
           style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 30),
-        SizedBox(
-          height: 350, // Give the carousel a fixed height
-          child: PageView.builder(
-            controller: _hustleController,
-            itemCount: hustles.length,
-            itemBuilder: (context, index) {
-              return _buildHustleCard(index);
-            },
+        if (_isLoading)
+          const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.angolaYellow),
+          )
+        else if (_level1Hustles.isEmpty)
+          const Text(
+            'No hustles available. Please try again later.',
+            style: TextStyle(color: AppColors.textGrey),
+            textAlign: TextAlign.center,
+          )
+        else
+          SizedBox(
+            height: 350, // Give the carousel a fixed height
+            child: PageView.builder(
+              controller: _hustleController,
+              itemCount: _level1Hustles.length,
+              itemBuilder: (context, index) {
+                return _buildHustleCard(index);
+              },
+            ),
           ),
-        ),
         const SizedBox(height: 30),
         _buildActionButton(
           text: 'Create Account',
-          onTap: () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HomeScreen()),
-            );
-          },
+          onTap: _isLoading ? null : () => _registerUser(),
         ),
         const SizedBox(height: 10),
         GestureDetector(
-          onTap: () => _goToStep(0),
+          onTap: _isLoading ? null : () => _goToStep(0),
           child: const Text(
             'Go Back',
             style: TextStyle(color: AppColors.textGrey, fontSize: 14),
@@ -246,10 +431,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
     required IconData icon,
     required String hintText,
     bool obscureText = false,
+    TextEditingController? controller,
   }) {
     return _GlassEffectContainer(
       borderRadius: BorderRadius.circular(12),
       child: TextField(
+        controller: controller,
         obscureText: obscureText,
         style: const TextStyle(color: AppColors.textLight, fontSize: 16),
         decoration: InputDecoration(
@@ -294,10 +481,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  Widget _buildActionButton({
-    required String text,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildActionButton({required String text, VoidCallback? onTap}) {
     return PressableWidget(
       onTap: onTap,
       child: Container(
@@ -326,7 +510,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Widget _buildHustleCard(int index) {
     bool isSelected = index == _selectedHustleIndex;
-    final hustle = hustles[index];
+    final hustle = _level1Hustles[index];
 
     return AnimatedScale(
       scale: isSelected ? 1.0 : 0.9,
