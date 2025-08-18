@@ -392,6 +392,31 @@ class ApiRepository {
     }
   }
 
+  // Level upgrade API
+  Future<Map<String, dynamic>> levelUpgrade() async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/api/hustles/level-upgrade'),
+      headers: _headers,
+    );
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to upgrade level: ${response.body}');
+    }
+  }
+
+  // Select new hustle API
+  Future<void> selectHustle(String hustleName) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/api/hustles/select'),
+      headers: _headers,
+      body: json.encode({'hustle_name': hustleName}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to select hustle: ${response.body}');
+    }
+  }
+
   // --- Tasks & Shop ---
   Future<List<Task>> getAllTasks() async {
     final response = await http.get(

@@ -86,11 +86,14 @@ class QuizScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final quizAsync = ref.watch(quizQuestionProvider);
+    final user = ref.watch(userControllerProvider).value;
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/Taxi Driver.png'),
+            image: AssetImage(
+              'assets/images/${user?.currentHustle ?? "Taxi Driver"}.png',
+            ),
             fit: BoxFit.cover,
           ),
         ),

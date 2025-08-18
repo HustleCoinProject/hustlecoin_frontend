@@ -73,12 +73,16 @@ class LeaderboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Get leaderboard data from provider
     final leaderboardAsync = ref.watch(leaderboardProvider);
+    final userState = ref.watch(userControllerProvider);
+    final user = userState.value;
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/Taxi Driver.png'),
+            image: AssetImage(
+              'assets/images/${user?.currentHustle ?? "Taxi Driver"}.png',
+            ),
             fit: BoxFit.cover,
           ),
         ),

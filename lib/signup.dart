@@ -241,11 +241,31 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Use a random image for the signup screen background
+    final List<String> backgroundImages = [
+      'Business Director.png',
+      'Cart Pusher.png',
+      'CEO.png',
+      'Hustle Legend.png',
+      'Lawyer.png',
+      'Manager.png',
+      'Minister.png',
+      'Motorcycle Owner.png',
+      'President.png',
+      'Secretary.png',
+      'Shopkeeper.png',
+      'Small Farmer.png',
+      'Store Owner.png',
+      'Street Vendor.png',
+    ];
+    final String randomImage =
+        backgroundImages[DateTime.now().millisecond % backgroundImages.length];
+
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/Taxi Driver.png'),
+            image: AssetImage('assets/images/$randomImage'),
             fit: BoxFit.cover,
           ),
         ),

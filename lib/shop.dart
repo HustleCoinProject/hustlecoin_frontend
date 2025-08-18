@@ -104,9 +104,11 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/Taxi Driver.png'),
+            image: AssetImage(
+              'assets/images/${user?.currentHustle ?? "Taxi Driver"}.png',
+            ),
             fit: BoxFit.cover,
           ),
         ),

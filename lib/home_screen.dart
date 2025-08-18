@@ -11,6 +11,7 @@ import 'leaderboard.dart';
 import 'edit_profile.dart';
 import 'quiz.dart';
 import 'land_map.dart';
+import 'select_hustle.dart';
 
 // A custom, lightweight widget for press feedback.
 class PressableWidget extends StatefulWidget {
@@ -201,9 +202,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/Taxi Driver.png'),
+            image: AssetImage('assets/images/${user.currentHustle}.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -966,37 +967,82 @@ class _StatsContainer extends ConsumerWidget {
                           isEnabled: status.isEligibleForUpgrade,
                           child: PressableWidget(
                             onTap: status.isEligibleForUpgrade
-                                ? () {
-                                    // Create a task controller for the level_upgrade task
-                                    final taskController = TaskController(
-                                      ref,
-                                      'level_upgrade',
-                                    );
-                                    taskController.completeTask();
+                                ? () async {
+                                    try {
+                                      // Show loading state
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Processing level upgrade...',
+                                          ),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+
+                                      // Call the level upgrade API
+                                      final apiRepo = ref.read(
+                                        apiRepositoryProvider,
+                                      );
+                                      final result = await apiRepo
+                                          .levelUpgrade();
+
+                                      // Extract the new level and hustle
+                                      final int newLevel = result['new_level'];
+                                      final String newHustle =
+                                          result['new_hustle'];
+
+                                      // Navigate to the hustle selection screen
+                                      if (context.mounted) {
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => SelectHustleScreen(
+                                              newLevel: newLevel,
+                                              newHustle: newHustle,
+                                            ),
+                                          ),
+                                        );
+                                      }
+
+                                      // Refresh user data and level status
+                                      ref.invalidate(userControllerProvider);
+                                      ref.invalidate(levelStatusProvider);
+                                    } catch (e) {
+                                      // Show error message
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Error: $e'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    }
                                   }
                                 : null,
-                            child: ElevatedButton(
-                              onPressed: status.isEligibleForUpgrade
-                                  ? () {}
-                                  : null,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.angolaYellow,
-                                disabledBackgroundColor: AppColors.orange,
-                                foregroundColor: AppColors.angolaBlack,
-                                disabledForegroundColor: AppColors.angolaBlack,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 6,
-                                ),
-                                textStyle: const TextStyle(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: status.isEligibleForUpgrade
+                                    ? AppColors.angolaYellow
+                                    : AppColors.orange,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              child: Text(
+                                '${status.upgradeFee} HC',
+                                style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 14,
+                                  color: AppColors.angolaBlack,
                                 ),
                               ),
-                              child: Text('${status.upgradeFee} HC'),
                             ),
                           ),
                         ),

@@ -109,11 +109,31 @@ class LoginScreen extends ConsumerWidget {
       }
     });
 
+    // Use a random image for the login screen background
+    final List<String> backgroundImages = [
+      'Business Director.png',
+      'Cart Pusher.png',
+      'CEO.png',
+      'Hustle Legend.png',
+      'Lawyer.png',
+      'Manager.png',
+      'Minister.png',
+      'Motorcycle Owner.png',
+      'President.png',
+      'Secretary.png',
+      'Shopkeeper.png',
+      'Small Farmer.png',
+      'Store Owner.png',
+      'Street Vendor.png',
+    ];
+    final String randomImage =
+        backgroundImages[DateTime.now().microsecond % backgroundImages.length];
+
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/Taxi Driver.png'),
+            image: AssetImage('assets/images/$randomImage'),
             fit: BoxFit.cover,
           ),
         ),

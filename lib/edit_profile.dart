@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app_colors.dart';
 import 'state/all_states.dart';
+import 'start.dart';
 
 // --- Reusable Helper Widgets ---
 
@@ -188,11 +189,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.read(userControllerProvider).value;
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/Taxi Driver.png'),
+            image: AssetImage(
+              'assets/images/${user?.currentHustle ?? "Taxi Driver"}.png',
+            ),
             fit: BoxFit.cover,
           ),
         ),
@@ -246,7 +250,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             onTap: () {
               // Handle logout logic
               ref.read(authControllerProvider.notifier).logout();
-              Navigator.of(context).pop(); // Navigate back after logout
+              // Navigate to StartScreen and remove all previous routes
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const StartScreen()),
+                (route) => false, // This removes all previous routes
+              );
             },
             child: const _GlassEffectContainer(
               borderRadius: BorderRadius.all(Radius.circular(12)),
