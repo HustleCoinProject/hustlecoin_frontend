@@ -630,18 +630,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           _upgradeItem(FontAwesomeIcons.robot, 'Chat bot'),
           const SizedBox(width: 8),
-          _upgradeItem(FontAwesomeIcons.rocket, 'Boosts'),
+          _upgradeItem(
+            FontAwesomeIcons.rocket,
+            'Boosts',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const ShopScreen(itemTypeFilter: 'BOOSTER'),
+                ),
+              );
+            },
+          ),
           const SizedBox(width: 8),
-          _upgradeItem(FontAwesomeIcons.key, 'Keys'),
+          _upgradeItem(
+            FontAwesomeIcons.key,
+            'Keys',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const ShopScreen(itemTypeFilter: 'ACCESS_KEY'),
+                ),
+              );
+            },
+          ),
           const SizedBox(width: 8),
           _upgradeItem(
             FontAwesomeIcons.store,
             'Shop',
             isShop: true,
             onTap: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const ShopScreen()));
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const ShopScreen(excludeTypes: ["ACCESS_KEY", "BOOSTER"]),
+                ),
+              );
             },
           ),
         ],

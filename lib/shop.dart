@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'app_colors.dart'; // Assuming you have this file from the previous steps
+import 'package:hustlecoin/state/all_states.dart';
+import 'app_colors.dart';
 
 // --- Reusable Helper Widgets ---
 
@@ -72,68 +74,24 @@ class _PressableWidgetState extends State<PressableWidget> {
   }
 }
 
-// Data model for a shop product
-class Product {
-  final IconData icon;
-  final String title;
-  final String description;
-  final int price;
-
-  const Product({
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.price,
-  });
-}
-
 // --- Main Shop Screen Widget ---
 
-class ShopScreen extends StatelessWidget {
-  const ShopScreen({super.key});
+class ShopScreen extends ConsumerWidget {
+  final String? itemTypeFilter;
+  final List<String>? excludeTypes;
 
-  // Dummy data for the shop
-  final List<Product> products = const [
-    Product(
-      icon: FontAwesomeIcons.rocket,
-      title: 'Nitro Boost',
-      description: 'Double your earnings for the next 1 hour.',
-      price: 150,
-    ),
-    Product(
-      icon: FontAwesomeIcons.key,
-      title: 'Silver Key',
-      description: 'Unlocks a special mission with guaranteed rewards.',
-      price: 300,
-    ),
-    Product(
-      icon: FontAwesomeIcons.shieldHalved,
-      title: 'Safety Shield',
-      description: 'Protects your streak from being broken for 24 hours.',
-      price: 500,
-    ),
-    Product(
-      icon: FontAwesomeIcons.bolt,
-      title: 'Full Energy',
-      description: 'Instantly refills your energy to 100%.',
-      price: 100,
-    ),
-    Product(
-      icon: FontAwesomeIcons.gem,
-      title: 'Rare Gem',
-      description: 'A valuable item that can be traded with other players.',
-      price: 1000,
-    ),
-    Product(
-      icon: FontAwesomeIcons.mapLocationDot,
-      title: 'New Area',
-      description: 'Unlocks a new district with higher paying hustles.',
-      price: 2500,
-    ),
-  ];
+  // Constructor that accepts optional itemTypeFilter and excludeTypes
+  const ShopScreen({super.key, this.itemTypeFilter, this.excludeTypes});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Get the user data to display the HC balance
+    final userState = ref.watch(userControllerProvider);
+    final user = userState.value;
+
+    // Get the shop items from the provider
+    final shopItemsAsync = ref.watch(shopItemsProvider);
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -154,14 +112,80 @@ class ShopScreen extends StatelessWidget {
             ),
           ),
           child: SafeArea(
-            child: Column(children: [_buildHeader(context), _buildContent()]),
+            child: Column(
+              children: [
+                _buildHeader(context, user),
+                // Display the title based on filter
+                _buildShopTitle(context),
+                // Show loading indicator or shop items
+                shopItemsAsync.when(
+                  data: (shopItems) {
+                    List<ShopItem> filteredItems = shopItems;
+
+                    // Filter by item type if specified
+                    if (itemTypeFilter != null) {
+                      filteredItems = shopItems
+                          .where((item) => item.itemType == itemTypeFilter)
+                          .toList();
+                    }
+
+                    // Exclude specified item types if provided
+                    if (excludeTypes != null && excludeTypes!.isNotEmpty) {
+                      filteredItems = filteredItems
+                          .where(
+                            (item) => !excludeTypes!.contains(item.itemType),
+                          )
+                          .toList();
+                    }
+
+                    return _buildContent(context, ref, filteredItems);
+                  },
+                  loading: () => const Expanded(
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (e, st) => Expanded(
+                    child: Center(
+                      child: Text(
+                        'Failed to load shop items',
+                        style: TextStyle(color: AppColors.textGrey),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  // Get the appropriate title based on filter
+  String _getShopTitle() {
+    if (itemTypeFilter == 'BOOSTER') {
+      return 'Boosters';
+    } else if (itemTypeFilter == 'ACCESS_KEY') {
+      return 'Keys';
+    }
+    return 'Shop';
+  }
+
+  // Build the shop title
+  Widget _buildShopTitle(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Text(
+        _getShopTitle(),
+        style: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textLight,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, User? user) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
       child: Row(
@@ -179,17 +203,7 @@ class ShopScreen extends StatelessWidget {
               ),
             ),
           ),
-          const Expanded(
-            child: Text(
-              'Shop',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                shadows: [Shadow(blurRadius: 4, color: Colors.black87)],
-              ),
-            ),
-          ),
+          const Spacer(),
           _GlassEffectContainer(
             borderRadius: BorderRadius.circular(12),
             padding: const EdgeInsets.all(8),
@@ -209,19 +223,22 @@ class ShopScreen extends StatelessWidget {
                     color: AppColors.textLight,
                   ),
                 ),
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '1,250 HC',
-                      style: TextStyle(
+                      '${user?.hcBalance ?? 0} HC',
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
-                      '≈ Kz 12,507',
-                      style: TextStyle(fontSize: 11, color: AppColors.textGrey),
+                      '≈ Kz ${user?.kzBalance ?? 0}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textGrey,
+                      ),
                     ),
                   ],
                 ),
@@ -233,25 +250,62 @@ class ShopScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(
+    BuildContext context,
+    WidgetRef ref,
+    List<ShopItem> items,
+  ) {
     return Expanded(
-      child: GridView.builder(
-        padding: const EdgeInsets.all(15.0),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 15,
-          mainAxisSpacing: 15,
-          childAspectRatio: 0.75, // Adjust this ratio to fit content
-        ),
-        itemCount: products.length,
-        itemBuilder: (context, index) {
-          return _buildProductCard(products[index]);
-        },
-      ),
+      child: items.isEmpty
+          ? const Center(
+              child: Text(
+                'No items available',
+                style: TextStyle(color: AppColors.textGrey, fontSize: 16),
+              ),
+            )
+          : GridView.builder(
+              padding: const EdgeInsets.all(15.0),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 15,
+                mainAxisSpacing: 15,
+                childAspectRatio: 0.75, // Adjust this ratio to fit content
+              ),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                return _buildProductCard(context, ref, items[index]);
+              },
+            ),
     );
   }
 
-  Widget _buildProductCard(Product product) {
+  // Get appropriate icon for item type
+  IconData _getIconForItemType(String itemType, String itemId) {
+    switch (itemType) {
+      case 'BOOSTER':
+        if (itemId.contains('speed')) return FontAwesomeIcons.rocket;
+        if (itemId.contains('coin')) return FontAwesomeIcons.coins;
+        if (itemId.contains('prestige')) return FontAwesomeIcons.trophy;
+        if (itemId.contains('brain')) return FontAwesomeIcons.brain;
+        if (itemId.contains('land')) return FontAwesomeIcons.mountain;
+        return FontAwesomeIcons.bolt;
+      case 'ACCESS_KEY':
+        if (itemId.contains('bronze')) return FontAwesomeIcons.key;
+        if (itemId.contains('silver')) return FontAwesomeIcons.key;
+        if (itemId.contains('gold')) return FontAwesomeIcons.key;
+        if (itemId.contains('platinum')) return FontAwesomeIcons.key;
+        if (itemId.contains('permanent')) return FontAwesomeIcons.crown;
+        return FontAwesomeIcons.key;
+      case 'SPECIAL':
+        return FontAwesomeIcons.wandMagicSparkles;
+      case 'BUNDLE':
+        return FontAwesomeIcons.box;
+      default:
+        return FontAwesomeIcons.gift;
+    }
+  }
+
+  Widget _buildProductCard(BuildContext context, WidgetRef ref, ShopItem item) {
     return _GlassEffectContainer(
       borderRadius: BorderRadius.circular(16),
       padding: const EdgeInsets.all(15),
@@ -265,10 +319,15 @@ class ShopScreen extends StatelessWidget {
               color: const Color.fromRGBO(16, 16, 16, 0.5),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(product.icon, size: 40, color: AppColors.angolaYellow),
+            child: Icon(
+              _getIconForItemType(item.itemType, item.itemId),
+              size: 40,
+              color: AppColors.angolaYellow,
+            ),
           ),
           Text(
-            product.title,
+            item.name,
+            textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -278,7 +337,7 @@ class ShopScreen extends StatelessWidget {
           const SizedBox(height: 5),
           Expanded(
             child: Text(
-              product.description,
+              item.description,
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
             ),
@@ -287,6 +346,9 @@ class ShopScreen extends StatelessWidget {
           PressableWidget(
             onTap: () {
               // Handle buy logic
+              ref
+                  .read(userControllerProvider.notifier)
+                  .purchaseItem(item.itemId);
             },
             child: Container(
               width: double.infinity,
@@ -309,7 +371,7 @@ class ShopScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '${product.price} HC',
+                    '${item.price} HC',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,
