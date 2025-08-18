@@ -332,27 +332,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.angolaYellow,
+                      color: user.language.toUpperCase() == 'EN'
+                          ? AppColors.angolaYellow
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text(
+                    child: Text(
                       'EN',
                       style: TextStyle(
-                        color: AppColors.angolaBlack,
+                        color: user.language.toUpperCase() == 'EN'
+                            ? AppColors.angolaBlack
+                            : AppColors.textGrey,
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
                       ),
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8.0,
-                      vertical: 4.0,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: user.language.toUpperCase() == 'PT'
+                          ? AppColors.angolaYellow
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       'PT',
                       style: TextStyle(
-                        color: AppColors.textGrey,
+                        color: user.language.toUpperCase() == 'PT'
+                            ? AppColors.angolaBlack
+                            : AppColors.textGrey,
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
                       ),
