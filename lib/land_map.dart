@@ -62,6 +62,8 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
   Polygon? _selectedHexagon;
   String? _selectedH3Index;
   bool _isPurchasing = false;
+  bool _isSelling = false;
+  bool _isOwnedLand = false; // Track if selected land is owned by user
   String _currentBbox = '';
 
   // A map for quick lookup of owned tiles in the current view
@@ -72,6 +74,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
   static const double MAX_COLOR_ZOOM =
       10.0; // Lowered from 14.0 to show colors earlier
   static const int LAND_PRICE = 500; // Corresponds to backend LAND_PRICE
+  static const int LAND_SELL_PRICE = 400; // 80% of purchase price
 
   @override
   void dispose() {
@@ -196,12 +199,21 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
     final geoCoord = GeoCoord(lat: latlng.latitude, lon: latlng.longitude);
     final h3IndexInt = h3.geoToCell(geoCoord, DATA_RESOLUTION);
     final h3IndexStr = h3IndexInt.toRadixString(16).toLowerCase();
+    final currentUser = ref.read(userControllerProvider).value;
 
-    // Don't allow selecting already owned land
-    if (_ownedTilesInView.containsKey(h3IndexStr)) {
+    if (currentUser == null) return;
+
+    // Check if this land is owned
+    final ownedTile = _ownedTilesInView[h3IndexStr];
+    final isOwnedByUser = ownedTile?.ownerId == currentUser.id;
+    final isOwnedByOther = ownedTile != null && !isOwnedByUser;
+
+    // Don't allow selecting land owned by other players
+    if (isOwnedByOther) {
       setState(() {
         _selectedH3Index = null;
         _selectedHexagon = null;
+        _isOwnedLand = false;
       });
       return;
     }
@@ -211,9 +223,12 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
 
     setState(() {
       _selectedH3Index = h3IndexStr;
+      _isOwnedLand = isOwnedByUser;
       _selectedHexagon = Polygon(
         points: points,
-        borderColor: AppColors.angolaYellow,
+        borderColor: isOwnedByUser
+            ? const Color(0xFFFF4444) // Red border for owned land (sell)
+            : AppColors.angolaYellow, // Yellow border for unowned land (buy)
         borderStrokeWidth: 3,
         color: Colors.transparent,
       );
@@ -236,6 +251,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
         setState(() {
           _selectedH3Index = null;
           _selectedHexagon = null;
+          _isOwnedLand = false;
         });
 
         // Show success message
@@ -273,6 +289,64 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
     } finally {
       if (mounted) {
         setState(() => _isPurchasing = false);
+      }
+    }
+  }
+
+  Future<void> _sellLand() async {
+    if (_selectedH3Index == null || _isSelling) return;
+
+    setState(() => _isSelling = true);
+
+    try {
+      // Sell the land
+      await ref
+          .read(userControllerProvider.notifier)
+          .sellLand(_selectedH3Index!);
+
+      if (mounted) {
+        // Clear selection first
+        setState(() {
+          _selectedH3Index = null;
+          _selectedHexagon = null;
+          _isOwnedLand = false;
+        });
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Land sold successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Invalidate providers after a short delay to avoid circular dependency
+        Future.delayed(const Duration(milliseconds: 200), () async {
+          if (mounted) {
+            // Invalidate both land-related providers to force fresh data
+            ref.invalidate(landTilesProvider(_currentBbox));
+            ref.invalidate(myLandsProvider);
+
+            // Small additional delay to ensure providers are invalidated
+            await Future.delayed(const Duration(milliseconds: 100));
+
+            // Force refresh the hexagons display with new data
+            await _fetchAndDrawHexagons();
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Sale failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSelling = false);
       }
     }
   }
@@ -360,7 +434,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
                 );
               },
               child: _selectedH3Index != null
-                  ? _buildPurchasePanel()
+                  ? _buildActionPanel()
                   : const SizedBox.shrink(),
             ),
           ),
@@ -369,85 +443,170 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
     );
   }
 
-  Widget _buildPurchasePanel() {
+  Widget _buildActionPanel() {
     final userAsyncValue = ref.watch(userControllerProvider);
     final user = userAsyncValue.value;
-    final canAfford = user != null && user.hcBalance >= LAND_PRICE;
 
-    return _GlassEffectContainer(
-      key: const ValueKey('purchase_panel'),
-      borderRadius: BorderRadius.circular(16),
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Selected Land (Res 8)',
-                  style: TextStyle(color: AppColors.textGrey, fontSize: 12),
-                ),
-                Text(
-                  _selectedH3Index ?? '',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontFamily: 'monospace',
+    if (_isOwnedLand) {
+      // Show sell panel for owned land
+      return _GlassEffectContainer(
+        key: const ValueKey('sell_panel'),
+        borderRadius: BorderRadius.circular(16),
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Your Land (Res 8)',
+                    style: TextStyle(color: AppColors.textGrey, fontSize: 12),
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 15),
-          GestureDetector(
-            onTap: (canAfford && !_isPurchasing) ? _purchaseLand : null,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              decoration: BoxDecoration(
-                gradient: (canAfford && !_isPurchasing)
-                    ? const LinearGradient(
-                        colors: [AppColors.angolaYellow, AppColors.angolaRed],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : null,
-                color: !(canAfford && !_isPurchasing)
-                    ? Colors.grey.shade800
-                    : null,
-                borderRadius: BorderRadius.circular(12),
+                  Text(
+                    _selectedH3Index ?? '',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ],
               ),
-              child: _isPurchasing
-                  ? const SizedBox(
-                      height: 16,
-                      width: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Row(
-                      children: [
-                        const FaIcon(
-                          FontAwesomeIcons.coins,
-                          size: 14,
+            ),
+            const SizedBox(width: 15),
+            GestureDetector(
+              onTap: !_isSelling ? _sellLand : null,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  gradient: !_isSelling
+                      ? const LinearGradient(
+                          colors: [AppColors.angolaRed, Colors.redAccent],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  color: _isSelling ? Colors.grey.shade800 : null,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: _isSelling
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
                           color: Colors.white,
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '${LAND_PRICE} HC',
-                          style: const TextStyle(
+                      )
+                    : Row(
+                        children: [
+                          const FaIcon(
+                            FontAwesomeIcons.coins,
+                            size: 14,
                             color: Colors.white,
-                            fontWeight: FontWeight.w700,
                           ),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Sell ${LAND_SELL_PRICE} HC',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    } else {
+      // Show purchase panel for unowned land
+      final canAfford = user != null && user.hcBalance >= LAND_PRICE;
+
+      return _GlassEffectContainer(
+        key: const ValueKey('purchase_panel'),
+        borderRadius: BorderRadius.circular(16),
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Selected Land (Res 8)',
+                    style: TextStyle(color: AppColors.textGrey, fontSize: 12),
+                  ),
+                  Text(
+                    _selectedH3Index ?? '',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 15),
+            GestureDetector(
+              onTap: (canAfford && !_isPurchasing) ? _purchaseLand : null,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  gradient: (canAfford && !_isPurchasing)
+                      ? const LinearGradient(
+                          colors: [AppColors.angolaYellow, AppColors.angolaRed],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  color: !(canAfford && !_isPurchasing)
+                      ? Colors.grey.shade800
+                      : null,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: _isPurchasing
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Row(
+                        children: [
+                          const FaIcon(
+                            FontAwesomeIcons.coins,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${LAND_PRICE} HC',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
   }
 }
