@@ -4,6 +4,11 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/state/all_states.dart';
 import 'app_colors.dart';
 
+// Provider to track loading state for each shop item
+final itemPurchasingProvider = StateProvider.autoDispose.family<bool, String>(
+  (ref, itemId) => false,
+);
+
 // --- Reusable Helper Widgets ---
 
 // High-performance "smoky glass" container without blur
@@ -76,7 +81,7 @@ class _PressableWidgetState extends State<PressableWidget> {
 
 // --- Main Shop Screen Widget ---
 
-class ShopScreen extends ConsumerWidget {
+class ShopScreen extends ConsumerStatefulWidget {
   final String? itemTypeFilter;
   final List<String>? excludeTypes;
 
@@ -84,7 +89,12 @@ class ShopScreen extends ConsumerWidget {
   const ShopScreen({super.key, this.itemTypeFilter, this.excludeTypes});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ShopScreen> createState() => _ShopScreenState();
+}
+
+class _ShopScreenState extends ConsumerState<ShopScreen> {
+  @override
+  Widget build(BuildContext context) {
     // Get the user data to display the HC balance
     final userState = ref.watch(userControllerProvider);
     final user = userState.value;
@@ -123,21 +133,24 @@ class ShopScreen extends ConsumerWidget {
                     List<ShopItem> filteredItems = shopItems;
 
                     // Filter by item type if specified
-                    if (itemTypeFilter != null) {
+                    if (widget.itemTypeFilter != null) {
                       filteredItems = shopItems
-                          .where((item) => item.itemType == itemTypeFilter)
-                          .toList();
-                    }
-
-                    // Exclude specified item types if provided
-                    if (excludeTypes != null && excludeTypes!.isNotEmpty) {
-                      filteredItems = filteredItems
                           .where(
-                            (item) => !excludeTypes!.contains(item.itemType),
+                            (item) => item.itemType == widget.itemTypeFilter,
                           )
                           .toList();
                     }
 
+                    // Exclude specified item types if provided
+                    if (widget.excludeTypes != null &&
+                        widget.excludeTypes!.isNotEmpty) {
+                      filteredItems = filteredItems
+                          .where(
+                            (item) =>
+                                !widget.excludeTypes!.contains(item.itemType),
+                          )
+                          .toList();
+                    }
                     return _buildContent(context, ref, filteredItems);
                   },
                   loading: () => const Expanded(
@@ -162,9 +175,9 @@ class ShopScreen extends ConsumerWidget {
 
   // Get the appropriate title based on filter
   String _getShopTitle() {
-    if (itemTypeFilter == 'BOOSTER') {
+    if (widget.itemTypeFilter == 'BOOSTER') {
       return 'Boosters';
-    } else if (itemTypeFilter == 'ACCESS_KEY') {
+    } else if (widget.itemTypeFilter == 'ACCESS_KEY') {
       return 'Keys';
     }
     return 'Shop';
@@ -306,6 +319,8 @@ class ShopScreen extends ConsumerWidget {
   }
 
   Widget _buildProductCard(BuildContext context, WidgetRef ref, ShopItem item) {
+    // Watch the purchase state for this specific item
+    final isPurchasing = ref.watch(itemPurchasingProvider(item.itemId));
     return _GlassEffectContainer(
       borderRadius: BorderRadius.circular(16),
       padding: const EdgeInsets.all(15),
@@ -343,42 +358,118 @@ class ShopScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 15),
-          PressableWidget(
-            onTap: () {
-              // Handle buy logic
-              ref
-                  .read(userControllerProvider.notifier)
-                  .purchaseItem(item.itemId);
-            },
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                gradient: const LinearGradient(
-                  colors: [AppColors.angolaYellow, AppColors.angolaRed],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+          // Use InkWell instead of GestureDetector for visual feedback with ripple effect
+          InkWell(
+            borderRadius: BorderRadius.circular(10),
+            splashColor: Colors.white.withOpacity(0.3),
+            highlightColor: Colors.white.withOpacity(0.1),
+            onTap: isPurchasing
+                ? null
+                : () {
+                    // Set purchase in progress state IMMEDIATELY
+                    ref
+                            .read(itemPurchasingProvider(item.itemId).notifier)
+                            .state =
+                        true;
+
+                    // Use Future.microtask to ensure UI updates before starting API call
+                    Future.microtask(() async {
+                      try {
+                        // Purchase the item with quantity = 1
+                        await ref
+                            .read(userControllerProvider.notifier)
+                            .purchaseItem(item.itemId);
+
+                        // Show success message
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Successfully purchased ${item.name}!',
+                              ),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        // Show error message
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Failed to purchase: ${e.toString()}',
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      } finally {
+                        // Reset purchase in progress state
+                        if (context.mounted) {
+                          ref
+                                  .read(
+                                    itemPurchasingProvider(
+                                      item.itemId,
+                                    ).notifier,
+                                  )
+                                  .state =
+                              false;
+                        }
+                      }
+                    });
+                  },
+            // Using Material for better ink effects and feedback
+            child: Material(
+              color: Colors.transparent,
+              child: Ink(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  gradient: LinearGradient(
+                    colors: isPurchasing
+                        ? [
+                            AppColors.angolaYellow.withOpacity(0.5),
+                            AppColors.angolaRed.withOpacity(0.5),
+                          ]
+                        : [AppColors.angolaYellow, AppColors.angolaRed],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const FaIcon(
-                    FontAwesomeIcons.coins,
-                    size: 14,
-                    color: Colors.white,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (isPurchasing)
+                        // Show a small loading indicator when purchasing
+                        Container(
+                          width: 14,
+                          height: 14,
+                          margin: const EdgeInsets.only(right: 8),
+                          child: const CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      else
+                        const FaIcon(
+                          FontAwesomeIcons.coins,
+                          size: 14,
+                          color: Colors.white,
+                        ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${item.price} HC',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${item.price} HC',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),

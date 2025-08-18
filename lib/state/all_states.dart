@@ -588,8 +588,24 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
+  // Purchase an item with improved error handling for UI feedback
   Future<void> purchaseItem(String itemId, {int quantity = 1}) async {
-    await _handleAction(() => _api.purchaseItem(itemId, quantity));
+    try {
+      // Call the API directly so we can propagate errors to the UI
+      await _api.purchaseItem(itemId, quantity);
+
+      // If successful, refresh user data to update balance
+      await _fetchUser();
+    } catch (e) {
+      // Log the error
+      print("Purchase failed: $e");
+
+      // Refresh user data anyway to ensure UI is up to date
+      await _fetchUser();
+
+      // Re-throw the error so the UI can handle it
+      rethrow;
+    }
   }
 }
 

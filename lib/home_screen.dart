@@ -157,7 +157,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         });
         break;
       case 1:
-        // Stats/Leaderboard
+        // Leaderboard
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (_) => LeaderboardScreen()))
             .then((_) {
@@ -747,7 +747,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _navItem(FontAwesomeIcons.house, 'Home', 0),
-              _navItem(FontAwesomeIcons.chartLine, 'Stats', 1),
+              _navItem(FontAwesomeIcons.chartLine, 'Leaderboard', 1),
               _navItem(FontAwesomeIcons.userCircle, 'Profile', 2),
               _navItem(FontAwesomeIcons.cog, 'Settings', 3),
             ],
