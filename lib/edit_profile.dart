@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'app_colors.dart'; // Assuming you have this file from previous steps
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'app_colors.dart';
+import 'state/all_states.dart';
 
 // --- Reusable Helper Widgets ---
 
@@ -77,8 +79,112 @@ class _PressableWidgetState extends State<PressableWidget> {
 
 // --- Main Edit Profile Screen Widget ---
 
-class EditProfileScreen extends StatelessWidget {
+class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
+
+  @override
+  ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
+}
+
+class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
+  // Form controllers
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _emailController;
+  late TextEditingController _currentPasswordController;
+  late TextEditingController _newPasswordController;
+  late TextEditingController _confirmNewPasswordController;
+
+  String _selectedLanguage = 'EN';
+  String? _selectedHustle;
+
+  bool _isLoading = false;
+  String? _errorMessage;
+  bool _isSuccess = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController();
+    _currentPasswordController = TextEditingController();
+    _newPasswordController = TextEditingController();
+    _confirmNewPasswordController = TextEditingController();
+
+    // Initialize with user data after frame is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initUserData();
+    });
+  }
+
+  void _initUserData() {
+    final user = ref.read(userControllerProvider).value;
+    if (user != null) {
+      _emailController.text = user.email;
+      setState(() {
+        _selectedLanguage = user.language;
+        _selectedHustle = user.currentHustle;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmNewPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveProfile() async {
+    if (_formKey.currentState?.validate() != true) {
+      return;
+    }
+
+    if (_newPasswordController.text.isNotEmpty &&
+        _newPasswordController.text != _confirmNewPasswordController.text) {
+      setState(() {
+        _errorMessage = "New password and confirmation don't match";
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+      _isSuccess = false;
+    });
+
+    try {
+      await ref
+          .read(userControllerProvider.notifier)
+          .updateProfile(
+            email: _emailController.text,
+            currentPassword: _currentPasswordController.text.isNotEmpty
+                ? _currentPasswordController.text
+                : null,
+            newPassword: _newPasswordController.text.isNotEmpty
+                ? _newPasswordController.text
+                : null,
+            language: _selectedLanguage,
+            currentHustle: _selectedHustle,
+          );
+
+      setState(() {
+        _isSuccess = true;
+        _currentPasswordController.clear();
+        _newPasswordController.clear();
+        _confirmNewPasswordController.clear();
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -139,6 +245,8 @@ class EditProfileScreen extends StatelessWidget {
           PressableWidget(
             onTap: () {
               // Handle logout logic
+              ref.read(authControllerProvider.notifier).logout();
+              Navigator.of(context).pop(); // Navigate back after logout
             },
             child: const _GlassEffectContainer(
               borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -212,100 +320,280 @@ class EditProfileScreen extends StatelessWidget {
   }
 
   Widget _buildProfileForm() {
+    final user = ref.watch(userControllerProvider);
+    final availableHustles = ref.watch(availableHustlesProvider);
+
+    // Show loading indicator while loading user data
+    if (user.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // Show error if we failed to load user data
+    if (user.hasError) {
+      return Center(
+        child: Text(
+          'Error loading profile: ${user.error}',
+          style: const TextStyle(color: Colors.red),
+        ),
+      );
+    }
+
     return SizedBox(
       width: 380,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildInputField(
-            label: 'Username',
-            child: _GlassEffectContainer(
-              borderRadius: BorderRadius.circular(10),
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-              child: const Row(
-                children: [
-                  Icon(
-                    FontAwesomeIcons.lock,
-                    size: 16,
-                    color: AppColors.angolaYellow,
-                  ),
-                  SizedBox(width: 10),
-                  Text(
-                    'YourUsername',
-                    style: TextStyle(color: AppColors.textGrey, fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 15),
-          _buildInputField(
-            label: 'Email Address',
-            child: _buildTextField(initialValue: 'user@example.com'),
-          ),
-          const SizedBox(height: 15),
-
-          // --- Change Password Section ---
-          const Padding(
-            padding: EdgeInsets.only(top: 15.0, bottom: 5.0),
-            child: Text(
-              'Change Password',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-            ),
-          ),
-          Container(
-            height: 1,
-            color: Colors.white.withOpacity(0.2),
-            margin: const EdgeInsets.only(bottom: 15),
-          ),
-
-          _buildInputField(
-            label: 'Current Password',
-            child: _buildTextField(
-              hint: 'Enter current password',
-              obscure: true,
-            ),
-          ),
-          const SizedBox(height: 15),
-          _buildInputField(
-            label: 'New Password',
-            child: _buildTextField(hint: 'Enter new password', obscure: true),
-          ),
-          const SizedBox(height: 15),
-          _buildInputField(
-            label: 'Confirm New Password',
-            child: _buildTextField(hint: 'Confirm new password', obscure: true),
-          ),
-          const SizedBox(height: 30),
-
-          // --- Update Button ---
-          PressableWidget(
-            onTap: () {
-              // Handle update profile logic
-            },
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                gradient: const LinearGradient(
-                  colors: [AppColors.angolaYellow, AppColors.angolaRed],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Username (read-only)
+            _buildInputField(
+              label: 'Username',
+              child: _GlassEffectContainer(
+                borderRadius: BorderRadius.circular(10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 12,
                 ),
-              ),
-              child: const Text(
-                'Update Profile',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                child: Row(
+                  children: [
+                    const Icon(
+                      FontAwesomeIcons.lock,
+                      size: 16,
+                      color: AppColors.angolaYellow,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      user.value?.username ?? 'Username',
+                      style: const TextStyle(
+                        color: AppColors.textGrey,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
+            const SizedBox(height: 15),
+
+            // Email address
+            _buildInputField(
+              label: 'Email Address',
+              child: _buildTextField(
+                controller: _emailController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Email is required';
+                  }
+                  if (!value.contains('@') || !value.contains('.')) {
+                    return 'Please enter a valid email';
+                  }
+                  return null;
+                },
+              ),
+            ),
+            const SizedBox(height: 15),
+
+            // Language selector
+            _buildInputField(
+              label: 'Language',
+              child: _buildLanguageSelector(),
+            ),
+            const SizedBox(height: 15),
+
+            // Current hustle selector
+            _buildInputField(
+              label: 'Current Hustle',
+              child: availableHustles.when(
+                data: (hustles) => _buildHustleSelector(hustles),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, _) => Text(
+                  'Error loading hustles: $err',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            ),
+            const SizedBox(height: 15),
+
+            // --- Change Password Section ---
+            const Padding(
+              padding: EdgeInsets.only(top: 15.0, bottom: 5.0),
+              child: Text(
+                'Change Password',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              ),
+            ),
+            Container(
+              height: 1,
+              color: Colors.white.withOpacity(0.2),
+              margin: const EdgeInsets.only(bottom: 15),
+            ),
+
+            _buildInputField(
+              label: 'Current Password',
+              child: _buildTextField(
+                hint: 'Enter current password',
+                obscure: true,
+                controller: _currentPasswordController,
+              ),
+            ),
+            const SizedBox(height: 15),
+            _buildInputField(
+              label: 'New Password',
+              child: _buildTextField(
+                hint: 'Enter new password',
+                obscure: true,
+                controller: _newPasswordController,
+                validator: (value) {
+                  if (value != null && value.isNotEmpty) {
+                    if (value.length < 6) {
+                      return 'Password must be at least 6 characters';
+                    }
+                    if (_currentPasswordController.text.isEmpty) {
+                      return 'Current password is required to change password';
+                    }
+                  }
+                  return null;
+                },
+              ),
+            ),
+            const SizedBox(height: 15),
+            _buildInputField(
+              label: 'Confirm New Password',
+              child: _buildTextField(
+                hint: 'Confirm new password',
+                obscure: true,
+                controller: _confirmNewPasswordController,
+                validator: (value) {
+                  if (_newPasswordController.text.isNotEmpty &&
+                      value != _newPasswordController.text) {
+                    return 'Passwords do not match';
+                  }
+                  return null;
+                },
+              ),
+            ),
+            const SizedBox(height: 15),
+
+            // Error message
+            if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 15),
+                child: Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+
+            // Success message
+            if (_isSuccess)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 15),
+                child: Text(
+                  'Profile updated successfully!',
+                  style: TextStyle(color: Colors.green),
+                ),
+              ),
+
+            // --- Update Button ---
+            PressableWidget(
+              onTap: _isLoading ? null : _saveProfile,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: const LinearGradient(
+                    colors: [AppColors.angolaYellow, AppColors.angolaRed],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: _isLoading
+                    ? const Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      )
+                    : const Text(
+                        'Update Profile',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageSelector() {
+    return _GlassEffectContainer(
+      borderRadius: BorderRadius.circular(10),
+      padding: const EdgeInsets.all(5),
+      child: Row(
+        children: [_buildLanguageOption('EN'), _buildLanguageOption('PT')],
+      ),
+    );
+  }
+
+  Widget _buildLanguageOption(String lang) {
+    final isSelected = _selectedLanguage == lang;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedLanguage = lang),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.angolaYellow : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
           ),
-        ],
+          child: Text(
+            lang,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: isSelected ? AppColors.angolaBlack : AppColors.textLight,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHustleSelector(List<String> availableHustles) {
+    return _GlassEffectContainer(
+      borderRadius: BorderRadius.circular(10),
+      child: DropdownButtonFormField<String>(
+        value: _selectedHustle,
+        dropdownColor: AppColors.glassBg,
+        style: const TextStyle(color: AppColors.textLight),
+        decoration: const InputDecoration(
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+        ),
+        items: availableHustles.map((hustle) {
+          return DropdownMenuItem<String>(value: hustle, child: Text(hustle));
+        }).toList(),
+        onChanged: (value) {
+          setState(() {
+            _selectedHustle = value;
+          });
+        },
+        hint: const Text(
+          'Select your hustle',
+          style: TextStyle(color: AppColors.textGrey),
+        ),
       ),
     );
   }
@@ -330,12 +618,16 @@ class EditProfileScreen extends StatelessWidget {
     String? initialValue,
     String? hint,
     bool obscure = false,
+    TextEditingController? controller,
+    String? Function(String?)? validator,
   }) {
     return _GlassEffectContainer(
       borderRadius: BorderRadius.circular(10),
       child: TextFormField(
-        initialValue: initialValue,
+        initialValue: controller == null ? initialValue : null,
+        controller: controller,
         obscureText: obscure,
+        validator: validator,
         style: const TextStyle(color: AppColors.textLight, fontSize: 16),
         decoration: InputDecoration(
           border: InputBorder.none,
@@ -345,6 +637,7 @@ class EditProfileScreen extends StatelessWidget {
             horizontal: 15,
             vertical: 12,
           ),
+          errorStyle: const TextStyle(color: Colors.red, fontSize: 12),
         ),
       ),
     );

@@ -317,6 +317,32 @@ class ApiRepository {
     }
   }
 
+  Future<void> updateProfile({
+    String? email,
+    String? currentPassword,
+    String? newPassword,
+    String? language,
+    String? currentHustle,
+  }) async {
+    final Map<String, dynamic> body = {};
+
+    if (email != null) body['email'] = email;
+    if (currentPassword != null) body['current_password'] = currentPassword;
+    if (newPassword != null) body['new_password'] = newPassword;
+    if (language != null) body['language'] = language;
+    if (currentHustle != null) body['current_hustle'] = currentHustle;
+
+    final response = await http.put(
+      Uri.parse('$_baseUrl/api/users/profile'),
+      headers: _headers,
+      body: json.encode(body),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update profile: ${response.body}');
+    }
+  }
+
   Future<List<InventoryItem>> getInventory() async {
     final response = await http.get(
       Uri.parse('$_baseUrl/api/users/inventory'),
@@ -338,6 +364,19 @@ class ApiRepository {
       return data.map((key, value) => MapEntry(key, List<String>.from(value)));
     } else {
       throw Exception('Failed to fetch hustles');
+    }
+  }
+
+  Future<List<String>> getAvailableHustles() async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/hustles/available'),
+      headers: _headers,
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.cast<String>().toList();
+    } else {
+      throw Exception('Failed to fetch available hustles');
     }
   }
 
@@ -554,20 +593,11 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
-  // This is the "Re-fetch" pattern from the docs.
-  // After any action that changes user data, we just refetch from the server
-  // to ensure our local state is perfectly in sync.
-  Future<void> _handleAction(Future<void> Function() action) async {
-    try {
-      await action();
-      await _fetchUser(); // Re-fetch user data on success
-    } catch (e) {
-      // Optionally handle the error, e.g., show a snackbar
-      print("Action failed: $e");
-      // You might want to refetch even on failure to get the latest state
-      await _fetchUser();
-    }
-  }
+  // Note: The "_handleAction" method was removed as it was unused.
+  // If needed in the future, the pattern is:
+  // 1. Try to execute an action
+  // 2. Refresh user data regardless of success or failure
+  // 3. Handle or propagate errors as needed
 
   Future<void> completeTask(
     String taskId, {
@@ -607,6 +637,38 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
       rethrow;
     }
   }
+
+  // Update user profile with improved error handling for UI feedback
+  Future<void> updateProfile({
+    String? email,
+    String? currentPassword,
+    String? newPassword,
+    String? language,
+    String? currentHustle,
+  }) async {
+    try {
+      // Call the API directly so we can propagate errors to the UI
+      await _api.updateProfile(
+        email: email,
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+        language: language,
+        currentHustle: currentHustle,
+      );
+
+      // If successful, refresh user data to update with new values
+      await _fetchUser();
+    } catch (e) {
+      // Log the error
+      print("Profile update failed: $e");
+
+      // Refresh user data anyway to ensure UI is up to date
+      await _fetchUser();
+
+      // Re-throw the error so the UI can handle it
+      rethrow;
+    }
+  }
 }
 
 // --- Other Data Providers ---
@@ -617,6 +679,12 @@ final allHustlesProvider = FutureProvider<Map<String, List<String>>>((
   ref,
 ) async {
   return ref.watch(apiRepositoryProvider).getAllHustles();
+});
+
+final availableHustlesProvider = FutureProvider<List<String>>((ref) async {
+  final user = ref.watch(userControllerProvider);
+  if (user.value == null) return [];
+  return ref.watch(apiRepositoryProvider).getAvailableHustles();
 });
 
 final allTasksProvider = FutureProvider<List<Task>>((ref) async {
