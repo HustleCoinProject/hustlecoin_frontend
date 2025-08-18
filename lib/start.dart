@@ -1,18 +1,20 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hustlecoin/utils/localization.dart';
 import 'app_colors.dart';
 import 'login.dart';
 
 // --- Main Start Screen Widget ---
 
-class StartScreen extends StatefulWidget {
+class StartScreen extends ConsumerStatefulWidget {
   const StartScreen({super.key});
 
   @override
-  State<StartScreen> createState() => _StartScreenState();
+  ConsumerState<StartScreen> createState() => _StartScreenState();
 }
 
-class _StartScreenState extends State<StartScreen>
+class _StartScreenState extends ConsumerState<StartScreen>
     with TickerProviderStateMixin {
   // Controllers for the animations
   late final AnimationController _titleController;
@@ -119,8 +121,8 @@ class _StartScreenState extends State<StartScreen>
               const Spacer(flex: 2),
               ScaleTransition(
                 scale: _titleAnimation,
-                child: const Text(
-                  'Welcome to Hustle Coin',
+                child: Text(
+                  ref.t(LocalizationKeys.welcomeToHustleCoin),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 50, // Adjusted for better fit on various screens
@@ -138,8 +140,8 @@ class _StartScreenState extends State<StartScreen>
                 ),
               ),
               const SizedBox(height: 10),
-              const Text(
-                'Earn by Hustling Daily!',
+              Text(
+                ref.t(LocalizationKeys.earnByHustlingDaily),
                 style: TextStyle(
                   fontSize: 20,
                   color: Color(0xFFCCCCCC),
@@ -203,8 +205,8 @@ class _StartScreenState extends State<StartScreen>
             child: child,
           );
         },
-        child: const Text(
-          'START MY HUSTLE',
+        child: Text(
+          ref.t(LocalizationKeys.startMyHustle),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,

@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app_colors.dart';
 import 'state/all_states.dart';
+import 'utils/localization.dart';
 
 // --- Reusable Helper Widgets ---
 
@@ -100,8 +101,8 @@ class LeaderboardScreen extends ConsumerWidget {
           child: SafeArea(
             child: Column(
               children: [
-                _buildHeader(context),
-                _buildContent(leaderboardAsync),
+                _buildHeader(context, ref),
+                _buildContent(leaderboardAsync, ref),
                 _buildPlayerHighlight(),
               ],
             ),
@@ -111,7 +112,7 @@ class LeaderboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
       child: Row(
@@ -128,9 +129,9 @@ class LeaderboardScreen extends ConsumerWidget {
               ),
             ),
           ),
-          const Text(
-            'Leaderboard',
-            style: TextStyle(
+          Text(
+            ref.t(LocalizationKeys.leaderboard),
+            style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
               shadows: [Shadow(blurRadius: 4, color: Colors.black87)],
@@ -142,13 +143,16 @@ class LeaderboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildContent(AsyncValue<List<LeaderboardEntry>> leaderboardAsync) {
+  Widget _buildContent(
+    AsyncValue<List<LeaderboardEntry>> leaderboardAsync,
+    WidgetRef ref,
+  ) {
     return Expanded(
       child: leaderboardAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
           child: Text(
-            'Failed to load leaderboard: $error',
+            '${ref.t(LocalizationKeys.failedToLoadLeaderboard)}: $error',
             style: const TextStyle(color: Colors.red),
           ),
         ),

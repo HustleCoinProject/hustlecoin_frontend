@@ -7,6 +7,7 @@ import 'package:hustlecoin/state/all_states.dart';
 import 'package:hustlecoin/services/admob_service.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
 import 'package:hustlecoin/utils/ad_helper.dart';
+import 'package:hustlecoin/utils/localization.dart';
 import 'dart:async'; // For Timer
 import 'app_colors.dart';
 import 'shop.dart';
@@ -235,9 +236,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                 ),
                 _buildTopBar(user),
-                const Text(
-                  'Hustle Coin',
-                  style: TextStyle(
+                Text(
+                  ref.t(LocalizationKeys.hustleCoin),
+                  style: const TextStyle(
                     color: AppColors.textGrey,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -407,87 +408,106 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     TaskState taskState,
     TaskController taskController,
   ) {
-    // Determine button text based on state
-    String buttonText = 'Daily Reward';
-    if (taskState == TaskState.loading) {
-      buttonText = 'Loading...';
-    } else if (taskState == TaskState.cooldown) {
-      // Get the remaining cooldown based on server time
-      final remainingTime = taskController.remainingCooldown;
-      if (remainingTime != null) {
-        // If cooldown time is large (like a day), show hours remaining
-        if (remainingTime.inHours > 0) {
-          final hours = remainingTime.inHours;
-          buttonText = '$hours hrs left';
-        } else {
-          // For shorter times, show minutes:seconds
-          final minutes = remainingTime.inMinutes.remainder(60);
-          final seconds = remainingTime.inSeconds.remainder(60);
-          buttonText = '$minutes:${seconds.toString().padLeft(2, '0')}';
+    return Consumer(
+      builder: (context, ref, child) {
+        // Determine button text based on state
+        String buttonText = ref.t(LocalizationKeys.dailyReward);
+        if (taskState == TaskState.loading) {
+          buttonText = '${ref.t(LocalizationKeys.loading)}...';
+        } else if (taskState == TaskState.cooldown) {
+          // Get the remaining cooldown based on server time
+          final remainingTime = taskController.remainingCooldown;
+          if (remainingTime != null) {
+            // If cooldown time is large (like a day), show hours remaining
+            if (remainingTime.inHours > 0) {
+              final hours = remainingTime.inHours;
+              buttonText = '$hours ${ref.t(LocalizationKeys.hrsLeft)}';
+            } else {
+              // For shorter times, show minutes:seconds
+              final minutes = remainingTime.inMinutes.remainder(60);
+              final seconds = remainingTime.inSeconds.remainder(60);
+              buttonText = '$minutes:${seconds.toString().padLeft(2, '0')}';
+            }
+          }
         }
-      }
-    }
 
-    // Determine if button is disabled
-    final bool isDisabled =
-        taskState == TaskState.cooldown ||
-        taskState == TaskState.loading ||
-        taskState == TaskState.disabled;
+        // Determine if button is disabled
+        final bool isDisabled =
+            taskState == TaskState.cooldown ||
+            taskState == TaskState.loading ||
+            taskState == TaskState.disabled;
 
-    // Determine UI appearance based on state
-    final Color gradientStartColor = isDisabled
-        ? AppColors.angolaYellow.withOpacity(0.5)
-        : AppColors.angolaYellow;
-    final Color gradientEndColor = isDisabled
-        ? AppColors.orange.withOpacity(0.5)
-        : AppColors.orange;
+        // Determine UI appearance based on state
+        final Color gradientStartColor = isDisabled
+            ? AppColors.angolaYellow.withOpacity(0.5)
+            : AppColors.angolaYellow;
+        final Color gradientEndColor = isDisabled
+            ? AppColors.orange.withOpacity(0.5)
+            : AppColors.orange;
 
-    return PressableWidget(
-      onTap: isDisabled ? null : () => taskController.completeTask(),
-      scaleFactor: 0.9,
-      borderRadius: BorderRadius.circular(30), // Approximates the star shape
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-        decoration: ShapeDecoration(
-          shape: StarBorder(
-            points: 10,
-            innerRadiusRatio: 0.7,
-            pointRounding: 0.3,
-            side: BorderSide(
-              color: AppColors.angolaYellow.withOpacity(0.5),
-              width: 1,
-            ),
-          ),
-          gradient: LinearGradient(
-            colors: [gradientStartColor, gradientEndColor],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          shadows: [
-            BoxShadow(
-              color: AppColors.glowYellow.withOpacity(isDisabled ? 0.3 : 0.7),
-              blurRadius: 15,
-              spreadRadius: -2,
-            ),
-          ],
-        ),
-        child: taskState == TaskState.loading
-            ?
-              // Show loading indicator when in loading state
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.angolaBlack.withOpacity(0.7),
-                      ),
-                    ),
+        return PressableWidget(
+          onTap: isDisabled ? null : () => taskController.completeTask(),
+          scaleFactor: 0.9,
+          borderRadius: BorderRadius.circular(
+            30,
+          ), // Approximates the star shape
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+            decoration: ShapeDecoration(
+              shape: StarBorder(
+                points: 10,
+                innerRadiusRatio: 0.7,
+                pointRounding: 0.3,
+                side: BorderSide(
+                  color: AppColors.angolaYellow.withOpacity(0.5),
+                  width: 1,
+                ),
+              ),
+              gradient: LinearGradient(
+                colors: [gradientStartColor, gradientEndColor],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shadows: [
+                BoxShadow(
+                  color: AppColors.glowYellow.withOpacity(
+                    isDisabled ? 0.3 : 0.7,
                   ),
-                  const SizedBox(width: 8),
+                  blurRadius: 15,
+                  spreadRadius: -2,
+                ),
+              ],
+            ),
+            child: taskState == TaskState.loading
+                ?
+                  // Show loading indicator when in loading state
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.angolaBlack.withOpacity(0.7),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        buttonText,
+                        style: const TextStyle(
+                          color: AppColors.angolaBlack,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  )
+                :
+                  // Regular text for other states
                   Text(
                     buttonText,
                     style: const TextStyle(
@@ -497,20 +517,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       letterSpacing: 0.5,
                     ),
                   ),
-                ],
-              )
-            :
-              // Regular text for other states
-              Text(
-                buttonText,
-                style: const TextStyle(
-                  color: AppColors.angolaBlack,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                  letterSpacing: 0.5,
-                ),
-              ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -555,7 +564,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   _actionButton(
                     FontAwesomeIcons.mapMarkedAlt,
-                    'Land',
+                    ref.t(LocalizationKeys.land),
                     onTap: () {
                       AdHelper.showInterstitialOnNavigation();
                       Navigator.of(context).push(
@@ -566,7 +575,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     },
                   ),
                   const SizedBox(height: 15),
-                  _actionButton(FontAwesomeIcons.calendarAlt, 'Events'),
+                  _actionButton(
+                    FontAwesomeIcons.calendarAlt,
+                    ref.t(LocalizationKeys.events),
+                  ),
                 ],
               ),
             ),
@@ -672,11 +684,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
       child: Row(
         children: [
-          _upgradeItem(FontAwesomeIcons.robot, 'Chat bot'),
+          _upgradeItem(FontAwesomeIcons.robot, ref.t(LocalizationKeys.chatBot)),
           const SizedBox(width: 8),
           _upgradeItem(
             FontAwesomeIcons.rocket,
-            'Boosts',
+            ref.t(LocalizationKeys.boosts),
             onTap: () {
               AdHelper.showInterstitialOnNavigation();
               Navigator.of(context).push(
@@ -689,7 +701,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(width: 8),
           _upgradeItem(
             FontAwesomeIcons.key,
-            'Keys',
+            ref.t(LocalizationKeys.keys),
             onTap: () {
               AdHelper.showInterstitialOnNavigation();
               Navigator.of(context).push(
@@ -703,7 +715,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(width: 8),
           _upgradeItem(
             FontAwesomeIcons.store,
-            'Shop',
+            ref.t(LocalizationKeys.shop),
             isShop: true,
             onTap: () {
               AdHelper.showInterstitialOnNavigation();
@@ -793,10 +805,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _navItem(FontAwesomeIcons.house, 'Home', 0),
-              _navItem(FontAwesomeIcons.chartLine, 'Leaderboard', 1),
-              _navItem(FontAwesomeIcons.userCircle, 'Profile', 2),
-              _navItem(FontAwesomeIcons.cog, 'Settings', 3),
+              _navItem(FontAwesomeIcons.house, ref.t(LocalizationKeys.home), 0),
+              _navItem(
+                FontAwesomeIcons.chartLine,
+                ref.t(LocalizationKeys.leaderboard),
+                1,
+              ),
+              _navItem(
+                FontAwesomeIcons.userCircle,
+                ref.t(LocalizationKeys.profile),
+                2,
+              ),
+              _navItem(
+                FontAwesomeIcons.cog,
+                ref.t(LocalizationKeys.settings),
+                3,
+              ),
             ],
           ),
         ),
@@ -860,9 +884,9 @@ class _StatsContainer extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'HUSTLE LEVEL',
-                style: TextStyle(
+              Text(
+                ref.t(LocalizationKeys.hustleLevel),
+                style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textGrey,
                   shadows: textShadow,
@@ -879,7 +903,7 @@ class _StatsContainer extends ConsumerWidget {
                 ),
               ),
               Text(
-                'Level ${user.level}',
+                '${ref.t(LocalizationKeys.level)} ${user.level}',
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textGrey,
@@ -888,7 +912,7 @@ class _StatsContainer extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                '🔥 Daily Streak: ${user.dailyStreak}',
+                '${ref.t(LocalizationKeys.dailyStreak)}: ${user.dailyStreak}',
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textGrey,
@@ -904,19 +928,19 @@ class _StatsContainer extends ConsumerWidget {
           child: levelStatusAsync.when(
             data: (status) {
               if (status == null) {
-                return const Column(
+                return Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      'NEXT LEVEL',
-                      style: TextStyle(
+                      ref.t(LocalizationKeys.nextLevel),
+                      style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textGrey,
                         shadows: textShadow,
                       ),
                     ),
-                    SizedBox(height: 4),
-                    Text("Stats loading..."),
+                    const SizedBox(height: 4),
+                    Text("${ref.t(LocalizationKeys.statsLoading)}"),
                   ],
                 );
               }
@@ -928,9 +952,9 @@ class _StatsContainer extends ConsumerWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text(
-                    'NEXT LEVEL',
-                    style: TextStyle(
+                  Text(
+                    ref.t(LocalizationKeys.nextLevel),
+                    style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textGrey,
                       shadows: textShadow,
@@ -1007,11 +1031,14 @@ class _StatsContainer extends ConsumerWidget {
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
-                                        const SnackBar(
+                                        SnackBar(
                                           content: Text(
-                                            'Processing level upgrade...',
+                                            ref.t(
+                                              LocalizationKeys
+                                                  .processingLevelUpgrade,
+                                            ),
                                           ),
-                                          duration: Duration(seconds: 2),
+                                          duration: const Duration(seconds: 2),
                                         ),
                                       );
 
@@ -1082,9 +1109,9 @@ class _StatsContainer extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 2),
-                      const Text(
-                        'Upgrade Level',
-                        style: TextStyle(
+                      Text(
+                        ref.t(LocalizationKeys.upgradeLevel),
+                        style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textGrey,
@@ -1107,7 +1134,7 @@ class _StatsContainer extends ConsumerWidget {
 }
 
 // Daily Tap Button Widget
-class _DailyTapButton extends StatefulWidget {
+class _DailyTapButton extends ConsumerStatefulWidget {
   final TaskState taskState;
   final TaskController taskController;
 
@@ -1117,10 +1144,10 @@ class _DailyTapButton extends StatefulWidget {
   });
 
   @override
-  State<_DailyTapButton> createState() => _DailyTapButtonState();
+  ConsumerState<_DailyTapButton> createState() => _DailyTapButtonState();
 }
 
-class _DailyTapButtonState extends State<_DailyTapButton> {
+class _DailyTapButtonState extends ConsumerState<_DailyTapButton> {
   Timer? _cooldownTimer;
   Duration? _remainingTime;
 
@@ -1189,13 +1216,13 @@ class _DailyTapButtonState extends State<_DailyTapButton> {
   String get _buttonText {
     switch (widget.taskState) {
       case TaskState.loading:
-        return 'LOADING';
+        return ref.t(LocalizationKeys.loading);
       case TaskState.cooldown:
         final minutes = _remainingTime?.inMinutes.remainder(60) ?? 0;
         final seconds = _remainingTime?.inSeconds.remainder(60) ?? 0;
         return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
       default:
-        return 'DAILY TAP';
+        return ref.t(LocalizationKeys.dailyTap);
     }
   }
 
@@ -1297,17 +1324,17 @@ class _DailyTapButtonState extends State<_DailyTapButton> {
 //
 
 // Watch Ad Button Widget
-class _WatchAdButton extends StatefulWidget {
+class _WatchAdButton extends ConsumerStatefulWidget {
   final TaskState taskState;
   final TaskController taskController;
 
   const _WatchAdButton({required this.taskState, required this.taskController});
 
   @override
-  State<_WatchAdButton> createState() => _WatchAdButtonState();
+  ConsumerState<_WatchAdButton> createState() => _WatchAdButtonState();
 }
 
-class _WatchAdButtonState extends State<_WatchAdButton> {
+class _WatchAdButtonState extends ConsumerState<_WatchAdButton> {
   Timer? _cooldownTimer;
   Duration? _remainingTime;
   bool _isShowingAd = false;
@@ -1407,10 +1434,8 @@ class _WatchAdButtonState extends State<_WatchAdButton> {
           print('DEBUG: _WatchAdButton - ❌ Ad still not loaded after attempt');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Ad is not ready yet. Please try again in a moment.',
-                ),
+              SnackBar(
+                content: Text(ref.t(LocalizationKeys.adNotReadyTryAgain)),
                 backgroundColor: Colors.orange,
               ),
             );
@@ -1487,18 +1512,18 @@ class _WatchAdButtonState extends State<_WatchAdButton> {
 
   String get _buttonText {
     if (_isShowingAd) {
-      return 'LOADING AD';
+      return ref.t(LocalizationKeys.loadingAd);
     }
 
     switch (widget.taskState) {
       case TaskState.loading:
-        return 'LOADING';
+        return ref.t(LocalizationKeys.loading);
       case TaskState.cooldown:
         final minutes = _remainingTime?.inMinutes.remainder(60) ?? 0;
         final seconds = _remainingTime?.inSeconds.remainder(60) ?? 0;
         return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
       default:
-        return 'WATCH AD';
+        return ref.t(LocalizationKeys.watchAd);
     }
   }
 
@@ -1613,17 +1638,17 @@ class _WatchAdButtonState extends State<_WatchAdButton> {
 //
 //
 
-class _QuizButton extends StatefulWidget {
+class _QuizButton extends ConsumerStatefulWidget {
   final TaskState taskState;
   final TaskController taskController;
 
   const _QuizButton({required this.taskState, required this.taskController});
 
   @override
-  State<_QuizButton> createState() => _QuizButtonState();
+  ConsumerState<_QuizButton> createState() => _QuizButtonState();
 }
 
-class _QuizButtonState extends State<_QuizButton> {
+class _QuizButtonState extends ConsumerState<_QuizButton> {
   Timer? _cooldownTimer;
   Duration? _remainingTime;
 
@@ -1692,13 +1717,13 @@ class _QuizButtonState extends State<_QuizButton> {
   String get _buttonText {
     switch (widget.taskState) {
       case TaskState.loading:
-        return 'LOADING';
+        return ref.t(LocalizationKeys.loading);
       case TaskState.cooldown:
         final minutes = _remainingTime?.inMinutes.remainder(60) ?? 0;
         final seconds = _remainingTime?.inSeconds.remainder(60) ?? 0;
         return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
       default:
-        return 'QUIZ';
+        return ref.t(LocalizationKeys.quiz);
     }
   }
 

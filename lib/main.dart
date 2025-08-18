@@ -8,6 +8,7 @@ import 'app_colors.dart';
 import 'package:hustlecoin/home_screen.dart';
 
 import 'package:hustlecoin/state/all_states.dart';
+import 'package:hustlecoin/utils/localization.dart';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hustlecoin/services/admob_service.dart';

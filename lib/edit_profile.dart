@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app_colors.dart';
 import 'state/all_states.dart';
 import 'start.dart';
+import 'utils/localization.dart';
 
 // --- Reusable Helper Widgets ---
 
@@ -144,7 +145,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (_newPasswordController.text.isNotEmpty &&
         _newPasswordController.text != _confirmNewPasswordController.text) {
       setState(() {
-        _errorMessage = "New password and confirmation don't match";
+        _errorMessage = ref.t(LocalizationKeys.passwordsDontMatch);
       });
       return;
     }
@@ -235,11 +236,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Text(
-              'View/Edit Profile',
+              ref.t(LocalizationKeys.viewEditProfile),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
                 shadows: [Shadow(blurRadius: 4, color: Colors.black87)],
@@ -340,7 +341,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (user.hasError) {
       return Center(
         child: Text(
-          'Error loading profile: ${user.error}',
+          '${ref.t(LocalizationKeys.errorLoadingProfile)}: ${user.error}',
           style: const TextStyle(color: Colors.red),
         ),
       );
@@ -355,7 +356,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           children: [
             // Username (read-only)
             _buildInputField(
-              label: 'Username',
+              label: ref.t(LocalizationKeys.username),
               child: _GlassEffectContainer(
                 borderRadius: BorderRadius.circular(10),
                 padding: const EdgeInsets.symmetric(
@@ -385,15 +386,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
             // Email address
             _buildInputField(
-              label: 'Email Address',
+              label: ref.t(LocalizationKeys.emailAddress),
               child: _buildTextField(
                 controller: _emailController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Email is required';
+                    return ref.t(LocalizationKeys.emailIsRequired);
                   }
                   if (!value.contains('@') || !value.contains('.')) {
-                    return 'Please enter a valid email';
+                    return ref.t(LocalizationKeys.pleaseEnterValidEmail);
                   }
                   return null;
                 },
@@ -403,19 +404,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
             // Language selector
             _buildInputField(
-              label: 'Language',
+              label: ref.t(LocalizationKeys.language),
               child: _buildLanguageSelector(),
             ),
             const SizedBox(height: 15),
 
             // Current hustle selector
             _buildInputField(
-              label: 'Current Hustle',
+              label: ref.t(LocalizationKeys.currentHustle),
               child: availableHustles.when(
                 data: (hustles) => _buildHustleSelector(hustles),
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (err, _) => Text(
-                  'Error loading hustles: $err',
+                  '${ref.t(LocalizationKeys.errorLoadingHustles)}: $err',
                   style: const TextStyle(color: Colors.red),
                 ),
               ),
@@ -423,11 +424,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             const SizedBox(height: 15),
 
             // --- Change Password Section ---
-            const Padding(
-              padding: EdgeInsets.only(top: 15.0, bottom: 5.0),
+            Padding(
+              padding: const EdgeInsets.only(top: 15.0, bottom: 5.0),
               child: Text(
-                'Change Password',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                ref.t(LocalizationKeys.changePassword),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
               ),
             ),
             Container(
@@ -437,18 +441,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
 
             _buildInputField(
-              label: 'Current Password',
+              label: ref.t(LocalizationKeys.currentPassword),
               child: _buildTextField(
-                hint: 'Enter current password',
+                hint: ref.t(LocalizationKeys.enterCurrentPassword),
                 obscure: true,
                 controller: _currentPasswordController,
               ),
             ),
             const SizedBox(height: 15),
             _buildInputField(
-              label: 'New Password',
+              label: ref.t(LocalizationKeys.newPassword),
               child: _buildTextField(
-                hint: 'Enter new password',
+                hint: ref.t(LocalizationKeys.enterNewPassword),
                 obscure: true,
                 controller: _newPasswordController,
                 validator: (value) {
@@ -457,7 +461,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       return 'Password must be at least 6 characters';
                     }
                     if (_currentPasswordController.text.isEmpty) {
-                      return 'Current password is required to change password';
+                      return ref.t(LocalizationKeys.currentPasswordRequired);
                     }
                   }
                   return null;
@@ -466,15 +470,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
             const SizedBox(height: 15),
             _buildInputField(
-              label: 'Confirm New Password',
+              label: ref.t(LocalizationKeys.confirmNewPassword),
               child: _buildTextField(
-                hint: 'Confirm new password',
+                hint: ref.t(LocalizationKeys.confirmNewPasswordHint),
                 obscure: true,
                 controller: _confirmNewPasswordController,
                 validator: (value) {
                   if (_newPasswordController.text.isNotEmpty &&
                       value != _newPasswordController.text) {
-                    return 'Passwords do not match';
+                    return ref.t(LocalizationKeys.passwordsDoNotMatch);
                   }
                   return null;
                 },
@@ -494,11 +498,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
             // Success message
             if (_isSuccess)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 15),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 15),
                 child: Text(
-                  'Profile updated successfully!',
-                  style: TextStyle(color: Colors.green),
+                  ref.t(LocalizationKeys.profileUpdatedSuccessfully),
+                  style: const TextStyle(color: Colors.green),
                 ),
               ),
 
@@ -527,10 +531,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           ),
                         ),
                       )
-                    : const Text(
-                        'Update Profile',
+                    : Text(
+                        ref.t(LocalizationKeys.updateProfile),
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -598,9 +602,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             _selectedHustle = value;
           });
         },
-        hint: const Text(
-          'Select your hustle',
-          style: TextStyle(color: AppColors.textGrey),
+        hint: Text(
+          ref.t(LocalizationKeys.selectYourHustle),
+          style: const TextStyle(color: AppColors.textGrey),
         ),
       ),
     );

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/state/all_states.dart';
+import 'package:hustlecoin/utils/localization.dart';
 import 'app_colors.dart';
 import 'signup.dart';
 import 'home_screen.dart';
@@ -157,42 +158,46 @@ class LoginScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Title and Subtitle
-                    const Text(
-                      'Welcome Back!',
-                      style: TextStyle(
+                    Text(
+                      ref.t(LocalizationKeys.welcomeBack),
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 5),
-                    const Text(
-                      'Log in to continue your hustle.',
-                      style: TextStyle(color: AppColors.textGrey, fontSize: 16),
+                    Text(
+                      ref.t(LocalizationKeys.logInToContinue),
+                      style: const TextStyle(
+                        color: AppColors.textGrey,
+                        fontSize: 16,
+                      ),
                     ),
                     const SizedBox(height: 30),
 
                     // Input Fields
                     _buildInputField(
                       icon: FontAwesomeIcons.user,
-                      hintText: 'Email or Username',
+                      hintText:
+                          '${ref.t(LocalizationKeys.email)} ${ref.t(LocalizationKeys.username)}',
                       controller: usernameController,
                     ),
                     const SizedBox(height: 20),
                     _buildInputField(
                       icon: FontAwesomeIcons.lock,
-                      hintText: 'Password',
+                      hintText: ref.t(LocalizationKeys.password),
                       controller: passwordController,
                       obscureText: true,
                     ),
                     const SizedBox(height: 5),
 
                     // Forgot Password Link
-                    _buildForgotPasswordLink(),
+                    _buildForgotPasswordLink(ref),
                     const SizedBox(height: 20),
 
                     // Login Button
                     _buildActionButton(
-                      text: 'Log In',
+                      text: ref.t(LocalizationKeys.logIn),
                       onTap: () async {
                         /*Navigator.of(context).pushReplacement(
                           MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -212,7 +217,7 @@ class LoginScreen extends ConsumerWidget {
                     const SizedBox(height: 30),
 
                     // Sign Up Link
-                    _buildSignUpLink(context),
+                    _buildSignUpLink(context, ref),
                   ],
                 ),
               ),
@@ -248,7 +253,7 @@ class LoginScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildForgotPasswordLink() {
+  Widget _buildForgotPasswordLink(WidgetRef ref) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -256,9 +261,9 @@ class LoginScreen extends ConsumerWidget {
           onTap: () {
             // Handle forgot password logic
           },
-          child: const Text(
-            'Forgot Password?',
-            style: TextStyle(color: AppColors.textGrey, fontSize: 14),
+          child: Text(
+            ref.t(LocalizationKeys.forgotPassword),
+            style: const TextStyle(color: AppColors.textGrey, fontSize: 14),
           ),
         ),
       ],
@@ -295,7 +300,7 @@ class LoginScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSignUpLink(BuildContext context) {
+  Widget _buildSignUpLink(BuildContext context, WidgetRef ref) {
     return RichText(
       text: TextSpan(
         style: const TextStyle(
@@ -304,9 +309,9 @@ class LoginScreen extends ConsumerWidget {
           fontFamily: 'Poppins',
         ),
         children: [
-          const TextSpan(text: "Don't have an account? "),
+          TextSpan(text: "${ref.t(LocalizationKeys.dontHaveAccount)} "),
           TextSpan(
-            text: 'Sign Up',
+            text: ref.t(LocalizationKeys.signUp),
             style: const TextStyle(
               color: AppColors.angolaYellow,
               fontWeight: FontWeight.w600,
