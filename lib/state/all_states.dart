@@ -243,6 +243,41 @@ class QuizResult {
   }
 }
 
+// --- Land System Models ---
+
+@immutable
+class LandTileInfo {
+  final String h3Index;
+  final String ownerId;
+
+  const LandTileInfo({required this.h3Index, required this.ownerId});
+
+  factory LandTileInfo.fromJson(Map<String, dynamic> json) {
+    return LandTileInfo(h3Index: json['h3_index'], ownerId: json['owner_id']);
+  }
+}
+
+@immutable
+class MyLandTile {
+  final String h3Index;
+  final DateTime purchasedAt;
+  final int purchasePrice;
+
+  const MyLandTile({
+    required this.h3Index,
+    required this.purchasedAt,
+    required this.purchasePrice,
+  });
+
+  factory MyLandTile.fromJson(Map<String, dynamic> json) {
+    return MyLandTile(
+      h3Index: json['h3_index'],
+      purchasedAt: DateTime.parse(json['purchased_at']),
+      purchasePrice: json['purchase_price'],
+    );
+  }
+}
+
 // ==========================================================================
 // 2. API SERVICE REPOSITORY
 // ==========================================================================
@@ -510,7 +545,53 @@ class ApiRepository {
     }
   }
 
-  // Add other API methods here (buy/sell land, etc.) following the same pattern.
+  // --- Land System ---
+  Future<List<LandTileInfo>> getTilesInBbox(String bbox) async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/land/tiles?bbox=$bbox'),
+      headers: _headers,
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((item) => LandTileInfo.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to fetch land tiles: ${response.body}');
+    }
+  }
+
+  Future<List<MyLandTile>> getMyLands() async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/land/my-lands'),
+      headers: _headers,
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((item) => MyLandTile.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to fetch my lands: ${response.body}');
+    }
+  }
+
+  Future<void> buyLandTile(String h3Index) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/api/land/buy/$h3Index'),
+      headers: _headers,
+    );
+    // Backend returns 201 CREATED on successful purchase
+    if (response.statusCode != 201) {
+      throw Exception('Failed to buy land tile: ${response.body}');
+    }
+  }
+
+  Future<void> sellLandTile(String h3Index) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/api/land/sell/$h3Index'),
+      headers: _headers,
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to sell land tile: ${response.body}');
+    }
+  }
 }
 
 // ==========================================================================
@@ -618,12 +699,6 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
-  // Note: The "_handleAction" method was removed as it was unused.
-  // If needed in the future, the pattern is:
-  // 1. Try to execute an action
-  // 2. Refresh user data regardless of success or failure
-  // 3. Handle or propagate errors as needed
-
   Future<void> completeTask(
     String taskId, {
     Map<String, dynamic>? payload,
@@ -633,13 +708,10 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
     } catch (e) {
       // We still want to refetch user data even if the task "fails"
       // because a failure might still result in a cooldown being applied.
-      print("Action failed but refetching user: $e");
+      debugPrint("Action failed but refetching user: $e");
     } finally {
       // Always refetch user data to get the latest balance and cooldowns.
       await _fetchUser();
-
-      // print new user state for debugging
-      print("New user state: ${state.value!.taskCooldowns}");
     }
   }
 
@@ -648,18 +720,46 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
     try {
       // Call the API directly so we can propagate errors to the UI
       await _api.purchaseItem(itemId, quantity);
-
       // If successful, refresh user data to update balance
       await _fetchUser();
     } catch (e) {
-      // Log the error
-      print("Purchase failed: $e");
-
+      debugPrint("Purchase failed: $e");
       // Refresh user data anyway to ensure UI is up to date
       await _fetchUser();
-
       // Re-throw the error so the UI can handle it
       rethrow;
+    }
+  }
+
+  // Buy a land tile
+  Future<void> buyLand(String h3Index) async {
+    try {
+      await _api.buyLandTile(h3Index);
+      // On success, refresh user data for balance only
+      await _fetchUser();
+      // Do NOT invalidate any providers here to avoid circular dependencies
+      // Let the UI handle provider invalidation after the transaction is complete
+    } catch (e) {
+      debugPrint("Land purchase failed: $e");
+      // Still refresh user data in case the state is out of sync
+      await _fetchUser();
+      rethrow; // Rethrow to let the UI show an error
+    }
+  }
+
+  // Sell a land tile
+  Future<void> sellLand(String h3Index) async {
+    try {
+      await _api.sellLandTile(h3Index);
+      // On success, refresh user data for balance only
+      await _fetchUser();
+      // Do NOT invalidate any providers here to avoid circular dependencies
+      // Let the UI handle provider invalidation after the transaction is complete
+    } catch (e) {
+      debugPrint("Land sell failed: $e");
+      // Still refresh user data in case the state is out of sync
+      await _fetchUser();
+      rethrow; // Rethrow to let the UI show an error
     }
   }
 
@@ -680,16 +780,12 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
         language: language,
         currentHustle: currentHustle,
       );
-
       // If successful, refresh user data to update with new values
       await _fetchUser();
     } catch (e) {
-      // Log the error
-      print("Profile update failed: $e");
-
+      debugPrint("Profile update failed: $e");
       // Refresh user data anyway to ensure UI is up to date
       await _fetchUser();
-
       // Re-throw the error so the UI can handle it
       rethrow;
     }
@@ -703,26 +799,26 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
 final allHustlesProvider = FutureProvider<Map<String, List<String>>>((
   ref,
 ) async {
-  return ref.watch(apiRepositoryProvider).getAllHustles();
+  return ref.read(apiRepositoryProvider).getAllHustles();
 });
 
 final availableHustlesProvider = FutureProvider<List<String>>((ref) async {
   final user = ref.watch(userControllerProvider);
   if (user.value == null) return [];
-  return ref.watch(apiRepositoryProvider).getAvailableHustles();
+  return ref.read(apiRepositoryProvider).getAvailableHustles();
 });
 
 final allTasksProvider = FutureProvider<List<Task>>((ref) async {
   final user = ref.watch(userControllerProvider);
   // Only fetch if the user is logged in
   if (user.value == null) return [];
-  return ref.watch(apiRepositoryProvider).getAllTasks();
+  return ref.read(apiRepositoryProvider).getAllTasks();
 });
 
 final shopItemsProvider = FutureProvider<List<ShopItem>>((ref) async {
   final user = ref.watch(userControllerProvider);
   if (user.value == null) return [];
-  return ref.watch(apiRepositoryProvider).getShopItems();
+  return ref.read(apiRepositoryProvider).getShopItems();
 });
 
 // User-specific data that can be refreshed
@@ -731,7 +827,7 @@ final levelStatusProvider = FutureProvider.autoDispose<LevelStatus?>((
 ) async {
   final user = ref.watch(userControllerProvider);
   if (user.value == null) return null;
-  return ref.watch(apiRepositoryProvider).getLevelStatus();
+  return ref.read(apiRepositoryProvider).getLevelStatus();
 });
 
 final inventoryProvider = FutureProvider.autoDispose<List<InventoryItem>>((
@@ -739,13 +835,13 @@ final inventoryProvider = FutureProvider.autoDispose<List<InventoryItem>>((
 ) async {
   final user = ref.watch(userControllerProvider);
   if (user.value == null) return [];
-  return ref.watch(apiRepositoryProvider).getInventory();
+  return ref.read(apiRepositoryProvider).getInventory();
 });
 
 final leaderboardProvider = FutureProvider.autoDispose<List<LeaderboardEntry>>((
   ref,
 ) async {
-  return ref.watch(apiRepositoryProvider).getLeaderboard();
+  return ref.read(apiRepositoryProvider).getLeaderboard();
 });
 
 // Provider for fetching a single quiz question for the quiz screen
@@ -757,7 +853,33 @@ final quizQuestionProvider = FutureProvider.autoDispose<QuizQuestion>((
   if (user == null) {
     throw Exception("User must be logged in to fetch a quiz question.");
   }
-  return ref.watch(apiRepositoryProvider).fetchQuizQuestion();
+  return ref.read(apiRepositoryProvider).fetchQuizQuestion();
+});
+
+// --- Land System Providers ---
+
+final landTilesProvider = FutureProvider.family
+    .autoDispose<List<LandTileInfo>, String>((ref, bbox) async {
+      // This provider fetches owned tiles within a specific bounding box.
+      // The .family modifier allows us to pass the bbox string as a parameter.
+      final user = ref.watch(userControllerProvider);
+      if (user.value == null) return []; // Don't fetch if not logged in
+
+      // Use read instead of watch for apiRepositoryProvider to avoid circular dependency
+      final api = ref.read(apiRepositoryProvider);
+      return api.getTilesInBbox(bbox);
+    });
+
+final myLandsProvider = FutureProvider.autoDispose<List<MyLandTile>>((
+  ref,
+) async {
+  // This provider fetches all land tiles owned by the current user.
+  final user = ref.watch(userControllerProvider);
+  if (user.value == null) return [];
+
+  // Use read instead of watch for apiRepositoryProvider to avoid circular dependency
+  final api = ref.read(apiRepositoryProvider);
+  return api.getMyLands();
 });
 
 // Provider to manage server time and client-server time offset
@@ -824,9 +946,11 @@ class ServerTimeController extends StateNotifier<AsyncValue<Duration>> {
       // Update the state with the calculated offset
       state = AsyncValue.data(offset);
 
-      print("Server time sync completed. Offset: ${offset.inMilliseconds}ms");
+      debugPrint(
+        "Server time sync completed. Offset: ${offset.inMilliseconds}ms",
+      );
     } catch (e, st) {
-      print("Failed to sync with server time: $e");
+      debugPrint("Failed to sync with server time: $e");
       // If we already have an offset, keep it; otherwise, set to zero
       if (state.value == null) {
         state = AsyncValue.data(Duration.zero);

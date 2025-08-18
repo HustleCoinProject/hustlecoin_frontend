@@ -1,23 +1,29 @@
+// lib/screens/land_map.dart
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:h3_flutter/h3_flutter.dart';
 import 'package:latlong2/latlong.dart';
-import 'app_colors.dart'; // Assuming you have this file
+
+import 'state/all_states.dart';
+import 'app_colors.dart';
 
 // --- Reusable "Smoky Glass" Widget ---
 class _GlassEffectContainer extends StatelessWidget {
   final Widget child;
   final BorderRadius borderRadius;
   final EdgeInsetsGeometry padding;
+  final Key? key;
 
   const _GlassEffectContainer({
-    Key? key,
+    this.key,
     required this.child,
     this.borderRadius = BorderRadius.zero,
     this.padding = EdgeInsets.zero,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -38,34 +44,40 @@ class _GlassEffectContainer extends StatelessWidget {
 
 // --- Main Land Map Screen Widget ---
 
-class LandMapScreen extends StatefulWidget {
+class LandMapScreen extends ConsumerStatefulWidget {
   const LandMapScreen({super.key});
 
   @override
-  State<LandMapScreen> createState() => _LandMapScreenState();
+  ConsumerState<LandMapScreen> createState() => _LandMapScreenState();
 }
 
-class _LandMapScreenState extends State<LandMapScreen> {
+class _LandMapScreenState extends ConsumerState<LandMapScreen> {
   // H3 and Map Controllers
   final h3 = H3Factory().load();
   final _mapController = MapController();
+  Timer? _debounce;
 
   // State Variables
   List<Polygon> _visibleHexagons = [];
   Polygon? _selectedHexagon;
   String? _selectedH3Index;
-  final Set<String> _ownedHexagons = {}; // Stores H3 indexes of purchased land
+  bool _isPurchasing = false;
+  String _currentBbox = '';
+
+  // A map for quick lookup of owned tiles in the current view
+  Map<String, LandTileInfo> _ownedTilesInView = {};
 
   // Constants
   static const int DATA_RESOLUTION = 8;
-  static const double MAX_COLOR_ZOOM = 14.0;
-  static const int LAND_PRICE = 500;
+  static const double MAX_COLOR_ZOOM =
+      10.0; // Lowered from 14.0 to show colors earlier
+  static const int LAND_PRICE = 500; // Corresponds to backend LAND_PRICE
 
   @override
-  void initState() {
-    super.initState();
-    // Add some pre-owned hexagons for demonstration
-    _ownedHexagons.addAll(['8842a226bffffff', '8842a2267ffffff']);
+  void dispose() {
+    _debounce?.cancel();
+    _mapController.dispose();
+    super.dispose();
   }
 
   // --- Core Logic ---
@@ -80,11 +92,40 @@ class _LandMapScreenState extends State<LandMapScreen> {
     return DATA_RESOLUTION;
   }
 
-  void updateVisibleHexagons() {
+  // Debounced function to avoid spamming the API while panning the map
+  void _onMapMove() {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 350), () {
+      _fetchAndDrawHexagons();
+    });
+  }
+
+  Future<void> _fetchAndDrawHexagons() async {
     if (!mounted) return;
 
     final bounds = _mapController.camera.visibleBounds;
     final zoom = _mapController.camera.zoom;
+
+    // Format the bounding box string for the API
+    final bbox =
+        '${bounds.southWest.longitude},${bounds.southWest.latitude},${bounds.northEast.longitude},${bounds.northEast.latitude}';
+    _currentBbox = bbox; // Store for invalidation on purchase
+
+    // Fetch owned tiles within the current view
+    final currentUser = ref.read(userControllerProvider).value;
+    if (currentUser == null) return;
+
+    try {
+      final ownedTilesData = await ref.read(landTilesProvider(bbox).future);
+      // Update the local lookup map
+      _ownedTilesInView = {for (var tile in ownedTilesData) tile.h3Index: tile};
+      debugPrint("Loaded ${ownedTilesData.length} owned tiles in current view");
+    } catch (e) {
+      debugPrint("Failed to fetch owned tiles: $e");
+      // Continue with empty owned tiles if fetch fails
+      _ownedTilesInView = {};
+    }
+
     final showColors = zoom >= MAX_COLOR_ZOOM;
     final renderResolution = showColors
         ? DATA_RESOLUTION
@@ -112,10 +153,29 @@ class _LandMapScreenState extends State<LandMapScreen> {
       Color? fillColor;
       double fillOpacity = 0.4;
 
-      if (showColors && _ownedHexagons.contains(index)) {
-        borderColor = const Color(0xFF14DC78); // Green
-        fillColor = const Color(0xFF14DC78);
-        borderOpacity = 1.0;
+      final h3IndexStr = index.toRadixString(16).toLowerCase();
+      final ownedTile = _ownedTilesInView[h3IndexStr];
+
+      // Always show owned land colors if there's an owned tile, regardless of zoom
+      if (ownedTile != null) {
+        if (ownedTile.ownerId == currentUser.id) {
+          // Current user's land - Green
+          borderColor = const Color(0xFF14DC78);
+          fillColor = const Color(0xFF14DC78);
+          borderOpacity = 1.0;
+          fillOpacity = 0.6; // Make it more visible
+        } else {
+          // Other player's land - Orange/Red
+          borderColor = AppColors
+              .angolaYellow; // Changed to yellow/orange for better visibility
+          fillColor = AppColors.angolaYellow;
+          borderOpacity = 1.0;
+          fillOpacity = 0.5;
+        }
+      } else if (showColors) {
+        // Show subtle grid for unowned land only at high zoom
+        borderOpacity = 0.15;
+        fillOpacity = 0.1;
       }
 
       newHexes.add(
@@ -127,15 +187,18 @@ class _LandMapScreenState extends State<LandMapScreen> {
         ),
       );
     }
-    setState(() => _visibleHexagons = newHexes);
+    if (mounted) {
+      setState(() => _visibleHexagons = newHexes);
+    }
   }
 
   void _onMapTap(TapPosition pos, LatLng latlng) {
     final geoCoord = GeoCoord(lat: latlng.latitude, lon: latlng.longitude);
-    final h3Index = h3.geoToCell(geoCoord, DATA_RESOLUTION);
+    final h3IndexInt = h3.geoToCell(geoCoord, DATA_RESOLUTION);
+    final h3IndexStr = h3IndexInt.toRadixString(16).toLowerCase();
 
     // Don't allow selecting already owned land
-    if (_ownedHexagons.contains(h3Index)) {
+    if (_ownedTilesInView.containsKey(h3IndexStr)) {
       setState(() {
         _selectedH3Index = null;
         _selectedHexagon = null;
@@ -143,28 +206,74 @@ class _LandMapScreenState extends State<LandMapScreen> {
       return;
     }
 
-    final boundary = h3.cellToBoundary(h3Index);
+    final boundary = h3.cellToBoundary(h3IndexInt);
     final points = boundary.map((geo) => LatLng(geo.lat, geo.lon)).toList();
 
     setState(() {
-      _selectedH3Index = h3Index.toRadixString(16);
+      _selectedH3Index = h3IndexStr;
       _selectedHexagon = Polygon(
         points: points,
         borderColor: AppColors.angolaYellow,
         borderStrokeWidth: 3,
+        color: Colors.transparent,
       );
     });
   }
 
-  void _purchaseLand() {
-    if (_selectedH3Index != null) {
-      setState(() {
-        _ownedHexagons.add(_selectedH3Index!);
-        _selectedH3Index = null;
-        _selectedHexagon = null;
-      });
-      // Redraw the grid to show the newly purchased green hexagon
-      updateVisibleHexagons();
+  Future<void> _purchaseLand() async {
+    if (_selectedH3Index == null || _isPurchasing) return;
+
+    setState(() => _isPurchasing = true);
+
+    try {
+      // Purchase the land - this will only update user balance
+      await ref
+          .read(userControllerProvider.notifier)
+          .buyLand(_selectedH3Index!);
+
+      if (mounted) {
+        // Clear selection first
+        setState(() {
+          _selectedH3Index = null;
+          _selectedHexagon = null;
+        });
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Land purchased successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Invalidate providers after a short delay to avoid circular dependency
+        Future.delayed(const Duration(milliseconds: 200), () async {
+          if (mounted) {
+            // Invalidate both land-related providers to force fresh data
+            ref.invalidate(landTilesProvider(_currentBbox));
+            ref.invalidate(myLandsProvider);
+
+            // Small additional delay to ensure providers are invalidated
+            await Future.delayed(const Duration(milliseconds: 100));
+
+            // Force refresh the hexagons display with new data
+            await _fetchAndDrawHexagons();
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Purchase failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isPurchasing = false);
+      }
     }
   }
 
@@ -180,10 +289,10 @@ class _LandMapScreenState extends State<LandMapScreen> {
             options: MapOptions(
               initialCenter: const LatLng(-8.83, 13.23),
               initialZoom: 13.0,
-              onMapReady: updateVisibleHexagons,
+              onMapReady: _fetchAndDrawHexagons,
               onMapEvent: (event) {
-                if (event is MapEventMoveEnd || event is MapEventMoveEnd) {
-                  updateVisibleHexagons();
+                if (event is MapEventMoveEnd || event is MapEventRotateEnd) {
+                  _onMapMove();
                 }
               },
               onTap: _onMapTap,
@@ -261,6 +370,10 @@ class _LandMapScreenState extends State<LandMapScreen> {
   }
 
   Widget _buildPurchasePanel() {
+    final userAsyncValue = ref.watch(userControllerProvider);
+    final user = userAsyncValue.value;
+    final canAfford = user != null && user.hcBalance >= LAND_PRICE;
+
     return _GlassEffectContainer(
       key: const ValueKey('purchase_panel'),
       borderRadius: BorderRadius.circular(16),
@@ -288,34 +401,49 @@ class _LandMapScreenState extends State<LandMapScreen> {
           ),
           const SizedBox(width: 15),
           GestureDetector(
-            onTap: _purchaseLand,
-            child: Container(
+            onTap: (canAfford && !_isPurchasing) ? _purchaseLand : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.angolaYellow, AppColors.angolaRed],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                gradient: (canAfford && !_isPurchasing)
+                    ? const LinearGradient(
+                        colors: [AppColors.angolaYellow, AppColors.angolaRed],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
+                color: !(canAfford && !_isPurchasing)
+                    ? Colors.grey.shade800
+                    : null,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
-                children: [
-                  const FaIcon(
-                    FontAwesomeIcons.coins,
-                    size: 14,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${LAND_PRICE} HC',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
+              child: _isPurchasing
+                  ? const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Row(
+                      children: [
+                        const FaIcon(
+                          FontAwesomeIcons.coins,
+                          size: 14,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${LAND_PRICE} HC',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
             ),
           ),
         ],
