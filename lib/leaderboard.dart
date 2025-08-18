@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'app_colors.dart'; // Assuming you have this file from previous steps
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'app_colors.dart';
+import 'state/all_states.dart';
 
 // --- Reusable Helper Widgets ---
 
@@ -37,51 +39,41 @@ class _GlassEffectContainer extends StatelessWidget {
   }
 }
 
-// Data model for a leaderboard entry
-class LeaderboardEntry {
+// Local data model for a leaderboard entry UI
+class LeaderboardEntryUI {
   final int rank;
   final String username;
   final int score;
+  final int level;
   final IconData avatarIcon;
 
-  LeaderboardEntry({
+  LeaderboardEntryUI({
     required this.rank,
     required this.username,
     required this.score,
+    required this.level,
     this.avatarIcon = FontAwesomeIcons.user,
   });
 }
 
 // --- Main Leaderboard Screen Widget ---
 
-class LeaderboardScreen extends StatelessWidget {
+class LeaderboardScreen extends ConsumerWidget {
   LeaderboardScreen({super.key});
 
-  // Dummy data for the leaderboard list
-  final List<LeaderboardEntry> leaderboardData = [
-    LeaderboardEntry(rank: 1, username: 'HustleKing', score: 98450),
-    LeaderboardEntry(rank: 2, username: 'CoinMaster', score: 95210),
-    LeaderboardEntry(rank: 3, username: 'AngolaRider', score: 91880),
-    LeaderboardEntry(rank: 4, username: 'UrbanDriver', score: 88500),
-    LeaderboardEntry(rank: 5, username: 'StreetSmart', score: 85120),
-    LeaderboardEntry(rank: 6, username: 'LuandaLion', score: 82990),
-    LeaderboardEntry(rank: 7, username: 'MidnightHustler', score: 79430),
-    LeaderboardEntry(rank: 8, username: 'KwanzaFlow', score: 75600),
-    LeaderboardEntry(rank: 9, username: 'CitySlicker', score: 72150),
-    LeaderboardEntry(rank: 10, username: 'TheVendor', score: 68900),
-    LeaderboardEntry(rank: 11, username: 'RhythmRider', score: 65400),
-    LeaderboardEntry(rank: 12, username: 'AsphaltAce', score: 62300),
-  ];
-
-  // Dummy data for the current player
-  final LeaderboardEntry playerEntry = LeaderboardEntry(
-    rank: 142,
+  // Placeholder for the current player with dashes
+  final LeaderboardEntryUI playerEntry = LeaderboardEntryUI(
+    rank: 0,
     username: 'You',
-    score: 12507,
+    score: 0,
+    level: 0,
   );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Get leaderboard data from provider
+    final leaderboardAsync = ref.watch(leaderboardProvider);
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -105,7 +97,7 @@ class LeaderboardScreen extends StatelessWidget {
             child: Column(
               children: [
                 _buildHeader(context),
-                _buildContent(),
+                _buildContent(leaderboardAsync),
                 _buildPlayerHighlight(),
               ],
             ),
@@ -146,15 +138,41 @@ class LeaderboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(AsyncValue<List<LeaderboardEntry>> leaderboardAsync) {
     return Expanded(
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 15.0),
-        itemCount: leaderboardData.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10.0),
-            child: _buildRankItem(leaderboardData[index]),
+      child: leaderboardAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) => Center(
+          child: Text(
+            'Failed to load leaderboard: $error',
+            style: const TextStyle(color: Colors.red),
+          ),
+        ),
+        data: (leaderboardEntries) {
+          final leaderboardData = leaderboardEntries.asMap().entries.map((
+            entry,
+          ) {
+            // Convert backend LeaderboardEntry to UI LeaderboardEntryUI
+            return LeaderboardEntryUI(
+              rank: entry.key + 1, // Index + 1 for rank
+              username: entry.value.username,
+              score: entry.value.hcBalance,
+              level: entry.value.level,
+            );
+          }).toList();
+
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 15.0,
+              vertical: 15.0,
+            ),
+            itemCount: leaderboardData.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10.0),
+                child: _buildRankItem(leaderboardData[index]),
+              );
+            },
           );
         },
       ),
@@ -162,6 +180,14 @@ class LeaderboardScreen extends StatelessWidget {
   }
 
   Widget _buildPlayerHighlight() {
+    // Display player with dashes since the server doesn't provide this information
+    final playerEntryWithDashes = LeaderboardEntryUI(
+      rank: 0,
+      username: 'You',
+      score: 0,
+      level: 0,
+    );
+
     return Container(
       margin: const EdgeInsets.fromLTRB(15, 0, 15, 15),
       decoration: BoxDecoration(
@@ -177,11 +203,11 @@ class LeaderboardScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: _buildRankItem(playerEntry),
+      child: _buildRankItem(playerEntryWithDashes, isPlayer: true),
     );
   }
 
-  Widget _buildRankItem(LeaderboardEntry entry) {
+  Widget _buildRankItem(LeaderboardEntryUI entry, {bool isPlayer = false}) {
     Color rankColor = AppColors.textGrey;
     Color borderColor = Colors.transparent;
     List<BoxShadow>? boxShadow;
@@ -209,7 +235,10 @@ class LeaderboardScreen extends StatelessWidget {
     return _GlassEffectContainer(
       borderRadius: BorderRadius.circular(12),
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-      border: Border.all(color: borderColor, width: 2),
+      border: Border.all(
+        color: isPlayer ? AppColors.angolaYellow : borderColor,
+        width: 2,
+      ),
       boxShadow: boxShadow,
       child: Row(
         children: [
@@ -220,14 +249,14 @@ class LeaderboardScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '${entry.rank}',
+                  isPlayer ? '---' : '${entry.rank}',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: rankColor,
+                    color: isPlayer ? AppColors.angolaYellow : rankColor,
                   ),
                 ),
-                if (entry.rank == 1)
+                if (!isPlayer && entry.rank == 1)
                   Padding(
                     padding: const EdgeInsets.only(left: 2.0),
                     child: FaIcon(
@@ -241,19 +270,12 @@ class LeaderboardScreen extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           // User Info
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color.fromRGBO(16, 16, 16, 0.5),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(entry.avatarIcon, size: 18),
-          ),
-          const SizedBox(width: 10),
           Text(
             entry.username,
-            style: const TextStyle(fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontWeight: isPlayer ? FontWeight.w700 : FontWeight.w600,
+              color: isPlayer ? AppColors.angolaYellow : null,
+            ),
           ),
           const Spacer(),
           // Coin Balance
@@ -264,8 +286,12 @@ class LeaderboardScreen extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            entry.score.toString(),
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+            isPlayer ? '---' : entry.score.toString(),
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
+              color: isPlayer ? AppColors.angolaYellow : null,
+            ),
           ),
         ],
       ),
