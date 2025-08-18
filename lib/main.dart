@@ -10,6 +10,7 @@ import 'package:hustlecoin/home_screen.dart';
 import 'package:hustlecoin/state/all_states.dart';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:hustlecoin/services/admob_service.dart';
 
 // We need to initialize the server time sync after the app starts
 // Create a StatefulWidget that will synchronize with server on initialization
@@ -42,11 +43,31 @@ class _ServerTimeInitializerState extends ConsumerState<ServerTimeInitializer> {
 Future<void> main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
+  print('DEBUG: main() - Flutter bindings initialized');
 
   // Initialize Google Mobile Ads SDK
-  await MobileAds.instance.initialize();
+  print('DEBUG: main() - Initializing Google Mobile Ads SDK...');
+  try {
+    await MobileAds.instance.initialize();
+    print('DEBUG: main() - ✅ Google Mobile Ads SDK initialized successfully');
+  } catch (e) {
+    print('DEBUG: main() - ❌ Failed to initialize Google Mobile Ads SDK: $e');
+  }
+
+  // Initialize AdMob service and preload first ad
+  print('DEBUG: main() - Creating AdMob service instance...');
+  final adMobService = AdMobService();
+  print('DEBUG: main() - AdMob service created, loading first ad...');
+  try {
+    await adMobService.loadRewardedAd();
+    print('DEBUG: main() - ✅ Initial ad load attempt completed');
+    print('DEBUG: main() - Ad loaded state: ${adMobService.isAdLoaded}');
+  } catch (e) {
+    print('DEBUG: main() - ❌ Failed to load initial ad: $e');
+  }
 
   // Get SharedPreferences instance
+  print('DEBUG: main() - Getting SharedPreferences instance...');
   final prefs = await SharedPreferences.getInstance();
 
   // Start the app with a single ProviderScope

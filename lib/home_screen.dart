@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/state/all_states.dart';
+import 'package:hustlecoin/services/admob_service.dart';
 import 'dart:async'; // For Timer
 import 'app_colors.dart';
 import 'shop.dart';
@@ -526,7 +527,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   _buildDailyTapButton(),
                   const SizedBox(height: 15),
-                  _actionButton(FontAwesomeIcons.circlePlay, 'Watch Ad'),
+                  _buildWatchAdButton(),
                   const SizedBox(height: 15),
                   _buildQuizButton(),
                 ],
@@ -585,6 +586,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         final taskController = TaskController(ref, 'daily_tap');
 
         return _DailyTapButton(
+          taskState: taskState,
+          taskController: taskController,
+        );
+      },
+    );
+  }
+
+  Widget _buildWatchAdButton() {
+    print('DEBUG: HomeScreen - _buildWatchAdButton() called');
+    return Consumer(
+      builder: (context, ref, child) {
+        final taskState = ref.watch(taskStateProvider('watch_ad'));
+        final taskController = TaskController(ref, 'watch_ad');
+
+        print('DEBUG: HomeScreen - Watch ad task state: $taskState');
+        print('DEBUG: HomeScreen - Task controller created for watch_ad');
+
+        return _WatchAdButton(
           taskState: taskState,
           taskController: taskController,
         );
@@ -1212,6 +1231,323 @@ class _DailyTapButtonState extends State<_DailyTapButton> {
                   else
                     FaIcon(
                       FontAwesomeIcons.handPointer,
+                      size: 24,
+                      color: isDisabled
+                          ? AppColors.textGrey.withOpacity(0.5)
+                          : AppColors.textGrey,
+                    ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _buttonText,
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w600,
+                      color: _textColor,
+                    ),
+                  ),
+                ],
+              ),
+
+              // Cooldown overlay
+              if (widget.taskState == TaskState.cooldown &&
+                  _remainingTime != null)
+                CircularProgressIndicator(
+                  value:
+                      1 -
+                      (_remainingTime!.inSeconds /
+                          (widget.taskController.isOnCooldown
+                              ? widget
+                                        .taskController
+                                        .remainingCooldown!
+                                        .inSeconds +
+                                    _remainingTime!.inSeconds
+                              : _remainingTime!.inSeconds)),
+                  strokeWidth: 2,
+                  backgroundColor: Colors.transparent,
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    AppColors.angolaYellow,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+//
+//
+//
+//
+
+// Watch Ad Button Widget
+class _WatchAdButton extends StatefulWidget {
+  final TaskState taskState;
+  final TaskController taskController;
+
+  const _WatchAdButton({required this.taskState, required this.taskController});
+
+  @override
+  State<_WatchAdButton> createState() => _WatchAdButtonState();
+}
+
+class _WatchAdButtonState extends State<_WatchAdButton> {
+  Timer? _cooldownTimer;
+  Duration? _remainingTime;
+  bool _isShowingAd = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateRemainingTime();
+
+    // Start the timer if on cooldown
+    if (widget.taskState == TaskState.cooldown) {
+      _startCooldownTimer();
+    }
+  }
+
+  @override
+  void didUpdateWidget(_WatchAdButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.taskState != oldWidget.taskState) {
+      _updateRemainingTime();
+
+      // Start or cancel timer based on the new state
+      if (widget.taskState == TaskState.cooldown) {
+        _startCooldownTimer();
+      } else {
+        _cooldownTimer?.cancel();
+      }
+    }
+  }
+
+  void _updateRemainingTime() {
+    if (widget.taskState == TaskState.cooldown) {
+      setState(() {
+        // Get the remaining cooldown based on server time
+        _remainingTime = widget.taskController.remainingCooldown;
+      });
+    } else {
+      _remainingTime = null;
+    }
+  }
+
+  void _startCooldownTimer() {
+    _cooldownTimer?.cancel();
+    // Update every second, but the actual time is based on server time
+    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() {
+          // Get the remaining cooldown based on server time
+          _remainingTime = widget.taskController.remainingCooldown;
+
+          // Cancel timer if cooldown has expired
+          if (_remainingTime == null || _remainingTime!.inSeconds <= 0) {
+            _cooldownTimer?.cancel();
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _cooldownTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _watchAd() async {
+    print('DEBUG: _WatchAdButton - _watchAd() called');
+    print('DEBUG: _WatchAdButton - Current state: _isShowingAd=$_isShowingAd');
+
+    if (_isShowingAd) {
+      print('DEBUG: _WatchAdButton - Already showing ad, returning early');
+      return;
+    }
+
+    print('DEBUG: _WatchAdButton - Setting _isShowingAd to true');
+    setState(() {
+      _isShowingAd = true;
+    });
+
+    try {
+      print('DEBUG: _WatchAdButton - Getting AdMobService instance');
+      final adMobService = AdMobService();
+      print('DEBUG: _WatchAdButton - AdMobService instance obtained');
+      print(
+        'DEBUG: _WatchAdButton - Checking if ad is loaded: ${adMobService.isAdLoaded}',
+      );
+
+      if (!adMobService.isAdLoaded) {
+        print('DEBUG: _WatchAdButton - Ad not loaded, attempting to load...');
+        await adMobService.loadRewardedAd();
+        print(
+          'DEBUG: _WatchAdButton - Load attempt completed, checking state: ${adMobService.isAdLoaded}',
+        );
+
+        if (!adMobService.isAdLoaded) {
+          print('DEBUG: _WatchAdButton - ❌ Ad still not loaded after attempt');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Ad is not ready yet. Please try again in a moment.',
+                ),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          return;
+        }
+      }
+
+      print('DEBUG: _WatchAdButton - ✅ Ad is loaded, attempting to show...');
+      // Try to show the ad
+      final adWatched = await adMobService.showRewardedAd();
+      print('DEBUG: _WatchAdButton - showRewardedAd() returned: $adWatched');
+
+      if (adWatched) {
+        print(
+          'DEBUG: _WatchAdButton - ✅ Ad was watched successfully, completing task...',
+        );
+        // Ad was watched successfully, complete the task
+        await widget.taskController.completeTask();
+        print('DEBUG: _WatchAdButton - ✅ Task completed successfully');
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Ad watched successfully! Reward earned.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        print('DEBUG: _WatchAdButton - ❌ Ad was not watched or failed to show');
+        // Ad failed to show or wasn't watched
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Ad failed to load. Please try again later.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('DEBUG: _WatchAdButton - ❌ Exception in _watchAd(): $e');
+      print(
+        'DEBUG: _WatchAdButton - Exception stack trace: ${StackTrace.current}',
+      );
+      // Handle any errors
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error showing ad: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      print(
+        'DEBUG: _WatchAdButton - Finally block: setting _isShowingAd to false',
+      );
+      if (mounted) {
+        setState(() {
+          _isShowingAd = false;
+        });
+        print(
+          'DEBUG: _WatchAdButton - State updated: _isShowingAd=$_isShowingAd',
+        );
+      } else {
+        print(
+          'DEBUG: _WatchAdButton - Widget not mounted, skipping state update',
+        );
+      }
+    }
+  }
+
+  String get _buttonText {
+    if (_isShowingAd) {
+      return 'LOADING AD';
+    }
+
+    switch (widget.taskState) {
+      case TaskState.loading:
+        return 'LOADING';
+      case TaskState.cooldown:
+        final minutes = _remainingTime?.inMinutes.remainder(60) ?? 0;
+        final seconds = _remainingTime?.inSeconds.remainder(60) ?? 0;
+        return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+      default:
+        return 'WATCH AD';
+    }
+  }
+
+  Color get _textColor {
+    if (_isShowingAd) {
+      return AppColors.angolaYellow;
+    }
+
+    switch (widget.taskState) {
+      case TaskState.available:
+        return AppColors.textLight;
+      case TaskState.cooldown:
+        return AppColors.angolaYellow;
+      default:
+        return AppColors.textGrey;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print('DEBUG: _WatchAdButton - build() called');
+    print(
+      'DEBUG: _WatchAdButton - Widget state: taskState=${widget.taskState}, _isShowingAd=$_isShowingAd',
+    );
+
+    final bool isDisabled =
+        widget.taskState == TaskState.cooldown ||
+        widget.taskState == TaskState.loading ||
+        widget.taskState == TaskState.disabled ||
+        _isShowingAd;
+
+    print('DEBUG: _WatchAdButton - Button isDisabled: $isDisabled');
+    print('DEBUG: _WatchAdButton - Button text: $_buttonText');
+    print('DEBUG: _WatchAdButton - Text color: $_textColor');
+
+    return PressableWidget(
+      onTap: isDisabled ? null : _watchAd,
+      borderRadius: BorderRadius.circular(16),
+      child: _GlassEffectContainer(
+        borderRadius: BorderRadius.circular(16),
+        child: SizedBox(
+          width: 64,
+          height: 64,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Content
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (widget.taskState == TaskState.loading || _isShowingAd)
+                    const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.angolaYellow,
+                        ),
+                      ),
+                    )
+                  else
+                    FaIcon(
+                      FontAwesomeIcons.circlePlay,
                       size: 24,
                       color: isDisabled
                           ? AppColors.textGrey.withOpacity(0.5)
