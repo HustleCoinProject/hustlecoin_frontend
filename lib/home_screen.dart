@@ -69,9 +69,14 @@ final taskStateProvider = StateProvider.family<TaskState, String>((
   final user = ref.watch(userControllerProvider).value;
   if (user == null) return TaskState.disabled;
 
+  // Get the server time controller
+  final serverTimeController = ref.watch(serverTimeProvider.notifier);
+
   if (user.taskCooldowns.containsKey(taskId)) {
     final cooldownExpiry = user.taskCooldowns[taskId]!;
-    if (DateTime.now().isBefore(cooldownExpiry)) {
+    // Use server time to check if the cooldown has expired
+    final serverNow = serverTimeController.currentServerTime;
+    if (serverNow.isBefore(cooldownExpiry)) {
       return TaskState.cooldown;
     }
   }
@@ -101,9 +106,15 @@ class TaskController {
     if (user == null || !user.taskCooldowns.containsKey(taskId)) return null;
 
     final cooldownExpiry = user.taskCooldowns[taskId]!;
-    if (DateTime.now().isAfter(cooldownExpiry)) return null;
 
-    return cooldownExpiry.difference(DateTime.now());
+    // Get the server time controller
+    final serverTimeController = ref.read(serverTimeProvider.notifier);
+    // Use server time to calculate remaining cooldown
+    final serverNow = serverTimeController.currentServerTime;
+
+    if (serverNow.isAfter(cooldownExpiry)) return null;
+
+    return cooldownExpiry.difference(serverNow);
   }
 
   Future<void> completeTask({Map<String, dynamic>? payload = const {}}) async {
@@ -376,6 +387,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (taskState == TaskState.loading) {
       buttonText = 'Loading...';
     } else if (taskState == TaskState.cooldown) {
+      // Get the remaining cooldown based on server time
       final remainingTime = taskController.remainingCooldown;
       if (remainingTime != null) {
         // If cooldown time is large (like a day), show hours remaining
@@ -1003,6 +1015,7 @@ class _DailyTapButtonState extends State<_DailyTapButton> {
   void _updateRemainingTime() {
     if (widget.taskState == TaskState.cooldown) {
       setState(() {
+        // Get the remaining cooldown based on server time
         _remainingTime = widget.taskController.remainingCooldown;
       });
     } else {
@@ -1012,9 +1025,11 @@ class _DailyTapButtonState extends State<_DailyTapButton> {
 
   void _startCooldownTimer() {
     _cooldownTimer?.cancel();
+    // Update every second, but the actual time is based on server time
     _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) {
         setState(() {
+          // Get the remaining cooldown based on server time
           _remainingTime = widget.taskController.remainingCooldown;
 
           // Cancel timer if cooldown has expired
@@ -1186,6 +1201,7 @@ class _QuizButtonState extends State<_QuizButton> {
   void _updateRemainingTime() {
     if (widget.taskState == TaskState.cooldown) {
       setState(() {
+        // Get the remaining cooldown based on server time
         _remainingTime = widget.taskController.remainingCooldown;
       });
     } else {
@@ -1195,9 +1211,11 @@ class _QuizButtonState extends State<_QuizButton> {
 
   void _startCooldownTimer() {
     _cooldownTimer?.cancel();
+    // Update every second, but the actual time is based on server time
     _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) {
         setState(() {
+          // Get the remaining cooldown based on server time
           _remainingTime = widget.taskController.remainingCooldown;
 
           // Cancel timer if cooldown has expired

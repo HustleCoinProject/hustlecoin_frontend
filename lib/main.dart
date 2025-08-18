@@ -9,18 +9,49 @@ import 'package:hustlecoin/home_screen.dart';
 
 import 'package:hustlecoin/state/all_states.dart';
 
+// We need to initialize the server time sync after the app starts
+// Create a StatefulWidget that will synchronize with server on initialization
+class ServerTimeInitializer extends ConsumerStatefulWidget {
+  final Widget child;
+  const ServerTimeInitializer({super.key, required this.child});
+
+  @override
+  ConsumerState<ServerTimeInitializer> createState() =>
+      _ServerTimeInitializerState();
+}
+
+class _ServerTimeInitializerState extends ConsumerState<ServerTimeInitializer> {
+  @override
+  void initState() {
+    super.initState();
+    // Schedule server time sync after the widget tree is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Initialize server time sync
+      ref.read(serverTimeProvider.notifier).syncWithServer();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
+  }
+}
+
 Future<void> main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
+
   // Get SharedPreferences instance
   final prefs = await SharedPreferences.getInstance();
+
+  // Start the app with a single ProviderScope
   runApp(
     ProviderScope(
       overrides: [
         // Override the unimplemented provider with the actual instance
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
-      child: const MyApp(),
+      child: const ServerTimeInitializer(child: MyApp()),
     ),
   );
 }

@@ -1,6 +1,7 @@
 // lib/state/all_states.dart
 
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -408,6 +409,20 @@ class ApiRepository {
     }
   }
 
+  // --- Server Time ---
+  Future<DateTime> getServerTime() async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/timestamp'),
+      headers: _headers,
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return DateTime.parse(data['timestamp']);
+    } else {
+      throw Exception('Failed to fetch server time: ${response.body}');
+    }
+  }
+
   // --- Leaderboard ---
   Future<List<LeaderboardEntry>> getLeaderboard() async {
     final response = await http.get(Uri.parse('$_baseUrl/api/leaderboard'));
@@ -452,7 +467,7 @@ final apiRepositoryProvider = Provider<ApiRepository>((ref) {
   final token = ref.watch(authControllerProvider).value;
   repo.setToken(token);
   return repo;
-});
+}, dependencies: [authControllerProvider]);
 
 // --- Authentication State ---
 
@@ -496,9 +511,17 @@ class AuthController extends StateNotifier<AsyncValue<String?>> {
 // --- User State (The most important one) ---
 
 final userControllerProvider =
-    StateNotifierProvider<UserController, AsyncValue<User?>>((ref) {
-      return UserController(ref);
-    });
+    StateNotifierProvider<UserController, AsyncValue<User?>>(
+      (ref) {
+        return UserController(ref);
+      },
+      dependencies: [
+        // Add all dependencies to ensure they're properly tracked
+        sharedPreferencesProvider,
+        authControllerProvider,
+        apiRepositoryProvider,
+      ],
+    );
 
 class UserController extends StateNotifier<AsyncValue<User?>> {
   final Ref _ref;
@@ -627,3 +650,129 @@ final quizQuestionProvider = FutureProvider.autoDispose<QuizQuestion>((
   }
   return ref.watch(apiRepositoryProvider).fetchQuizQuestion();
 });
+
+// Provider to manage server time and client-server time offset
+final serverTimeProvider =
+    StateNotifierProvider<ServerTimeController, AsyncValue<Duration>>((ref) {
+      return ServerTimeController(ref);
+    }, dependencies: [apiRepositoryProvider]);
+
+class ServerTimeController extends StateNotifier<AsyncValue<Duration>> {
+  final Ref _ref;
+
+  // Set a refresh interval (e.g., every 10 minutes)
+  static const refreshInterval = Duration(minutes: 10);
+
+  // Timer for periodic refreshes
+  Timer? _refreshTimer;
+
+  ServerTimeController(this._ref) : super(const AsyncValue.loading()) {
+    // Initial sync when the app starts
+    syncWithServer();
+
+    // Set up periodic refresh
+    _refreshTimer = Timer.periodic(refreshInterval, (_) => syncWithServer());
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  // Get the current offset
+  Duration get timeOffset => state.value ?? Duration.zero;
+
+  // Get the current server time
+  DateTime get currentServerTime {
+    final offset = state.value ?? Duration.zero;
+    return DateTime.now().add(offset);
+  }
+
+  // Synchronize with the server
+  Future<void> syncWithServer() async {
+    try {
+      final api = _ref.read(apiRepositoryProvider);
+
+      // Record local time before the request
+      final localTimeBefore = DateTime.now();
+
+      // Get server time
+      final serverTime = await api.getServerTime();
+
+      // Record local time after the request
+      final localTimeAfter = DateTime.now();
+
+      // Calculate network latency (approximately)
+      final latency = localTimeAfter.difference(localTimeBefore) ~/ 2;
+
+      // Adjust server time by adding the latency
+      final adjustedServerTime = serverTime.add(latency);
+
+      // Calculate the offset between local time and server time
+      final offset = adjustedServerTime.difference(localTimeAfter);
+
+      // Update the state with the calculated offset
+      state = AsyncValue.data(offset);
+
+      print("Server time sync completed. Offset: ${offset.inMilliseconds}ms");
+    } catch (e, st) {
+      print("Failed to sync with server time: $e");
+      // If we already have an offset, keep it; otherwise, set to zero
+      if (state.value == null) {
+        state = AsyncValue.data(Duration.zero);
+      }
+      // Still mark as error for debugging purposes
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  // Calculate if a task is in cooldown using server time
+  bool isTaskInCooldown(String taskId, Map<String, DateTime> cooldowns) {
+    if (!cooldowns.containsKey(taskId)) {
+      return false;
+    }
+
+    // Get the cooldown time from the user data
+    final cooldownEndTime = cooldowns[taskId]!;
+
+    // Use the current server time for comparison
+    final serverNow = currentServerTime;
+
+    // Check if the cooldown has expired
+    return serverNow.isBefore(cooldownEndTime);
+  }
+
+  // Calculate remaining cooldown duration using server time
+  Duration getRemainingCooldown(
+    String taskId,
+    Map<String, DateTime> cooldowns,
+  ) {
+    if (!cooldowns.containsKey(taskId)) {
+      return Duration.zero;
+    }
+
+    // Get the cooldown time from the user data
+    final cooldownEndTime = cooldowns[taskId]!;
+
+    // Use the current server time for comparison
+    final serverNow = currentServerTime;
+
+    // If cooldown has expired, return zero duration
+    if (serverNow.isAfter(cooldownEndTime)) {
+      return Duration.zero;
+    }
+
+    // Calculate and return remaining time
+    return cooldownEndTime.difference(serverNow);
+  }
+}
+
+// Provider to help easily access server time
+final currentServerTimeProvider = Provider<DateTime>((ref) {
+  // Access the server time controller
+  final serverTimeController = ref.watch(serverTimeProvider.notifier);
+
+  // Return the current server time
+  return serverTimeController.currentServerTime;
+}, dependencies: [serverTimeProvider]);
