@@ -3,42 +3,108 @@ import 'package:flutter/foundation.dart';
 import 'dart:async';
 
 class AdMobService {
-  static const String _testAdUnitId =
+  // Rewarded Ad IDs
+  static const String _testRewardedAdUnitId =
       'ca-app-pub-3940256099942544/5224354917'; // Test ad unit
-  static const String _adUnitId =
+  static const String _rewardedAdUnitId =
       'ca-app-pub-3737974268376998/7706125192'; // Your actual ad unit
 
+  // Banner Ad IDs
+  static const String _testBannerAdUnitId =
+      'ca-app-pub-3940256099942544/6300978111'; // Test banner ad unit
+  static const String _bannerAdUnitId =
+      'ca-app-pub-3737974268376998/1994649425'; // Your actual banner ad unit
+
+  // Interstitial Ad IDs
+  static const String _testInterstitialAdUnitId =
+      'ca-app-pub-3940256099942544/1033173712'; // Test interstitial ad unit
+  static const String _interstitialAdUnitId =
+      'ca-app-pub-3737974268376998/6080990147'; // Your actual interstitial ad unit
+
+  // App Open Ad IDs
+  static const String _testAppOpenAdUnitId =
+      'ca-app-pub-3940256099942544/3419835294'; // Test app open ad unit
+  static const String _appOpenAdUnitId =
+      'ca-app-pub-3737974268376998/4122103486'; // Your actual app open ad unit
+
   // Use test ad in debug mode, real ad in release mode
-  static String get adUnitId {
-    final id = kDebugMode ? _testAdUnitId : _adUnitId;
+  static String get rewardedAdUnitId {
+    final id = kDebugMode ? _testRewardedAdUnitId : _rewardedAdUnitId;
     print(
-      'DEBUG: AdMobService - Using ad unit ID: $id (Debug mode: $kDebugMode)',
+      'DEBUG: AdMobService - Using rewarded ad unit ID: $id (Debug mode: $kDebugMode)',
     );
     return id;
   }
 
+  static String get bannerAdUnitId {
+    final id = kDebugMode ? _testBannerAdUnitId : _bannerAdUnitId;
+    print(
+      'DEBUG: AdMobService - Using banner ad unit ID: $id (Debug mode: $kDebugMode)',
+    );
+    return id;
+  }
+
+  static String get interstitialAdUnitId {
+    final id = kDebugMode ? _testInterstitialAdUnitId : _interstitialAdUnitId;
+    print(
+      'DEBUG: AdMobService - Using interstitial ad unit ID: $id (Debug mode: $kDebugMode)',
+    );
+    return id;
+  }
+
+  static String get appOpenAdUnitId {
+    final id = kDebugMode ? _testAppOpenAdUnitId : _appOpenAdUnitId;
+    print(
+      'DEBUG: AdMobService - Using app open ad unit ID: $id (Debug mode: $kDebugMode)',
+    );
+    return id;
+  }
+
+  // Ad instances
   RewardedAd? _rewardedAd;
-  bool _isAdLoaded = false;
+  BannerAd? _bannerAd;
+  InterstitialAd? _interstitialAd;
+  AppOpenAd? _appOpenAd;
+
+  // Ad states
+  bool _isRewardedAdLoaded = false;
+  bool _isBannerAdLoaded = false;
+  bool _isInterstitialAdLoaded = false;
+  bool _isAppOpenAdLoaded = false;
+
+  // App lifecycle management for app open ads
+  DateTime? _appOpenAdLastShown;
+  static const Duration _appOpenAdCooldown = Duration(
+    hours: 4,
+  ); // Show app open ad max once every 4 hours
 
   // Singleton pattern
   static final AdMobService _instance = AdMobService._internal();
   factory AdMobService() => _instance;
   AdMobService._internal();
 
-  bool get isAdLoaded {
+  // Getters for ad states
+  bool get isRewardedAdLoaded {
     print(
-      'DEBUG: AdMobService - isAdLoaded called, current state: $_isAdLoaded',
+      'DEBUG: AdMobService - isRewardedAdLoaded called, current state: $_isRewardedAdLoaded',
     );
-    return _isAdLoaded;
+    return _isRewardedAdLoaded;
   }
+
+  bool get isBannerAdLoaded => _isBannerAdLoaded;
+  bool get isInterstitialAdLoaded => _isInterstitialAdLoaded;
+  bool get isAppOpenAdLoaded => _isAppOpenAdLoaded;
+
+  // Legacy getter for backward compatibility
+  bool get isAdLoaded => isRewardedAdLoaded;
 
   Future<void> loadRewardedAd() async {
     print('DEBUG: AdMobService - Starting to load rewarded ad...');
     print(
-      'DEBUG: AdMobService - Current ad state before loading: _isAdLoaded=$_isAdLoaded, _rewardedAd=$_rewardedAd',
+      'DEBUG: AdMobService - Current ad state before loading: _isRewardedAdLoaded=$_isRewardedAdLoaded, _rewardedAd=$_rewardedAd',
     );
 
-    final currentAdUnitId = adUnitId;
+    final currentAdUnitId = rewardedAdUnitId;
     print('DEBUG: AdMobService - Loading ad with unit ID: $currentAdUnitId');
 
     try {
@@ -50,9 +116,9 @@ class AdMobService {
             print('DEBUG: AdMobService - ✅ Rewarded ad loaded successfully!');
             print('DEBUG: AdMobService - Ad details: ${ad.toString()}');
             _rewardedAd = ad;
-            _isAdLoaded = true;
+            _isRewardedAdLoaded = true;
             print(
-              'DEBUG: AdMobService - Updated state: _isAdLoaded=$_isAdLoaded',
+              'DEBUG: AdMobService - Updated state: _isRewardedAdLoaded=$_isRewardedAdLoaded',
             );
           },
           onAdFailedToLoad: (LoadAdError error) {
@@ -61,7 +127,7 @@ class AdMobService {
             print('DEBUG: AdMobService - Error domain: ${error.domain}');
             print('DEBUG: AdMobService - Error message: ${error.message}');
             print('DEBUG: AdMobService - Full error: $error');
-            _isAdLoaded = false;
+            _isRewardedAdLoaded = false;
             _rewardedAd = null;
           },
         ),
@@ -69,7 +135,7 @@ class AdMobService {
       print('DEBUG: AdMobService - RewardedAd.load() call completed');
     } catch (e) {
       print('DEBUG: AdMobService - ❌ Exception during ad loading: $e');
-      _isAdLoaded = false;
+      _isRewardedAdLoaded = false;
       _rewardedAd = null;
     }
   }
@@ -77,12 +143,12 @@ class AdMobService {
   Future<bool> showRewardedAd() async {
     print('DEBUG: AdMobService - showRewardedAd called');
     print(
-      'DEBUG: AdMobService - Current state: _isAdLoaded=$_isAdLoaded, _rewardedAd=$_rewardedAd',
+      'DEBUG: AdMobService - Current state: _isRewardedAdLoaded=$_isRewardedAdLoaded, _rewardedAd=$_rewardedAd',
     );
 
-    if (!_isAdLoaded || _rewardedAd == null) {
+    if (!_isRewardedAdLoaded || _rewardedAd == null) {
       print('DEBUG: AdMobService - ❌ Cannot show ad - not loaded or null');
-      print('DEBUG: AdMobService - _isAdLoaded: $_isAdLoaded');
+      print('DEBUG: AdMobService - _isRewardedAdLoaded: $_isRewardedAdLoaded');
       print('DEBUG: AdMobService - _rewardedAd: $_rewardedAd');
       return false;
     }
@@ -103,7 +169,7 @@ class AdMobService {
         print('DEBUG: AdMobService - User earned reward: $adWatched');
         ad.dispose();
         _rewardedAd = null;
-        _isAdLoaded = false;
+        _isRewardedAdLoaded = false;
         print('DEBUG: AdMobService - Ad disposed, loading next ad...');
 
         // Complete the future with the result
@@ -121,7 +187,7 @@ class AdMobService {
         print('DEBUG: AdMobService - Full error: $error');
         ad.dispose();
         _rewardedAd = null;
-        _isAdLoaded = false;
+        _isRewardedAdLoaded = false;
 
         // Complete the future with failure
         if (!adCompleter.isCompleted) {
@@ -164,14 +230,250 @@ class AdMobService {
     }
   }
 
+  // ========== BANNER AD METHODS ==========
+  Future<BannerAd?> loadBannerAd() async {
+    print('DEBUG: AdMobService - Starting to load banner ad...');
+
+    try {
+      final bannerAd = BannerAd(
+        adUnitId: bannerAdUnitId,
+        size: AdSize.banner,
+        request: const AdRequest(),
+        listener: BannerAdListener(
+          onAdLoaded: (ad) {
+            print('DEBUG: AdMobService - ✅ Banner ad loaded successfully!');
+            _bannerAd = ad as BannerAd;
+            _isBannerAdLoaded = true;
+          },
+          onAdFailedToLoad: (ad, error) {
+            print('DEBUG: AdMobService - ❌ Failed to load banner ad!');
+            print('DEBUG: AdMobService - Error: $error');
+            ad.dispose();
+            _isBannerAdLoaded = false;
+            _bannerAd = null;
+          },
+          onAdOpened: (ad) {
+            print('DEBUG: AdMobService - Banner ad opened');
+          },
+          onAdClosed: (ad) {
+            print('DEBUG: AdMobService - Banner ad closed');
+          },
+        ),
+      );
+
+      await bannerAd.load();
+      return bannerAd;
+    } catch (e) {
+      print('DEBUG: AdMobService - ❌ Exception during banner ad loading: $e');
+      _isBannerAdLoaded = false;
+      _bannerAd = null;
+      return null;
+    }
+  }
+
+  void disposeBannerAd() {
+    print('DEBUG: AdMobService - Disposing banner ad');
+    _bannerAd?.dispose();
+    _bannerAd = null;
+    _isBannerAdLoaded = false;
+  }
+
+  // ========== INTERSTITIAL AD METHODS ==========
+  Future<void> loadInterstitialAd() async {
+    print('DEBUG: AdMobService - Starting to load interstitial ad...');
+
+    try {
+      await InterstitialAd.load(
+        adUnitId: interstitialAdUnitId,
+        request: const AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          onAdLoaded: (ad) {
+            print(
+              'DEBUG: AdMobService - ✅ Interstitial ad loaded successfully!',
+            );
+            _interstitialAd = ad;
+            _isInterstitialAdLoaded = true;
+
+            // Set up full screen content callback
+            _interstitialAd!
+                .fullScreenContentCallback = FullScreenContentCallback(
+              onAdShowedFullScreenContent: (ad) {
+                print(
+                  'DEBUG: AdMobService - Interstitial ad showed full screen',
+                );
+              },
+              onAdDismissedFullScreenContent: (ad) {
+                print('DEBUG: AdMobService - Interstitial ad dismissed');
+                ad.dispose();
+                _interstitialAd = null;
+                _isInterstitialAdLoaded = false;
+                // Preload next interstitial ad
+                loadInterstitialAd();
+              },
+              onAdFailedToShowFullScreenContent: (ad, error) {
+                print(
+                  'DEBUG: AdMobService - ❌ Failed to show interstitial ad: $error',
+                );
+                ad.dispose();
+                _interstitialAd = null;
+                _isInterstitialAdLoaded = false;
+                // Preload next interstitial ad
+                loadInterstitialAd();
+              },
+            );
+          },
+          onAdFailedToLoad: (error) {
+            print('DEBUG: AdMobService - ❌ Failed to load interstitial ad!');
+            print('DEBUG: AdMobService - Error: $error');
+            _isInterstitialAdLoaded = false;
+            _interstitialAd = null;
+          },
+        ),
+      );
+    } catch (e) {
+      print(
+        'DEBUG: AdMobService - ❌ Exception during interstitial ad loading: $e',
+      );
+      _isInterstitialAdLoaded = false;
+      _interstitialAd = null;
+    }
+  }
+
+  Future<bool> showInterstitialAd() async {
+    print('DEBUG: AdMobService - showInterstitialAd called');
+    print(
+      'DEBUG: AdMobService - Interstitial ad loaded: $_isInterstitialAdLoaded',
+    );
+
+    if (!_isInterstitialAdLoaded || _interstitialAd == null) {
+      print('DEBUG: AdMobService - ❌ Cannot show interstitial ad - not loaded');
+      return false;
+    }
+
+    try {
+      await _interstitialAd!.show();
+      print('DEBUG: AdMobService - ✅ Interstitial ad shown successfully');
+      return true;
+    } catch (e) {
+      print('DEBUG: AdMobService - ❌ Exception showing interstitial ad: $e');
+      return false;
+    }
+  }
+
+  // ========== APP OPEN AD METHODS ==========
+  Future<void> loadAppOpenAd() async {
+    print('DEBUG: AdMobService - Starting to load app open ad...');
+
+    try {
+      await AppOpenAd.load(
+        adUnitId: appOpenAdUnitId,
+        request: const AdRequest(),
+        adLoadCallback: AppOpenAdLoadCallback(
+          onAdLoaded: (ad) {
+            print('DEBUG: AdMobService - ✅ App open ad loaded successfully!');
+            _appOpenAd = ad;
+            _isAppOpenAdLoaded = true;
+
+            // Set up full screen content callback
+            _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
+              onAdShowedFullScreenContent: (ad) {
+                print('DEBUG: AdMobService - App open ad showed full screen');
+                _appOpenAdLastShown = DateTime.now();
+              },
+              onAdDismissedFullScreenContent: (ad) {
+                print('DEBUG: AdMobService - App open ad dismissed');
+                ad.dispose();
+                _appOpenAd = null;
+                _isAppOpenAdLoaded = false;
+                // Preload next app open ad
+                loadAppOpenAd();
+              },
+              onAdFailedToShowFullScreenContent: (ad, error) {
+                print(
+                  'DEBUG: AdMobService - ❌ Failed to show app open ad: $error',
+                );
+                ad.dispose();
+                _appOpenAd = null;
+                _isAppOpenAdLoaded = false;
+                // Preload next app open ad
+                loadAppOpenAd();
+              },
+            );
+          },
+          onAdFailedToLoad: (error) {
+            print('DEBUG: AdMobService - ❌ Failed to load app open ad!');
+            print('DEBUG: AdMobService - Error: $error');
+            _isAppOpenAdLoaded = false;
+            _appOpenAd = null;
+          },
+        ),
+      );
+    } catch (e) {
+      print('DEBUG: AdMobService - ❌ Exception during app open ad loading: $e');
+      _isAppOpenAdLoaded = false;
+      _appOpenAd = null;
+    }
+  }
+
+  Future<bool> showAppOpenAd() async {
+    print('DEBUG: AdMobService - showAppOpenAd called');
+
+    // Check cooldown
+    if (_appOpenAdLastShown != null) {
+      final timeSinceLastShown = DateTime.now().difference(
+        _appOpenAdLastShown!,
+      );
+      if (timeSinceLastShown < _appOpenAdCooldown) {
+        print(
+          'DEBUG: AdMobService - App open ad on cooldown for ${_appOpenAdCooldown - timeSinceLastShown}',
+        );
+        return false;
+      }
+    }
+
+    if (!_isAppOpenAdLoaded || _appOpenAd == null) {
+      print('DEBUG: AdMobService - ❌ Cannot show app open ad - not loaded');
+      return false;
+    }
+
+    try {
+      await _appOpenAd!.show();
+      print('DEBUG: AdMobService - ✅ App open ad shown successfully');
+      return true;
+    } catch (e) {
+      print('DEBUG: AdMobService - ❌ Exception showing app open ad: $e');
+      return false;
+    }
+  }
+
+  bool get canShowAppOpenAd {
+    if (_appOpenAdLastShown == null) return true;
+
+    final timeSinceLastShown = DateTime.now().difference(_appOpenAdLastShown!);
+    return timeSinceLastShown >= _appOpenAdCooldown;
+  }
+
   void dispose() {
     print('DEBUG: AdMobService - dispose() called');
     print(
-      'DEBUG: AdMobService - Current state before dispose: _isAdLoaded=$_isAdLoaded, _rewardedAd=$_rewardedAd',
+      'DEBUG: AdMobService - Current state before dispose: _isRewardedAdLoaded=$_isRewardedAdLoaded, _rewardedAd=$_rewardedAd',
     );
+
+    // Dispose all ads
     _rewardedAd?.dispose();
     _rewardedAd = null;
-    _isAdLoaded = false;
+    _isRewardedAdLoaded = false;
+
+    disposeBannerAd();
+
+    _interstitialAd?.dispose();
+    _interstitialAd = null;
+    _isInterstitialAdLoaded = false;
+
+    _appOpenAd?.dispose();
+    _appOpenAd = null;
+    _isAppOpenAdLoaded = false;
+
     print('DEBUG: AdMobService - dispose() completed');
   }
 }

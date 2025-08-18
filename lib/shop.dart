@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/state/all_states.dart';
+import 'package:hustlecoin/widgets/banner_ad_widget.dart';
 import 'app_colors.dart';
 
 // Provider to track loading state for each shop item
@@ -127,6 +128,10 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
             child: Column(
               children: [
                 _buildHeader(context, user),
+                // Banner ad
+                const BannerAdWidget(
+                  margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                ),
                 // Display the title based on filter
                 _buildShopTitle(context),
                 // Show loading indicator or shop items

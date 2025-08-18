@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/state/all_states.dart';
+import 'package:hustlecoin/utils/ad_helper.dart';
 import 'app_colors.dart';
 
 // --- Reusable Helper Widgets (copied from your original for completeness) ---
@@ -232,6 +233,9 @@ class _QuizContentState extends State<_QuizContent> {
 
     // Store the result globally (hack)
     globalQuizResult = result;
+
+    // Show interstitial ad after quiz completion
+    AdHelper.showInterstitialAfterTask();
 
     // Pop the screen and pass the result back to HomeScreen
     Navigator.of(context).pop();

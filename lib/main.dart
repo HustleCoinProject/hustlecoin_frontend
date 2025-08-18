@@ -23,15 +23,59 @@ class ServerTimeInitializer extends ConsumerStatefulWidget {
       _ServerTimeInitializerState();
 }
 
-class _ServerTimeInitializerState extends ConsumerState<ServerTimeInitializer> {
+class _ServerTimeInitializerState extends ConsumerState<ServerTimeInitializer>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
     // Schedule server time sync after the widget tree is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Initialize server time sync
       ref.read(serverTimeProvider.notifier).syncWithServer();
+
+      // Show app open ad on first launch
+      _showAppOpenAdIfAvailable();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.resumed) {
+      // Show app open ad when app comes to foreground
+      _showAppOpenAdIfAvailable();
+    }
+  }
+
+  void _showAppOpenAdIfAvailable() {
+    final adMobService = AdMobService();
+
+    // Only show if we haven't shown one yet or if cooldown has passed
+    if (adMobService.canShowAppOpenAd && adMobService.isAppOpenAdLoaded) {
+      print('DEBUG: ServerTimeInitializer - Showing app open ad');
+      adMobService.showAppOpenAd().then((shown) {
+        if (shown) {
+          print(
+            'DEBUG: ServerTimeInitializer - App open ad shown successfully',
+          );
+        } else {
+          print('DEBUG: ServerTimeInitializer - Failed to show app open ad');
+        }
+      });
+    } else {
+      print(
+        'DEBUG: ServerTimeInitializer - App open ad not available (cooldown: ${!adMobService.canShowAppOpenAd}, loaded: ${adMobService.isAppOpenAdLoaded})',
+      );
+    }
   }
 
   @override
@@ -54,16 +98,35 @@ Future<void> main() async {
     print('DEBUG: main() - ❌ Failed to initialize Google Mobile Ads SDK: $e');
   }
 
-  // Initialize AdMob service and preload first ad
+  // Initialize AdMob service and preload ads
   print('DEBUG: main() - Creating AdMob service instance...');
   final adMobService = AdMobService();
-  print('DEBUG: main() - AdMob service created, loading first ad...');
+  print('DEBUG: main() - AdMob service created, loading ads...');
+
   try {
+    // Load all ad types
+    print('DEBUG: main() - Loading rewarded ad...');
     await adMobService.loadRewardedAd();
-    print('DEBUG: main() - ✅ Initial ad load attempt completed');
-    print('DEBUG: main() - Ad loaded state: ${adMobService.isAdLoaded}');
+    print('DEBUG: main() - ✅ Rewarded ad load attempt completed');
+    print(
+      'DEBUG: main() - Rewarded ad loaded state: ${adMobService.isRewardedAdLoaded}',
+    );
+
+    print('DEBUG: main() - Loading interstitial ad...');
+    await adMobService.loadInterstitialAd();
+    print('DEBUG: main() - ✅ Interstitial ad load attempt completed');
+    print(
+      'DEBUG: main() - Interstitial ad loaded state: ${adMobService.isInterstitialAdLoaded}',
+    );
+
+    print('DEBUG: main() - Loading app open ad...');
+    await adMobService.loadAppOpenAd();
+    print('DEBUG: main() - ✅ App open ad load attempt completed');
+    print(
+      'DEBUG: main() - App open ad loaded state: ${adMobService.isAppOpenAdLoaded}',
+    );
   } catch (e) {
-    print('DEBUG: main() - ❌ Failed to load initial ad: $e');
+    print('DEBUG: main() - ❌ Failed to load some ads: $e');
   }
 
   // Get SharedPreferences instance

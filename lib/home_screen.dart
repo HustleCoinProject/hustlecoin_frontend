@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/state/all_states.dart';
 import 'package:hustlecoin/services/admob_service.dart';
+import 'package:hustlecoin/widgets/banner_ad_widget.dart';
+import 'package:hustlecoin/utils/ad_helper.dart';
 import 'dart:async'; // For Timer
 import 'app_colors.dart';
 import 'shop.dart';
@@ -130,6 +132,9 @@ class TaskController {
       await ref
           .read(userControllerProvider.notifier)
           .completeTask(taskId, payload: payload);
+
+      // Show interstitial ad after task completion
+      AdHelper.showInterstitialAfterTask();
     } catch (e) {
       // The UserController handles refetching even on failure.
       // We just need to catch the error here so it doesn't propagate
@@ -160,6 +165,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         break;
       case 1:
         // Leaderboard
+        AdHelper.showInterstitialOnNavigation();
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (_) => LeaderboardScreen()))
             .then((_) {
@@ -171,6 +177,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         break;
       case 2:
         // Profile
+        AdHelper.showInterstitialOnNavigation();
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (_) => const EditProfileScreen()))
             .then((_) {
@@ -223,6 +230,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: SafeArea(
             child: Column(
               children: [
+                // Banner ad at the top
+                const BannerAdWidget(
+                  margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                ),
                 _buildTopBar(user),
                 const Text(
                   'Hustle Coin',
@@ -546,6 +557,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     FontAwesomeIcons.mapMarkedAlt,
                     'Land',
                     onTap: () {
+                      AdHelper.showInterstitialOnNavigation();
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => const LandMapScreen(),
@@ -666,6 +678,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             FontAwesomeIcons.rocket,
             'Boosts',
             onTap: () {
+              AdHelper.showInterstitialOnNavigation();
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => const ShopScreen(itemTypeFilter: 'BOOSTER'),
@@ -678,6 +691,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             FontAwesomeIcons.key,
             'Keys',
             onTap: () {
+              AdHelper.showInterstitialOnNavigation();
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) =>
@@ -692,6 +706,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             'Shop',
             isShop: true,
             onTap: () {
+              AdHelper.showInterstitialOnNavigation();
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) =>
