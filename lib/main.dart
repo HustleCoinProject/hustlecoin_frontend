@@ -9,6 +9,8 @@ import 'package:hustlecoin/home_screen.dart';
 
 import 'package:hustlecoin/state/all_states.dart';
 
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+
 // We need to initialize the server time sync after the app starts
 // Create a StatefulWidget that will synchronize with server on initialization
 class ServerTimeInitializer extends ConsumerStatefulWidget {
@@ -40,6 +42,9 @@ class _ServerTimeInitializerState extends ConsumerState<ServerTimeInitializer> {
 Future<void> main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Google Mobile Ads SDK
+  await MobileAds.instance.initialize();
 
   // Get SharedPreferences instance
   final prefs = await SharedPreferences.getInstance();
