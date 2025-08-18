@@ -911,8 +911,10 @@ class _StatsContainer extends ConsumerWidget {
                         child: LinearProgressIndicator(
                           value: progressValue,
                           backgroundColor: Colors.transparent,
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            AppColors.angolaYellow,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            status.isEligibleForUpgrade
+                                ? Colors.green.shade500
+                                : AppColors.angolaYellow,
                           ),
                           minHeight: 12,
                           color: AppColors.angolaRed,
@@ -937,32 +939,53 @@ class _StatsContainer extends ConsumerWidget {
                         decoration: BoxDecoration(
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.orange.withOpacity(0.3),
-                              blurRadius: 10,
+                              color: status.isEligibleForUpgrade
+                                  ? AppColors.glowYellow
+                                  : AppColors.orange.withOpacity(0.3),
+                              blurRadius: status.isEligibleForUpgrade ? 15 : 10,
+                              spreadRadius: status.isEligibleForUpgrade
+                                  ? 0
+                                  : -2,
                             ),
                           ],
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: PressableWidget(
-                          onTap: () {},
-                          child: ElevatedButton(
-                            onPressed: null,
-                            style: ElevatedButton.styleFrom(
-                              disabledBackgroundColor: AppColors.orange,
-                              disabledForegroundColor: AppColors.angolaBlack,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                        child: _UpgradeButtonAnimator(
+                          isEnabled: status.isEligibleForUpgrade,
+                          child: PressableWidget(
+                            onTap: status.isEligibleForUpgrade
+                                ? () {
+                                    // Create a task controller for the level_upgrade task
+                                    final taskController = TaskController(
+                                      ref,
+                                      'level_upgrade',
+                                    );
+                                    taskController.completeTask();
+                                  }
+                                : null,
+                            child: ElevatedButton(
+                              onPressed: status.isEligibleForUpgrade
+                                  ? () {}
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.angolaYellow,
+                                disabledBackgroundColor: AppColors.orange,
+                                foregroundColor: AppColors.angolaBlack,
+                                disabledForegroundColor: AppColors.angolaBlack,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 6,
+                                ),
+                                textStyle: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                ),
                               ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 6,
-                              ),
-                              textStyle: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
-                              ),
+                              child: Text('${status.upgradeFee} HC'),
                             ),
-                            child: Text('${status.upgradeFee} HC'),
                           ),
                         ),
                       ),
@@ -1480,6 +1503,70 @@ class _GlassEffectContainer extends StatelessWidget {
         ],
       ),
       child: child,
+    );
+  }
+}
+
+// Animated upgrade button wrapper
+class _UpgradeButtonAnimator extends StatefulWidget {
+  final Widget child;
+  final bool isEnabled;
+
+  const _UpgradeButtonAnimator({required this.child, required this.isEnabled});
+
+  @override
+  State<_UpgradeButtonAnimator> createState() => _UpgradeButtonAnimatorState();
+}
+
+class _UpgradeButtonAnimatorState extends State<_UpgradeButtonAnimator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void didUpdateWidget(_UpgradeButtonAnimator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Start or stop the animation based on enabled state
+    if (widget.isEnabled && !oldWidget.isEnabled) {
+      _animationController.repeat(reverse: true);
+    } else if (!widget.isEnabled && oldWidget.isEnabled) {
+      _animationController.stop();
+      _animationController.value = 0.0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.isEnabled) {
+      return widget.child;
+    }
+
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(scale: _scaleAnimation.value, child: child);
+      },
+      child: widget.child,
     );
   }
 }
