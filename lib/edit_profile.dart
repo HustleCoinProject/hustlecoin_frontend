@@ -553,7 +553,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       borderRadius: BorderRadius.circular(10),
       padding: const EdgeInsets.all(5),
       child: Row(
-        children: [_buildLanguageOption('EN'), _buildLanguageOption('PT')],
+        children: [_buildLanguageOption('en'), _buildLanguageOption('pt')],
       ),
     );
   }
