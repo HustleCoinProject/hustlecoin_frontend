@@ -514,7 +514,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Text(
                     buttonText,
                     style: const TextStyle(
-                      color: AppColors.angolaBlack,
+                      color: AppColors.textLight,
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
                       letterSpacing: 0.5,
@@ -788,6 +788,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const SizedBox(height: 4),
         Text(
           label.toUpperCase(),
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
