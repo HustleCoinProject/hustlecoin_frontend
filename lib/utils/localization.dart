@@ -19,9 +19,11 @@ class LocalizationKeys {
   static const String dailyTap = 'daily_tap';
   static const String watchAd = 'watch_ad';
   static const String quiz = 'quiz';
+  static const String dailyQuiz = 'daily_quiz';
   static const String loading = 'loading';
   static const String submit = 'submit';
   static const String submitAnswer = 'submit_answer';
+  static const String tap = 'tap';
   static const String logIn = 'log_in';
   static const String signUp = 'sign_up';
   static const String createAccount = 'create_account';
@@ -88,9 +90,14 @@ class LocalizationKeys {
   static const String failedToLoadLeaderboard = 'failed_to_load_leaderboard';
 
   // Land Map
+  static const String back = 'back';
   static const String yourLand = 'your_land';
   static const String selectedLand = 'selected_land';
   static const String sell = 'sell';
+  static const String landPurchasedSuccessfully = 'land_purchased_successfully';
+  static const String landSoldSuccessfully = 'land_sold_successfully';
+  static const String purchaseFailed = 'purchase_failed';
+  static const String saleFailed = 'sale_failed';
 
   // Errors and Validation
   static const String error = 'error';
@@ -127,9 +134,11 @@ class _Translations {
       LocalizationKeys.dailyTap: 'DAILY TAP',
       LocalizationKeys.watchAd: 'WATCH AD',
       LocalizationKeys.quiz: 'QUIZ',
+      LocalizationKeys.dailyQuiz: 'Daily Quiz',
       LocalizationKeys.loading: 'LOADING',
       LocalizationKeys.submit: 'Submit',
       LocalizationKeys.submitAnswer: 'Submit Answer',
+      LocalizationKeys.tap: 'TAP',
       LocalizationKeys.logIn: 'Log In',
       LocalizationKeys.signUp: 'Sign Up',
       LocalizationKeys.createAccount: 'Create Account',
@@ -188,7 +197,7 @@ class _Translations {
       LocalizationKeys.boosters: 'Boosters',
       LocalizationKeys.boosts: 'Boosts',
       LocalizationKeys.keys: 'Keys',
-      LocalizationKeys.chatBot: 'Chat bot',
+      LocalizationKeys.chatBot: 'Chat Bot',
       LocalizationKeys.failedToLoadShopItems: 'Failed to load shop items',
       LocalizationKeys.noItemsAvailable: 'No items available',
       LocalizationKeys.successfullyPurchased: 'Successfully purchased',
@@ -196,9 +205,15 @@ class _Translations {
       LocalizationKeys.failedToLoadLeaderboard: 'Failed to load leaderboard',
 
       // Land Map
+      LocalizationKeys.back: 'Back',
       LocalizationKeys.yourLand: 'Your Land (Res 8)',
       LocalizationKeys.selectedLand: 'Selected Land (Res 8)',
       LocalizationKeys.sell: 'Sell',
+      LocalizationKeys.landPurchasedSuccessfully:
+          'Land purchased successfully!',
+      LocalizationKeys.landSoldSuccessfully: 'Land sold successfully!',
+      LocalizationKeys.purchaseFailed: 'Purchase failed',
+      LocalizationKeys.saleFailed: 'Sale failed',
 
       // Errors and Validation
       LocalizationKeys.error: 'Error',
@@ -233,9 +248,11 @@ class _Translations {
       LocalizationKeys.dailyTap: 'TOQUE DIÁRIO',
       LocalizationKeys.watchAd: 'VER ANÚNCIO',
       LocalizationKeys.quiz: 'QUIZ',
+      LocalizationKeys.dailyQuiz: 'Quiz Diário',
       LocalizationKeys.loading: 'CARREGANDO',
       LocalizationKeys.submit: 'Enviar',
       LocalizationKeys.submitAnswer: 'Enviar Resposta',
+      LocalizationKeys.tap: 'TOCAR',
       LocalizationKeys.logIn: 'Entrar',
       LocalizationKeys.signUp: 'Cadastrar',
       LocalizationKeys.createAccount: 'Criar Conta',
@@ -296,7 +313,7 @@ class _Translations {
       LocalizationKeys.boosters: 'Impulsionadores',
       LocalizationKeys.boosts: 'Impulsos',
       LocalizationKeys.keys: 'Chaves',
-      LocalizationKeys.chatBot: 'Chat bot',
+      LocalizationKeys.chatBot: 'Chat Bot',
       LocalizationKeys.failedToLoadShopItems: 'Falha ao carregar itens da loja',
       LocalizationKeys.noItemsAvailable: 'Nenhum item disponível',
       LocalizationKeys.successfullyPurchased: 'Comprado com sucesso',
@@ -305,9 +322,14 @@ class _Translations {
           'Falha ao carregar classificação',
 
       // Land Map
+      LocalizationKeys.back: 'Voltar',
       LocalizationKeys.yourLand: 'Sua Terra (Res 8)',
       LocalizationKeys.selectedLand: 'Terra Selecionada (Res 8)',
       LocalizationKeys.sell: 'Vender',
+      LocalizationKeys.landPurchasedSuccessfully: 'Terra comprada com sucesso!',
+      LocalizationKeys.landSoldSuccessfully: 'Terra vendida com sucesso!',
+      LocalizationKeys.purchaseFailed: 'Falha na compra',
+      LocalizationKeys.saleFailed: 'Falha na venda',
 
       // Errors and Validation
       LocalizationKeys.error: 'Erro',

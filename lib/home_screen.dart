@@ -1845,14 +1845,14 @@ class _QuizButtonState extends ConsumerState<_QuizButton> {
 //
 
 // Main Tap Button Widget
-class _MainTapButton extends StatelessWidget {
+class _MainTapButton extends ConsumerWidget {
   final TaskState taskState;
   final TaskController taskController;
 
   const _MainTapButton({required this.taskState, required this.taskController});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bool isDisabled =
         taskState == TaskState.cooldown ||
         taskState == TaskState.loading ||
@@ -1902,7 +1902,7 @@ class _MainTapButton extends StatelessWidget {
                 ),
               const SizedBox(height: 10),
               Text(
-                'TAP',
+                ref.t(LocalizationKeys.tap),
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 18,

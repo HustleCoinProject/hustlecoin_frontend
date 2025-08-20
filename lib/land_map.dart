@@ -10,6 +10,7 @@ import 'package:latlong2/latlong.dart';
 
 import 'state/all_states.dart';
 import 'app_colors.dart';
+import 'utils/localization.dart';
 
 // --- Reusable "Smoky Glass" Widget ---
 class _GlassEffectContainer extends StatelessWidget {
@@ -256,8 +257,8 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Land purchased successfully!'),
+          SnackBar(
+            content: Text(ref.t(LocalizationKeys.landPurchasedSuccessfully)),
             backgroundColor: Colors.green,
           ),
         );
@@ -281,7 +282,9 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Purchase failed: ${e.toString()}'),
+            content: Text(
+              '${ref.t(LocalizationKeys.purchaseFailed)}: ${e.toString()}',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -314,8 +317,8 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Land sold successfully!'),
+          SnackBar(
+            content: Text(ref.t(LocalizationKeys.landSoldSuccessfully)),
             backgroundColor: Colors.green,
           ),
         );
@@ -339,7 +342,9 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Sale failed: ${e.toString()}'),
+            content: Text(
+              '${ref.t(LocalizationKeys.saleFailed)}: ${e.toString()}',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -398,16 +403,19 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
             left: 15,
             child: GestureDetector(
               onTap: () => Navigator.of(context).pop(),
-              child: const _GlassEffectContainer(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+              child: _GlassEffectContainer(
+                borderRadius: const BorderRadius.all(Radius.circular(12)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
-                    Icon(Icons.arrow_back_ios_new, size: 14),
-                    SizedBox(width: 5),
+                    const Icon(Icons.arrow_back_ios_new, size: 14),
+                    const SizedBox(width: 5),
                     Text(
-                      'Back',
-                      style: TextStyle(
+                      ref.t(LocalizationKeys.back),
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
                       ),
@@ -459,9 +467,12 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Your Land (Res 8)',
-                    style: TextStyle(color: AppColors.textGrey, fontSize: 12),
+                  Text(
+                    ref.t(LocalizationKeys.yourLand),
+                    style: const TextStyle(
+                      color: AppColors.textGrey,
+                      fontSize: 12,
+                    ),
                   ),
                   Text(
                     _selectedH3Index ?? '',
@@ -512,7 +523,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Sell ${LAND_SELL_PRICE} HC',
+                            '${ref.t(LocalizationKeys.sell)} $LAND_SELL_PRICE HC',
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
@@ -539,9 +550,12 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Selected Land (Res 8)',
-                    style: TextStyle(color: AppColors.textGrey, fontSize: 12),
+                  Text(
+                    ref.t(LocalizationKeys.selectedLand),
+                    style: const TextStyle(
+                      color: AppColors.textGrey,
+                      fontSize: 12,
+                    ),
                   ),
                   Text(
                     _selectedH3Index ?? '',

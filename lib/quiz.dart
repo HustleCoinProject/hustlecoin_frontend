@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/state/all_states.dart';
 import 'package:hustlecoin/utils/ad_helper.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
+import 'package:hustlecoin/utils/localization.dart';
 import 'app_colors.dart';
 
 // --- Reusable Helper Widgets (copied from your original for completeness) ---
@@ -147,11 +148,11 @@ class QuizScreen extends ConsumerWidget {
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Daily Quiz',
+              ref.t(LocalizationKeys.dailyQuiz),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
                 shadows: [Shadow(blurRadius: 4, color: Colors.black87)],
@@ -205,15 +206,15 @@ class QuizScreen extends ConsumerWidget {
   }
 }
 
-class _QuizContent extends StatefulWidget {
+class _QuizContent extends ConsumerStatefulWidget {
   final QuizQuestion quiz;
   const _QuizContent({required this.quiz});
 
   @override
-  State<_QuizContent> createState() => _QuizContentState();
+  ConsumerState<_QuizContent> createState() => _QuizContentState();
 }
 
-class _QuizContentState extends State<_QuizContent> {
+class _QuizContentState extends ConsumerState<_QuizContent> {
   int? _selectedOptionIndex;
 
   void _selectOption(int index) {
@@ -290,10 +291,10 @@ class _QuizContentState extends State<_QuizContent> {
                     end: Alignment.bottomRight,
                   ),
                 ),
-                child: const Text(
-                  'Submit Answer',
+                child: Text(
+                  ref.t(LocalizationKeys.submitAnswer),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,

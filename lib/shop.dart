@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/state/all_states.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
+import 'package:hustlecoin/utils/localization.dart';
 import 'app_colors.dart';
 
 // Provider to track loading state for each shop item
@@ -182,13 +183,13 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   }
 
   // Get the appropriate title based on filter
-  String _getShopTitle() {
+  String _getShopTitle(WidgetRef ref) {
     if (widget.itemTypeFilter == 'BOOSTER') {
-      return 'Boosters';
+      return ref.t(LocalizationKeys.boosters);
     } else if (widget.itemTypeFilter == 'ACCESS_KEY') {
-      return 'Keys';
+      return ref.t(LocalizationKeys.keys);
     }
-    return 'Shop';
+    return ref.t(LocalizationKeys.shop);
   }
 
   // Build the shop title
@@ -196,7 +197,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Text(
-        _getShopTitle(),
+        _getShopTitle(ref),
         style: const TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.bold,

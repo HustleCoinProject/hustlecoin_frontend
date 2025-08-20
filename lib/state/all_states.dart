@@ -287,7 +287,7 @@ class MyLandTile {
 
 class ApiRepository {
   final String _baseUrl =
-      "https://hustlecoin-backend.fly.dev"; // Use 10.0.2.2 for Android emulator
+      "http://10.105.65.63:8000"; // Use 10.0.2.2 for Android emulator
   String? _token;
 
   void setToken(String? token) {
