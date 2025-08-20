@@ -313,7 +313,7 @@ class _Translations {
       LocalizationKeys.boosters: 'Impulsionadores',
       LocalizationKeys.boosts: 'Impulsos',
       LocalizationKeys.keys: 'Chaves',
-      LocalizationKeys.chatBot: 'Chat Bot',
+      LocalizationKeys.chatBot: 'Robô de Chat',
       LocalizationKeys.failedToLoadShopItems: 'Falha ao carregar itens da loja',
       LocalizationKeys.noItemsAvailable: 'Nenhum item disponível',
       LocalizationKeys.successfullyPurchased: 'Comprado com sucesso',
