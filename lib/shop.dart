@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/state/all_states.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
+import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'app_colors.dart';
 
 // Provider to track loading state for each shop item
@@ -108,7 +109,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage(
-              'assets/images/${user?.currentHustle ?? "Taxi Driver"}.png',
+              'assets/images/${user != null ? HustleUtils.getCurrentHustleKey(user.currentHustle) : "Taxi Driver"}.png',
             ),
             fit: BoxFit.cover,
           ),

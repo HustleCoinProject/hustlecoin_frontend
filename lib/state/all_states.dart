@@ -22,7 +22,8 @@ class User {
   final String email;
   final int hcBalance;
   final int level;
-  final String currentHustle;
+  final dynamic
+  currentHustle; // Can be String (old format) or Map<String, String> (new format)
   final DateTime levelEntryDate;
   final int hcEarnedInLevel;
   final String language;
@@ -98,7 +99,8 @@ class InventoryItem {
 @immutable
 class LevelStatus {
   final int currentLevel;
-  final String currentHustle;
+  final dynamic
+  currentHustle; // Can be String (old format) or Map<String, String> (new format)
   final double daysInLevelProgress;
   final int daysInLevelRequired;
   final int hcEarnedInLevelProgress;
@@ -318,7 +320,7 @@ class ApiRepository {
     String email,
     String password,
     String username,
-    String hustle,
+    String hustleKey, // This should be the English key
     String lang,
   ) async {
     final response = await http.post(
@@ -328,7 +330,7 @@ class ApiRepository {
         'email': email,
         'password': password,
         'username': username,
-        'current_hustle': hustle,
+        'current_hustle': hustleKey, // Send the key (English name)
         'language': lang,
       }),
     );
@@ -365,7 +367,8 @@ class ApiRepository {
     if (currentPassword != null) body['current_password'] = currentPassword;
     if (newPassword != null) body['new_password'] = newPassword;
     if (language != null) body['language'] = language;
-    if (currentHustle != null) body['current_hustle'] = currentHustle;
+    if (currentHustle != null)
+      body['current_hustle'] = currentHustle; // This should be the key
 
     final response = await http.put(
       Uri.parse('$_baseUrl/api/users/profile'),
@@ -392,24 +395,29 @@ class ApiRepository {
   }
 
   // --- Hustles & Levels ---
-  Future<Map<String, List<String>>> getAllHustles() async {
+  Future<Map<String, Map<String, String>>> getAllHustles() async {
     final response = await http.get(Uri.parse('$_baseUrl/api/hustles/all'));
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
-      return data.map((key, value) => MapEntry(key, List<String>.from(value)));
+      return data.map(
+        (key, value) => MapEntry(
+          key,
+          Map<String, String>.from(value as Map<String, dynamic>),
+        ),
+      );
     } else {
       throw Exception('Failed to fetch hustles');
     }
   }
 
-  Future<List<String>> getAvailableHustles() async {
+  Future<Map<String, String>> getAvailableHustles() async {
     final response = await http.get(
       Uri.parse('$_baseUrl/api/hustles/available'),
       headers: _headers,
     );
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data.cast<String>().toList();
+      final Map<String, dynamic> data = json.decode(response.body);
+      return Map<String, String>.from(data);
     } else {
       throw Exception('Failed to fetch available hustles');
     }
@@ -441,11 +449,13 @@ class ApiRepository {
   }
 
   // Select new hustle API
-  Future<void> selectHustle(String hustleName) async {
+  Future<void> selectHustle(String hustleKey) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/api/hustles/select'),
       headers: _headers,
-      body: json.encode({'hustle_name': hustleName}),
+      body: json.encode({
+        'hustle_name': hustleKey,
+      }), // Send the key (English name)
     );
     if (response.statusCode != 200) {
       throw Exception('Failed to select hustle: ${response.body}');
@@ -796,15 +806,17 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
 // These providers fetch data that is displayed in the UI but doesn't change as often.
 
 // Static game data
-final allHustlesProvider = FutureProvider<Map<String, List<String>>>((
+final allHustlesProvider = FutureProvider<Map<String, Map<String, String>>>((
   ref,
 ) async {
   return ref.read(apiRepositoryProvider).getAllHustles();
 });
 
-final availableHustlesProvider = FutureProvider<List<String>>((ref) async {
+final availableHustlesProvider = FutureProvider<Map<String, String>>((
+  ref,
+) async {
   final user = ref.watch(userControllerProvider);
-  if (user.value == null) return [];
+  if (user.value == null) return <String, String>{};
   return ref.read(apiRepositoryProvider).getAvailableHustles();
 });
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'app_colors.dart';
 import 'state/all_states.dart';
 import 'utils/localization.dart';
@@ -82,7 +83,7 @@ class LeaderboardScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage(
-              'assets/images/${user?.currentHustle ?? "Taxi Driver"}.png',
+              'assets/images/${user != null ? HustleUtils.getCurrentHustleKey(user.currentHustle) : "Taxi Driver"}.png',
             ),
             fit: BoxFit.cover,
           ),

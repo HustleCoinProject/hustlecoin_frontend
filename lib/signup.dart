@@ -134,12 +134,19 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       final apiRepo = ApiRepository(); // Create instance without auth token
       final allHustles = await apiRepo.getAllHustles();
 
-      // Extract level 1 hustles
-      final level1HustleNames = allHustles['1'] ?? [];
+      // Extract level 1 hustles (now returns Map<String, String>)
+      final level1HustleMap = allHustles['1'] ?? <String, String>{};
 
       setState(() {
-        _level1Hustles = level1HustleNames
-            .map((name) => {'name': name, 'image': 'assets/images/$name.png'})
+        _level1Hustles = level1HustleMap.entries
+            .map(
+              (entry) => {
+                'key': entry.key, // English name (for API calls)
+                'name': entry.value, // Localized name (for display)
+                'image':
+                    'assets/images/${entry.key}.png', // Use key for image path
+              },
+            )
             .toList();
         _isLoading = false;
       });
@@ -182,8 +189,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       _errorMessage = null;
     });
 
-    // Get the selected hustle
-    final selectedHustle = _level1Hustles[_selectedHustleIndex]['name'] ?? '';
+    // Get the selected hustle key (English name for API)
+    final selectedHustleKey = _level1Hustles[_selectedHustleIndex]['key'] ?? '';
 
     // Create an instance of ApiRepository
     final apiRepo = ApiRepository();
@@ -191,12 +198,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     // Use Future.delayed to avoid the "Future<void> Function()?" error with onTap
     Future.delayed(Duration.zero, () async {
       try {
-        // Register the user
+        // Register the user using the hustle key
         await apiRepo.register(
           _emailController.text,
           _passwordController.text,
           _usernameController.text,
-          selectedHustle,
+          selectedHustleKey, // Use the key (English name)
           _selectedLang.toLowerCase(),
         );
 

@@ -23,7 +23,8 @@ class _SelectHustleScreenState extends ConsumerState<SelectHustleScreen> {
   late final PageController _hustleController;
 
   int _selectedHustleIndex = 0;
-  List<Map<String, String>> _availableHustles = [];
+  List<Map<String, String>> _availableHustles =
+      []; // Changed to store key-value pairs
   bool _isLoading = false;
   String? _errorMessage;
   bool _isSubmitting = false;
@@ -57,8 +58,15 @@ class _SelectHustleScreenState extends ConsumerState<SelectHustleScreen> {
       final availableHustles = await apiRepo.getAvailableHustles();
 
       setState(() {
-        _availableHustles = availableHustles
-            .map((name) => {'name': name, 'image': 'assets/images/$name.png'})
+        _availableHustles = availableHustles.entries
+            .map(
+              (entry) => {
+                'key': entry.key, // English name (for images and API calls)
+                'name': entry.value, // Localized name (for display)
+                'image':
+                    'assets/images/${entry.key}.png', // Use key for image path
+              },
+            )
             .toList();
         _isLoading = false;
       });
@@ -83,22 +91,24 @@ class _SelectHustleScreenState extends ConsumerState<SelectHustleScreen> {
       _errorMessage = null;
     });
 
-    // Get the selected hustle
-    final selectedHustle =
+    // Get the selected hustle key (English name for API)
+    final selectedHustleKey =
+        _availableHustles[_selectedHustleIndex]['key'] ?? '';
+    final selectedHustleName =
         _availableHustles[_selectedHustleIndex]['name'] ?? '';
 
     try {
       final apiRepo = ref.read(apiRepositoryProvider);
 
-      // Make the API call to select the hustle
-      await apiRepo.selectHustle(selectedHustle);
+      // Make the API call to select the hustle using the key
+      await apiRepo.selectHustle(selectedHustleKey);
 
-      // Show success message
+      // Show success message with the display name
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Successfully selected $selectedHustle as your new hustle!',
+              'Successfully selected $selectedHustleName as your new hustle!',
             ),
             backgroundColor: Colors.green,
           ),

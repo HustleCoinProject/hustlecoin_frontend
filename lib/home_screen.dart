@@ -8,6 +8,7 @@ import 'package:hustlecoin/services/admob_service.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
 import 'package:hustlecoin/utils/ad_helper.dart';
 import 'package:hustlecoin/utils/localization.dart';
+import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'dart:async'; // For Timer
 import 'app_colors.dart';
 import 'shop.dart';
@@ -213,7 +214,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/${user.currentHustle}.png'),
+            image: AssetImage(
+              'assets/images/${HustleUtils.getCurrentHustleKey(user.currentHustle)}.png',
+            ),
             fit: BoxFit.cover,
           ),
         ),
@@ -893,7 +896,7 @@ class _StatsContainer extends ConsumerWidget {
                 ),
               ),
               Text(
-                user.currentHustle,
+                HustleUtils.getCurrentHustleDisplayName(user.currentHustle),
                 style: const TextStyle(
                   fontSize: 20,
                   color: AppColors.textLight,
@@ -1051,8 +1054,13 @@ class _StatsContainer extends ConsumerWidget {
 
                                       // Extract the new level and hustle
                                       final int newLevel = result['new_level'];
-                                      final String newHustle =
+                                      final dynamic newHustleObj =
                                           result['new_hustle'];
+                                      // Extract the hustle key (English name) for the background image
+                                      final String newHustleKey =
+                                          HustleUtils.getCurrentHustleKey(
+                                            newHustleObj,
+                                          );
 
                                       // Navigate to the hustle selection screen
                                       if (context.mounted) {
@@ -1061,7 +1069,7 @@ class _StatsContainer extends ConsumerWidget {
                                           MaterialPageRoute(
                                             builder: (_) => SelectHustleScreen(
                                               newLevel: newLevel,
-                                              newHustle: newHustle,
+                                              newHustle: newHustleKey,
                                             ),
                                           ),
                                         );

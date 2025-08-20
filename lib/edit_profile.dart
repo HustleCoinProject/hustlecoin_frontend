@@ -5,6 +5,7 @@ import 'app_colors.dart';
 import 'state/all_states.dart';
 import 'start.dart';
 import 'utils/localization.dart';
+import 'utils/hustle_utils.dart';
 
 // --- Reusable Helper Widgets ---
 
@@ -123,7 +124,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       _emailController.text = user.email;
       setState(() {
         _selectedLanguage = user.language;
-        _selectedHustle = user.currentHustle;
+        // Handle both old string format and new object format
+        _selectedHustle = HustleUtils.getCurrentHustleKey(user.currentHustle);
       });
     }
   }
@@ -191,13 +193,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.read(userControllerProvider).value;
+    // Use the hustle key for the background image
+    final hustleKey = user != null
+        ? HustleUtils.getCurrentHustleKey(user.currentHustle)
+        : "Taxi Driver";
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(
-              'assets/images/${user?.currentHustle ?? "Taxi Driver"}.png',
-            ),
+            image: AssetImage('assets/images/$hustleKey.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -583,7 +588,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
-  Widget _buildHustleSelector(List<String> availableHustles) {
+  Widget _buildHustleSelector(Map<String, String> availableHustles) {
     return _GlassEffectContainer(
       borderRadius: BorderRadius.circular(10),
       child: DropdownButtonFormField<String>(
@@ -594,12 +599,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 12),
         ),
-        items: availableHustles.map((hustle) {
-          return DropdownMenuItem<String>(value: hustle, child: Text(hustle));
+        items: availableHustles.entries.map((entry) {
+          // entry.key = English name (hustle key)
+          // entry.value = Localized name (display name)
+          return DropdownMenuItem<String>(
+            value: entry.key, // Store the key (English name)
+            child: Text(entry.value), // Display the localized name
+          );
         }).toList(),
         onChanged: (value) {
           setState(() {
-            _selectedHustle = value;
+            _selectedHustle = value; // This will be the key (English name)
           });
         },
         hint: Text(
