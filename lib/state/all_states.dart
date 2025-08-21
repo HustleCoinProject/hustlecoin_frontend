@@ -245,6 +245,25 @@ class QuizResult {
   }
 }
 
+@immutable
+class AuthTokens {
+  final String accessToken;
+  final String refreshToken;
+
+  const AuthTokens({required this.accessToken, required this.refreshToken});
+
+  factory AuthTokens.fromJson(Map<String, dynamic> json) {
+    return AuthTokens(
+      accessToken: json['access_token'],
+      refreshToken: json['refresh_token'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'access_token': accessToken, 'refresh_token': refreshToken};
+  }
+}
+
 // --- Land System Models ---
 
 @immutable
@@ -288,31 +307,99 @@ class MyLandTile {
 class ApiRepository {
   final String _baseUrl =
       "http://10.105.65.63:8000"; // Use 10.0.2.2 for Android emulator
-  String? _token;
+  String? _accessToken;
+  String? _refreshToken;
 
-  void setToken(String? token) {
-    _token = token;
+  // Callback function to notify when tokens are refreshed
+  Function(AuthTokens)? _onTokensRefreshed;
+
+  void setTokens(String? accessToken, String? refreshToken) {
+    _accessToken = accessToken;
+    _refreshToken = refreshToken;
+  }
+
+  void setOnTokensRefreshed(Function(AuthTokens)? callback) {
+    _onTokensRefreshed = callback;
   }
 
   Map<String, String> get _headers {
     final headers = {'Content-Type': 'application/json'};
-    if (_token != null) {
-      headers['Authorization'] = 'Bearer $_token';
+    if (_accessToken != null) {
+      headers['Authorization'] = 'Bearer $_accessToken';
     }
     return headers;
   }
 
+  // Helper method to make authenticated requests with automatic token refresh
+  Future<http.Response> _makeAuthenticatedRequest(
+    Future<http.Response> Function() requestFunction,
+  ) async {
+    try {
+      final response = await requestFunction();
+
+      // If we get a 401 and have a refresh token, try to refresh
+      if (response.statusCode == 401 && _refreshToken != null) {
+        print("DEBUG: Access token expired, attempting refresh...");
+
+        try {
+          // Attempt to refresh the token
+          final newTokens = await _refreshAccessToken();
+
+          // Update tokens
+          setTokens(newTokens.accessToken, newTokens.refreshToken);
+
+          // Notify the auth controller about the new tokens
+          if (_onTokensRefreshed != null) {
+            _onTokensRefreshed!(newTokens);
+          }
+
+          // Retry the original request with the new token
+          print("DEBUG: Token refreshed successfully, retrying request...");
+          return await requestFunction();
+        } catch (refreshError) {
+          print("DEBUG: Token refresh failed: $refreshError");
+          // If refresh fails, the token is invalid, so rethrow the original 401
+          throw Exception('Authentication failed: ${response.body}');
+        }
+      }
+
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // --- Auth ---
-  Future<String> login(String username, String password) async {
+  Future<AuthTokens> login(String username, String password) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/api/users/login'),
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: {'username': username, 'password': password},
     );
     if (response.statusCode == 200) {
-      return json.decode(response.body)['access_token'];
+      final responseData = json.decode(response.body);
+      return AuthTokens.fromJson(responseData);
     } else {
       throw Exception('Failed to login: ${response.body}');
+    }
+  }
+
+  Future<AuthTokens> _refreshAccessToken() async {
+    if (_refreshToken == null) {
+      throw Exception('No refresh token available');
+    }
+
+    final response = await http.post(
+      Uri.parse('$_baseUrl/api/users/refresh'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'refresh_token': _refreshToken}),
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      return AuthTokens.fromJson(responseData);
+    } else {
+      throw Exception('Failed to refresh token: ${response.body}');
     }
   }
 
@@ -343,9 +430,8 @@ class ApiRepository {
 
   // --- User ---
   Future<User> getMe() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/api/users/me'),
-      headers: _headers,
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(Uri.parse('$_baseUrl/api/users/me'), headers: _headers),
     );
     if (response.statusCode == 200) {
       return User.fromJson(json.decode(response.body));
@@ -370,10 +456,12 @@ class ApiRepository {
     if (currentHustle != null)
       body['current_hustle'] = currentHustle; // This should be the key
 
-    final response = await http.put(
-      Uri.parse('$_baseUrl/api/users/profile'),
-      headers: _headers,
-      body: json.encode(body),
+    final response = await _makeAuthenticatedRequest(
+      () => http.put(
+        Uri.parse('$_baseUrl/api/users/profile'),
+        headers: _headers,
+        body: json.encode(body),
+      ),
     );
 
     if (response.statusCode != 200) {
@@ -382,9 +470,11 @@ class ApiRepository {
   }
 
   Future<List<InventoryItem>> getInventory() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/api/users/inventory'),
-      headers: _headers,
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(
+        Uri.parse('$_baseUrl/api/users/inventory'),
+        headers: _headers,
+      ),
     );
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
@@ -411,9 +501,11 @@ class ApiRepository {
   }
 
   Future<Map<String, String>> getAvailableHustles() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/api/hustles/available'),
-      headers: _headers,
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(
+        Uri.parse('$_baseUrl/api/hustles/available'),
+        headers: _headers,
+      ),
     );
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
@@ -424,9 +516,11 @@ class ApiRepository {
   }
 
   Future<LevelStatus> getLevelStatus() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/api/hustles/level-status'),
-      headers: _headers,
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(
+        Uri.parse('$_baseUrl/api/hustles/level-status'),
+        headers: _headers,
+      ),
     );
     if (response.statusCode == 200) {
       return LevelStatus.fromJson(json.decode(response.body));
@@ -437,9 +531,11 @@ class ApiRepository {
 
   // Level upgrade API
   Future<Map<String, dynamic>> levelUpgrade() async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/api/hustles/level-upgrade'),
-      headers: _headers,
+    final response = await _makeAuthenticatedRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/api/hustles/level-upgrade'),
+        headers: _headers,
+      ),
     );
     if (response.statusCode == 200) {
       return json.decode(response.body);
@@ -450,12 +546,14 @@ class ApiRepository {
 
   // Select new hustle API
   Future<void> selectHustle(String hustleKey) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/api/hustles/select'),
-      headers: _headers,
-      body: json.encode({
-        'hustle_name': hustleKey,
-      }), // Send the key (English name)
+    final response = await _makeAuthenticatedRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/api/hustles/select'),
+        headers: _headers,
+        body: json.encode({
+          'hustle_name': hustleKey,
+        }), // Send the key (English name)
+      ),
     );
     if (response.statusCode != 200) {
       throw Exception('Failed to select hustle: ${response.body}');
@@ -464,9 +562,8 @@ class ApiRepository {
 
   // --- Tasks & Shop ---
   Future<List<Task>> getAllTasks() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/api/tasks/all'),
-      headers: _headers,
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(Uri.parse('$_baseUrl/api/tasks/all'), headers: _headers),
     );
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
@@ -484,10 +581,12 @@ class ApiRepository {
     if (payload != null) {
       body['payload'] = payload;
     }
-    final response = await http.post(
-      Uri.parse('$_baseUrl/api/tasks/complete'),
-      headers: _headers,
-      body: json.encode(body),
+    final response = await _makeAuthenticatedRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/api/tasks/complete'),
+        headers: _headers,
+        body: json.encode(body),
+      ),
     );
     if (response.statusCode != 200) {
       throw Exception('Failed to complete task: ${response.body}');
@@ -495,9 +594,8 @@ class ApiRepository {
   }
 
   Future<List<ShopItem>> getShopItems() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/api/shop/items'),
-      headers: _headers,
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(Uri.parse('$_baseUrl/api/shop/items'), headers: _headers),
     );
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
@@ -508,10 +606,12 @@ class ApiRepository {
   }
 
   Future<void> purchaseItem(String itemId, int quantity) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/api/shop/purchase'),
-      headers: _headers,
-      body: json.encode({'item_id': itemId, 'quantity': quantity}),
+    final response = await _makeAuthenticatedRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/api/shop/purchase'),
+        headers: _headers,
+        body: json.encode({'item_id': itemId, 'quantity': quantity}),
+      ),
     );
     if (response.statusCode != 200) {
       throw Exception('Failed to purchase item: ${response.body}');
@@ -520,9 +620,8 @@ class ApiRepository {
 
   // --- Server Time ---
   Future<DateTime> getServerTime() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/api/timestamp'),
-      headers: _headers,
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(Uri.parse('$_baseUrl/api/timestamp'), headers: _headers),
     );
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -544,9 +643,11 @@ class ApiRepository {
   }
 
   Future<QuizQuestion> fetchQuizQuestion() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/api/tasks/quiz/fetch'),
-      headers: _headers,
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(
+        Uri.parse('$_baseUrl/api/tasks/quiz/fetch'),
+        headers: _headers,
+      ),
     );
     if (response.statusCode == 200) {
       return QuizQuestion.fromJson(json.decode(response.body));
@@ -557,9 +658,11 @@ class ApiRepository {
 
   // --- Land System ---
   Future<List<LandTileInfo>> getTilesInBbox(String bbox) async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/api/land/tiles?bbox=$bbox'),
-      headers: _headers,
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(
+        Uri.parse('$_baseUrl/api/land/tiles?bbox=$bbox'),
+        headers: _headers,
+      ),
     );
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
@@ -570,9 +673,9 @@ class ApiRepository {
   }
 
   Future<List<MyLandTile>> getMyLands() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/api/land/my-lands'),
-      headers: _headers,
+    final response = await _makeAuthenticatedRequest(
+      () =>
+          http.get(Uri.parse('$_baseUrl/api/land/my-lands'), headers: _headers),
     );
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
@@ -583,9 +686,11 @@ class ApiRepository {
   }
 
   Future<void> buyLandTile(String h3Index) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/api/land/buy/$h3Index'),
-      headers: _headers,
+    final response = await _makeAuthenticatedRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/api/land/buy/$h3Index'),
+        headers: _headers,
+      ),
     );
     // Backend returns 201 CREATED on successful purchase
     if (response.statusCode != 201) {
@@ -594,9 +699,11 @@ class ApiRepository {
   }
 
   Future<void> sellLandTile(String h3Index) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/api/land/sell/$h3Index'),
-      headers: _headers,
+    final response = await _makeAuthenticatedRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/api/land/sell/$h3Index'),
+        headers: _headers,
+      ),
     );
     if (response.statusCode != 200) {
       throw Exception('Failed to sell land tile: ${response.body}');
@@ -620,40 +727,54 @@ final apiRepositoryProvider = Provider<ApiRepository>((ref) {
   final repo = ApiRepository();
   // Listen to the auth token and update the repository
   final authState = ref.watch(authControllerProvider);
-  final token = authState.when(
-    data: (token) => token,
+  final tokens = authState.when(
+    data: (tokens) => tokens,
     loading: () => null,
     error: (_, __) => null,
   );
   print(
-    "DEBUG: apiRepositoryProvider - Setting token: ${token != null ? 'YES (${token.substring(0, 20)}...)' : 'NO'}",
+    "DEBUG: apiRepositoryProvider - Setting tokens: ${tokens != null ? 'YES (${tokens.accessToken.substring(0, 20)}...)' : 'NO'}",
   );
-  repo.setToken(token);
+  repo.setTokens(tokens?.accessToken, tokens?.refreshToken);
+
+  // Set up token refresh callback
+  repo.setOnTokensRefreshed((newTokens) {
+    ref.read(authControllerProvider.notifier).updateTokens(newTokens);
+  });
+
   return repo;
 }, dependencies: [authControllerProvider]);
 
 // --- Authentication State ---
 
 final authControllerProvider =
-    StateNotifierProvider<AuthController, AsyncValue<String?>>((ref) {
+    StateNotifierProvider<AuthController, AsyncValue<AuthTokens?>>((ref) {
       return AuthController(ref.watch(sharedPreferencesProvider));
     });
 
-class AuthController extends StateNotifier<AsyncValue<String?>> {
+class AuthController extends StateNotifier<AsyncValue<AuthTokens?>> {
   final SharedPreferences _prefs;
   AuthController(this._prefs) : super(const AsyncValue.loading()) {
     _tryAutoLogin();
   }
 
-  static const _tokenKey = 'authToken';
+  static const _tokensKey = 'authTokens';
 
   void _tryAutoLogin() {
-    final token = _prefs.getString(_tokenKey);
+    final tokensJson = _prefs.getString(_tokensKey);
+    AuthTokens? tokens;
+    if (tokensJson != null) {
+      try {
+        tokens = AuthTokens.fromJson(json.decode(tokensJson));
+      } catch (e) {
+        print("DEBUG: Failed to parse stored tokens: $e");
+      }
+    }
+
     print(
-      "DEBUG: AuthController _tryAutoLogin - found token: ${token != null ? 'YES (${token.substring(0, 20)}...)' : 'NO'}",
+      "DEBUG: AuthController _tryAutoLogin - found tokens: ${tokens != null ? 'YES (${tokens.accessToken.substring(0, 20)}...)' : 'NO'}",
     );
-    state = AsyncValue.data(token);
-    print("DEBUG: AuthController loaded token: $token");
+    state = AsyncValue.data(tokens);
   }
 
   Future<void> login(String username, String password) async {
@@ -661,16 +782,26 @@ class AuthController extends StateNotifier<AsyncValue<String?>> {
     try {
       // Temporarily create a repository to perform login
       final tempRepo = ApiRepository();
-      final token = await tempRepo.login(username, password);
-      await _prefs.setString(_tokenKey, token);
-      state = AsyncValue.data(token);
+      final tokens = await tempRepo.login(username, password);
+      await _prefs.setString(_tokensKey, json.encode(tokens.toJson()));
+      state = AsyncValue.data(tokens);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
   }
 
+  Future<void> updateTokens(AuthTokens newTokens) async {
+    try {
+      await _prefs.setString(_tokensKey, json.encode(newTokens.toJson()));
+      state = AsyncValue.data(newTokens);
+      print("DEBUG: Tokens updated successfully");
+    } catch (e) {
+      print("DEBUG: Failed to update tokens: $e");
+    }
+  }
+
   Future<void> logout() async {
-    await _prefs.remove(_tokenKey);
+    await _prefs.remove(_tokensKey);
     state = const AsyncValue.data(null);
   }
 }
@@ -694,18 +825,18 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
   final Ref _ref;
   UserController(this._ref) : super(const AsyncValue.data(null)) {
     // Listen to the authentication state and fetch user when token is available
-    _ref.listen<AsyncValue<String?>>(
+    _ref.listen<AsyncValue<AuthTokens?>>(
       authControllerProvider,
       (previous, next) {
         next.when(
-          data: (token) {
-            if (token != null) {
+          data: (tokens) {
+            if (tokens != null) {
               print(
-                "DEBUG: UserController saw token available: ${token.substring(0, 20)}...",
+                "DEBUG: UserController saw tokens available: ${tokens.accessToken.substring(0, 20)}...",
               );
               _fetchUser();
             } else {
-              print("DEBUG: UserController saw token cleared");
+              print("DEBUG: UserController saw tokens cleared");
               state = const AsyncValue.data(null);
             }
           },

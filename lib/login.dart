@@ -210,7 +210,7 @@ class LoginScreen extends ConsumerWidget {
                               passwordController.text,
                             );
                         print(
-                          "Fetching user with token: ${ref.read(authControllerProvider).value}",
+                          "Fetching user with tokens: ${ref.read(authControllerProvider).value != null ? 'TOKENS_AVAILABLE' : 'NO_TOKENS'}",
                         );
                       },
                     ),

@@ -176,7 +176,7 @@ class AuthWrapper extends ConsumerWidget {
     final userState = ref.watch(userControllerProvider);
 
     print(
-      "DEBUG: AuthWrapper - authState: ${authState.value != null ? 'HAS_TOKEN' : 'NO_TOKEN'}",
+      "DEBUG: AuthWrapper - authState: ${authState.value != null ? 'HAS_TOKENS' : 'NO_TOKENS'}",
     );
     print(
       "DEBUG: AuthWrapper - userState: ${userState.when(data: (user) => user != null ? 'HAS_USER(${user.username})' : 'NO_USER', loading: () => 'LOADING', error: (e, _) => 'ERROR: $e')}",

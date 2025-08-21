@@ -19,7 +19,7 @@ void main() async {
   final authState = container.read(authControllerProvider);
   final userState = container.read(userControllerProvider);
 
-  print("Auth state: ${authState.value != null ? 'HAS_TOKEN' : 'NO_TOKEN'}");
+  print("Auth state: ${authState.value != null ? 'HAS_TOKENS' : 'NO_TOKENS'}");
   print(
     "User state: ${userState.when(data: (user) => user != null ? 'HAS_USER(${user.username})' : 'NO_USER', loading: () => 'LOADING', error: (e, _) => 'ERROR: $e')}",
   );
