@@ -206,12 +206,12 @@ class LoginScreen extends ConsumerWidget {
                         await ref
                             .read(authControllerProvider.notifier)
                             .login(
-                              usernameController.text,
-                              passwordController.text,
+                              usernameController.text.trim(),
+                              passwordController.text.trim(),
                             );
-                        print(
+                        /*print(
                           "Fetching user with tokens: ${ref.read(authControllerProvider).value != null ? 'TOKENS_AVAILABLE' : 'NO_TOKENS'}",
-                        );
+                        );*/
                       },
                     ),
                     const SizedBox(height: 30),

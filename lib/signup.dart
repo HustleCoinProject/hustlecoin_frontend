@@ -160,12 +160,45 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   void _registerUser() {
     // Form validation
-    if (_usernameController.text.isEmpty ||
-        _emailController.text.isEmpty ||
-        _passwordController.text.isEmpty ||
-        _confirmPasswordController.text.isEmpty) {
+    if (_usernameController.text.trim().isEmpty) {
       setState(() {
-        _errorMessage = 'Please fill all required fields';
+        _errorMessage = 'Username is required';
+      });
+      return;
+    }
+
+    if (_emailController.text.trim().isEmpty) {
+      setState(() {
+        _errorMessage = 'Email is required';
+      });
+      return;
+    }
+
+    // Basic email validation
+    if (!_emailController.text.trim().contains('@')) {
+      setState(() {
+        _errorMessage = 'Please enter a valid email address';
+      });
+      return;
+    }
+
+    if (_passwordController.text.isEmpty) {
+      setState(() {
+        _errorMessage = 'Password is required';
+      });
+      return;
+    }
+
+    if (_passwordController.text.length < 6) {
+      setState(() {
+        _errorMessage = 'Password must be at least 6 characters long';
+      });
+      return;
+    }
+
+    if (_confirmPasswordController.text.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please confirm your password';
       });
       return;
     }
@@ -200,9 +233,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       try {
         // Register the user using the hustle key
         await apiRepo.register(
-          _emailController.text,
+          _emailController.text.trim(),
           _passwordController.text,
-          _usernameController.text,
+          _usernameController.text.trim(),
           selectedHustleKey, // Use the key (English name)
           _selectedLang.toLowerCase(),
         );
@@ -210,7 +243,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         // Update auth state - this will handle login and token storage
         await ref
             .read(authControllerProvider.notifier)
-            .login(_usernameController.text, _passwordController.text);
+            .login(_usernameController.text.trim(), _passwordController.text);
 
         // Navigate to home screen
         if (mounted) {
@@ -220,7 +253,19 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         }
       } catch (e) {
         setState(() {
-          _errorMessage = 'Registration failed: $e';
+          // Extract more meaningful error message
+          String errorMessage = e.toString();
+          if (errorMessage.contains('Exception:')) {
+            errorMessage = errorMessage.replaceFirst('Exception: ', '');
+          }
+          if (errorMessage.contains('Failed to register:')) {
+            errorMessage = errorMessage.replaceFirst(
+              'Failed to register: ',
+              '',
+            );
+          }
+
+          _errorMessage = errorMessage;
           _isLoading = false;
         });
       }
