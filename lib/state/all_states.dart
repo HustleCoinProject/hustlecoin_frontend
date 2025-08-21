@@ -619,7 +619,15 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 final apiRepositoryProvider = Provider<ApiRepository>((ref) {
   final repo = ApiRepository();
   // Listen to the auth token and update the repository
-  final token = ref.watch(authControllerProvider).value;
+  final authState = ref.watch(authControllerProvider);
+  final token = authState.when(
+    data: (token) => token,
+    loading: () => null,
+    error: (_, __) => null,
+  );
+  print(
+    "DEBUG: apiRepositoryProvider - Setting token: ${token != null ? 'YES (${token.substring(0, 20)}...)' : 'NO'}",
+  );
   repo.setToken(token);
   return repo;
 }, dependencies: [authControllerProvider]);
@@ -641,7 +649,11 @@ class AuthController extends StateNotifier<AsyncValue<String?>> {
 
   void _tryAutoLogin() {
     final token = _prefs.getString(_tokenKey);
+    print(
+      "DEBUG: AuthController _tryAutoLogin - found token: ${token != null ? 'YES (${token.substring(0, 20)}...)' : 'NO'}",
+    );
     state = AsyncValue.data(token);
+    print("DEBUG: AuthController loaded token: $token");
   }
 
   Future<void> login(String username, String password) async {
@@ -681,14 +693,34 @@ final userControllerProvider =
 class UserController extends StateNotifier<AsyncValue<User?>> {
   final Ref _ref;
   UserController(this._ref) : super(const AsyncValue.data(null)) {
-    // When authentication state changes, try to fetch the user
-    _ref.listen<AsyncValue<String?>>(authControllerProvider, (_, next) {
-      if (next.value != null) {
-        _fetchUser();
-      } else {
-        state = const AsyncValue.data(null);
-      }
-    });
+    // Listen to the authentication state and fetch user when token is available
+    _ref.listen<AsyncValue<String?>>(
+      authControllerProvider,
+      (previous, next) {
+        next.when(
+          data: (token) {
+            if (token != null) {
+              print(
+                "DEBUG: UserController saw token available: ${token.substring(0, 20)}...",
+              );
+              _fetchUser();
+            } else {
+              print("DEBUG: UserController saw token cleared");
+              state = const AsyncValue.data(null);
+            }
+          },
+          loading: () {
+            print("DEBUG: UserController saw auth loading state");
+            // Don't do anything while auth is loading
+          },
+          error: (error, stack) {
+            print("DEBUG: UserController saw auth error: $error");
+            state = const AsyncValue.data(null);
+          },
+        );
+      },
+      fireImmediately: true,
+    ); // This ensures we check the current state immediately
   }
 
   ApiRepository get _api => _ref.read(apiRepositoryProvider);
@@ -700,9 +732,14 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
       state = const AsyncValue.loading();
     }
     try {
+      print("DEBUG: UserController fetching user data...");
       final user = await _api.getMe();
+      print(
+        "DEBUG: UserController successfully fetched user: ${user.username}",
+      );
       state = AsyncValue.data(user);
     } catch (e, st) {
+      print("DEBUG: UserController failed to fetch user: $e");
       // If fetching user fails, it might be an expired token. Log out.
       _ref.read(authControllerProvider.notifier).logout();
       state = AsyncValue.error(e, st);

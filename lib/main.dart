@@ -170,24 +170,41 @@ class AuthWrapper extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the authentication state
+    final authState = ref.watch(authControllerProvider);
     // Watch the user state
     final userState = ref.watch(userControllerProvider);
+
+    print(
+      "DEBUG: AuthWrapper - authState: ${authState.value != null ? 'HAS_TOKEN' : 'NO_TOKEN'}",
+    );
+    print(
+      "DEBUG: AuthWrapper - userState: ${userState.when(data: (user) => user != null ? 'HAS_USER(${user.username})' : 'NO_USER', loading: () => 'LOADING', error: (e, _) => 'ERROR: $e')}",
+    );
 
     return userState.when(
       data: (user) {
         // If user object is not null, they are logged in.
         if (user != null) {
+          print(
+            "DEBUG: AuthWrapper - Navigating to HomeScreen for user: ${user.username}",
+          );
           return const HomeScreen();
         }
         // Otherwise, show the start/login screen.
+        print("DEBUG: AuthWrapper - Navigating to StartScreen (no user)");
         return const StartScreen();
       },
       // Show a loading screen while checking auth state
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () {
+        print("DEBUG: AuthWrapper - Showing loading screen");
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      },
       // Show an error screen if something goes wrong
-      error: (error, stack) =>
-          Scaffold(body: Center(child: Text('An error occurred: $error'))),
+      error: (error, stack) {
+        print("DEBUG: AuthWrapper - Showing error screen: $error");
+        return Scaffold(body: Center(child: Text('An error occurred: $error')));
+      },
     );
   }
 }
