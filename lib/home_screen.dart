@@ -1325,6 +1325,7 @@ class _DailyTapButtonState extends ConsumerState<_DailyTapButton> {
                   const SizedBox(height: 4),
                   Text(
                     _getButtonText(currentTaskState),
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w600,
@@ -1670,6 +1671,7 @@ class _WatchAdButtonState extends ConsumerState<_WatchAdButton> {
                   const SizedBox(height: 4),
                   Text(
                     _getButtonText(currentTaskState),
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w600,
