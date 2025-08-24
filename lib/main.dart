@@ -13,6 +13,8 @@ import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/theme/responsive_theme.dart';
 
+import 'package:flutter/services.dart';
+
 // We need to initialize the server time sync after the app starts
 // Create a StatefulWidget that will synchronize with server on initialization
 class ServerTimeInitializer extends ConsumerStatefulWidget {
@@ -29,6 +31,10 @@ class _ServerTimeInitializerState extends ConsumerState<ServerTimeInitializer>
   @override
   void initState() {
     super.initState();
+
+    // Hide system UI for immersive experience
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
     WidgetsBinding.instance.addObserver(this);
 
     // Schedule server time sync after the widget tree is built

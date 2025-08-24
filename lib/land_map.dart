@@ -386,6 +386,8 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
               PolygonLayer(polygons: _visibleHexagons),
               if (_selectedHexagon != null)
                 PolygonLayer(polygons: [_selectedHexagon!]),
+              if (_selectedHexagon != null && _selectedH3Index != null)
+                _buildPriceOverlay(),
             ],
           ),
           _buildUIOverlay(),
@@ -674,5 +676,56 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
         ),
       );
     }
+  }
+
+  Widget _buildPriceOverlay() {
+    if (_selectedHexagon == null || _selectedH3Index == null) {
+      return const SizedBox.shrink();
+    }
+
+    // Calculate the center of the selected hexagon
+    final points = _selectedHexagon!.points;
+    if (points.isEmpty) return const SizedBox.shrink();
+
+    // Find center point of the hexagon
+    double centerLat =
+        points.map((p) => p.latitude).reduce((a, b) => a + b) / points.length;
+    double centerLon =
+        points.map((p) => p.longitude).reduce((a, b) => a + b) / points.length;
+    final centerPoint = LatLng(centerLat, centerLon);
+
+    // Determine price and text based on ownership
+    String priceText;
+    Color textColor = Colors.white;
+
+    if (_isOwnedLand) {
+      priceText = '${LAND_SELL_PRICE} HC';
+    } else {
+      priceText = '${LAND_PRICE} HC';
+    }
+
+    return MarkerLayer(
+      markers: [
+        Marker(
+          point: centerPoint,
+          alignment: Alignment.bottomCenter,
+          child: Text(
+            priceText,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 7,
+              fontWeight: FontWeight.bold,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withOpacity(0.8),
+                  blurRadius: 2,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

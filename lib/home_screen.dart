@@ -758,52 +758,58 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildUpgradesSection() {
     return Padding(
       padding: ResponsiveUtils.pLTRB(15, 10, 15, 10),
-      child: Row(
-        children: [
-          _upgradeItem(FontAwesomeIcons.robot, ref.t(LocalizationKeys.chatBot)),
-          SizedBox(width: 8.s),
-          _upgradeItem(
-            FontAwesomeIcons.rocket,
-            ref.t(LocalizationKeys.boosts),
-            onTap: () {
-              AdHelper.showInterstitialOnNavigation();
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const ShopScreen(itemTypeFilter: 'BOOSTER'),
-                ),
-              );
-            },
-          ),
-          SizedBox(width: 8.s),
-          _upgradeItem(
-            FontAwesomeIcons.key,
-            ref.t(LocalizationKeys.keys),
-            onTap: () {
-              AdHelper.showInterstitialOnNavigation();
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) =>
-                      const ShopScreen(itemTypeFilter: 'ACCESS_KEY'),
-                ),
-              );
-            },
-          ),
-          SizedBox(width: 8.s),
-          _upgradeItem(
-            FontAwesomeIcons.store,
-            ref.t(LocalizationKeys.shop),
-            isShop: true,
-            onTap: () {
-              AdHelper.showInterstitialOnNavigation();
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) =>
-                      const ShopScreen(excludeTypes: ["ACCESS_KEY", "BOOSTER"]),
-                ),
-              );
-            },
-          ),
-        ],
+      child: ClipRect(
+        child: Row(
+          children: [
+            _upgradeItem(
+              FontAwesomeIcons.robot,
+              ref.t(LocalizationKeys.chatBot),
+            ),
+            SizedBox(width: 8.s),
+            _upgradeItem(
+              FontAwesomeIcons.rocket,
+              ref.t(LocalizationKeys.boosts),
+              onTap: () {
+                AdHelper.showInterstitialOnNavigation();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const ShopScreen(itemTypeFilter: 'BOOSTER'),
+                  ),
+                );
+              },
+            ),
+            SizedBox(width: 8.s),
+            _upgradeItem(
+              FontAwesomeIcons.key,
+              ref.t(LocalizationKeys.keys),
+              onTap: () {
+                AdHelper.showInterstitialOnNavigation();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        const ShopScreen(itemTypeFilter: 'ACCESS_KEY'),
+                  ),
+                );
+              },
+            ),
+            SizedBox(width: 8.s),
+            _upgradeItem(
+              FontAwesomeIcons.store,
+              ref.t(LocalizationKeys.shop),
+              isShop: true,
+              onTap: () {
+                AdHelper.showInterstitialOnNavigation();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const ShopScreen(
+                      excludeTypes: ["ACCESS_KEY", "BOOSTER"],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
