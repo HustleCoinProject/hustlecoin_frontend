@@ -255,35 +255,45 @@ class _QuizContentState extends ConsumerState<_QuizContent> {
   Widget build(BuildContext context) {
     bool isButtonEnabled = _selectedOptionIndex != null;
 
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _GlassEffectContainer(
-            borderRadius: BorderRadius.circular(16),
-            padding: const EdgeInsets.all(20),
-            child: Text(
-              widget.quiz.question,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                height: 1.4,
-              ),
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 20), // Add some top spacing
+                _GlassEffectContainer(
+                  borderRadius: BorderRadius.circular(16),
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                    widget.quiz.question,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 25),
+                ...widget.quiz.options.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  String optionText = entry.value;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 15.0),
+                    child: _buildOptionCard(optionText, index),
+                  );
+                }),
+                const SizedBox(height: 100), // Add space for button
+              ],
             ),
           ),
-          const SizedBox(height: 25),
-          ...widget.quiz.options.asMap().entries.map((entry) {
-            int index = entry.key;
-            String optionText = entry.value;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 15.0),
-              child: _buildOptionCard(optionText, index),
-            );
-          }),
-          const Spacer(),
-          AnimatedOpacity(
+        ),
+        // Fixed submit button at bottom
+        Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: AnimatedOpacity(
             opacity: isButtonEnabled ? 1.0 : 0.5,
             duration: const Duration(milliseconds: 200),
             child: PressableWidget(
@@ -311,8 +321,8 @@ class _QuizContentState extends ConsumerState<_QuizContent> {
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

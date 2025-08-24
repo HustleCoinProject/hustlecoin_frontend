@@ -98,6 +98,7 @@ class LocalizationKeys {
   static const String landSoldSuccessfully = 'land_sold_successfully';
   static const String purchaseFailed = 'purchase_failed';
   static const String saleFailed = 'sale_failed';
+  static const String landDailyIncomeInfo = 'land_daily_income_info';
 
   // Errors and Validation
   static const String error = 'error';
@@ -214,6 +215,8 @@ class _Translations {
       LocalizationKeys.landSoldSuccessfully: 'Land sold successfully!',
       LocalizationKeys.purchaseFailed: 'Purchase failed',
       LocalizationKeys.saleFailed: 'Sale failed',
+      LocalizationKeys.landDailyIncomeInfo:
+          'Purchasing a piece of land will give you daily income of 50 HC',
 
       // Errors and Validation
       LocalizationKeys.error: 'Error',
@@ -330,6 +333,8 @@ class _Translations {
       LocalizationKeys.landSoldSuccessfully: 'Terra vendida com sucesso!',
       LocalizationKeys.purchaseFailed: 'Falha na compra',
       LocalizationKeys.saleFailed: 'Falha na venda',
+      LocalizationKeys.landDailyIncomeInfo:
+          'Comprar um pedaço de terra lhe dará uma renda diária de 50 HC',
 
       // Errors and Validation
       LocalizationKeys.error: 'Erro',

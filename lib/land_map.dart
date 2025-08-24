@@ -429,6 +429,44 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
               ),
             ),
           ),
+          // Daily Income Info Panel
+          Positioned(
+            top: 15,
+            left: 15,
+            right: 15,
+            child: Column(
+              children: [
+                const SizedBox(height: 60), // Space for back button
+                _GlassEffectContainer(
+                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.info_outline,
+                        color: AppColors.angolaYellow,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          ref.t(LocalizationKeys.landDailyIncomeInfo),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
           // Purchase Panel
           Positioned(
             bottom: 20,
