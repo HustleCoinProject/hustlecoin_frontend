@@ -177,6 +177,38 @@ enum TaskState {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _activeNavIndex = 0;
 
+  // Method to toggle language between EN and PT
+  Future<void> _toggleLanguage(String currentLanguage) async {
+    final newLanguage = currentLanguage.toLowerCase() == 'en' ? 'pt' : 'en';
+    final userController = ref.read(userControllerProvider.notifier);
+    try {
+      await userController.updateProfile(language: newLanguage);
+      // Show a success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Language updated to ${newLanguage.toUpperCase()}'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to update language: ${e.toString().replaceAll('Exception: ', '')}',
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
   void _onNavItemTapped(int index) {
     // Navigate to different screens based on the index
     switch (index) {
@@ -355,60 +387,64 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: const Icon(FontAwesomeIcons.user, size: 28),
             ),
           ),
-          _GlassEffectContainer(
+          PressableWidget(
+            onTap: () => _toggleLanguage(user.language),
             borderRadius: BorderRadius.circular(12),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8.0,
-                vertical: 4.0,
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: user.language.toUpperCase() == 'EN'
-                          ? AppColors.angolaYellow
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'EN',
-                      style: TextStyle(
+            child: _GlassEffectContainer(
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8.0,
+                  vertical: 4.0,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
                         color: user.language.toUpperCase() == 'EN'
-                            ? AppColors.angolaBlack
-                            : AppColors.textGrey,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
+                            ? AppColors.angolaYellow
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'EN',
+                        style: TextStyle(
+                          color: user.language.toUpperCase() == 'EN'
+                              ? AppColors.angolaBlack
+                              : AppColors.textGrey,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: user.language.toUpperCase() == 'PT'
-                          ? AppColors.angolaYellow
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'PT',
-                      style: TextStyle(
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
                         color: user.language.toUpperCase() == 'PT'
-                            ? AppColors.angolaBlack
-                            : AppColors.textGrey,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
+                            ? AppColors.angolaYellow
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'PT',
+                        style: TextStyle(
+                          color: user.language.toUpperCase() == 'PT'
+                              ? AppColors.angolaBlack
+                              : AppColors.textGrey,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -608,7 +644,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
           _buildMainTapButton(),
-          Positioned(bottom: 120, child: _buildDailyRewardButton()),
+          Positioned(bottom: 100, child: _buildDailyRewardButton()),
         ],
       ),
     );
