@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/services/sound_service.dart';
+import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'app_colors.dart';
 import 'home_screen.dart';
 import 'login.dart';
@@ -29,9 +30,9 @@ class _GlassEffectContainer extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.glassBg,
         borderRadius: borderRadius ?? BorderRadius.zero,
-        border: Border.all(color: AppColors.glassBorder, width: 1),
+        border: Border.all(color: AppColors.glassBorder, width: 1.s),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10),
+          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10.s),
         ],
       ),
       child: child,
@@ -318,69 +319,74 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     final String randomImage =
         backgroundImages[DateTime.now().millisecond % backgroundImages.length];
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/$randomImage'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
+    return ResponsiveBuilder(
+      builder: (context) => Scaffold(
+        body: Container(
           decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.center,
-              radius: 1.0,
-              colors: [
-                const Color(0xFF101010).withOpacity(0.4),
-                const Color(0xFF101010).withOpacity(0.9),
-              ],
+            image: DecorationImage(
+              image: AssetImage('assets/images/$randomImage'),
+              fit: BoxFit.cover,
             ),
           ),
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.85,
-                child: Column(
-                  children: [
-                    // Show error message if any
-                    if (_errorMessage != null)
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 20),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 10,
-                          horizontal: 15,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: Colors.red.withOpacity(0.6),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment.center,
+                radius: 1.0,
+                colors: [
+                  const Color(0xFF101010).withOpacity(0.4),
+                  const Color(0xFF101010).withOpacity(0.9),
+                ],
+              ),
+            ),
+            child: Center(
+              child: SingleChildScrollView(
+                padding: ResponsiveUtils.pSymmetric(horizontal: 20.0),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.85,
+                  child: Column(
+                    children: [
+                      // Show error message if any
+                      if (_errorMessage != null)
+                        Container(
+                          margin: EdgeInsets.only(bottom: 20.s),
+                          padding: ResponsiveUtils.pSymmetric(
+                            vertical: 10,
+                            horizontal: 15,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(8.r),
+                            border: Border.all(
+                              color: Colors.red.withOpacity(0.6),
+                            ),
+                          ),
+                          child: Text(
+                            _errorMessage!,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14.f,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                         ),
-                        child: Text(
-                          _errorMessage!,
-                          style: const TextStyle(color: Colors.white),
-                          textAlign: TextAlign.center,
+
+                      // Main content
+                      Expanded(
+                        child: PageView(
+                          controller: _stepController,
+                          physics: const NeverScrollableScrollPhysics(),
+                          children: [_buildStep1(), _buildStep2()],
                         ),
                       ),
-
-                    // Main content
-                    Expanded(
-                      child: PageView(
-                        controller: _stepController,
-                        physics: const NeverScrollableScrollPhysics(),
-                        children: [_buildStep1(), _buildStep2()],
-                      ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ), // Closing SizedBox
               ),
             ),
           ),
         ),
-      ),
+      ), // Closing ResponsiveBuilder
     );
   }
 
@@ -389,56 +395,57 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
+        Text(
           'Create Account',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
+          style: TextStyle(fontSize: 28.f, fontWeight: FontWeight.w700),
         ),
-        const SizedBox(height: 30),
+        SizedBox(height: 30.s),
         _buildInputField(
           icon: FontAwesomeIcons.user,
           hintText: 'Username',
           controller: _usernameController,
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20.s),
         _buildInputField(
           icon: FontAwesomeIcons.envelope,
           hintText: 'Email',
           controller: _emailController,
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20.s),
         _buildInputField(
           icon: FontAwesomeIcons.lock,
           hintText: 'Password',
           obscureText: true,
           controller: _passwordController,
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20.s),
         _buildInputField(
           icon: FontAwesomeIcons.checkCircle,
           hintText: 'Confirm Password',
           obscureText: true,
           controller: _confirmPasswordController,
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20.s),
         _buildLanguageSelector(),
-        const SizedBox(height: 20),
+        SizedBox(height: 20.s),
         _buildActionButton(text: 'Next', onTap: () => _goToStep(1)),
-        const SizedBox(height: 20),
+        SizedBox(height: 20.s),
         // Already have account link
         RichText(
           text: TextSpan(
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.textGrey,
-              fontSize: 14,
+              fontSize: 14.f,
               fontFamily: 'Poppins',
             ),
             children: [
               const TextSpan(text: "Already have an account? "),
               TextSpan(
                 text: 'Login',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.angolaYellow,
                   fontWeight: FontWeight.w600,
+                  fontSize: 14.f,
                 ),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () {
@@ -459,24 +466,24 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
+        Text(
           'Choose Your Hustle',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
+          style: TextStyle(fontSize: 28.f, fontWeight: FontWeight.w700),
         ),
-        const SizedBox(height: 30),
+        SizedBox(height: 30.s),
         if (_isLoading)
           const CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(AppColors.angolaYellow),
           )
         else if (_level1Hustles.isEmpty)
-          const Text(
+          Text(
             'No hustles available. Please try again later.',
-            style: TextStyle(color: AppColors.textGrey),
+            style: TextStyle(color: AppColors.textGrey, fontSize: 16.f),
             textAlign: TextAlign.center,
           )
         else
           SizedBox(
-            height: 350, // Give the carousel a fixed height
+            height: 350.s, // Give the carousel a fixed height
             child: PageView.builder(
               controller: _hustleController,
               itemCount: _level1Hustles.length,
@@ -511,16 +518,16 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     TextEditingController? controller,
   }) {
     return _GlassEffectContainer(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       child: TextField(
         controller: controller,
         obscureText: obscureText,
-        style: const TextStyle(color: AppColors.textLight, fontSize: 16),
+        style: TextStyle(color: AppColors.textLight, fontSize: 16.f),
         decoration: InputDecoration(
           border: InputBorder.none,
           hintText: hintText,
-          hintStyle: const TextStyle(color: AppColors.textGrey),
-          prefixIcon: Icon(icon, color: AppColors.textGrey, size: 18),
+          hintStyle: TextStyle(color: AppColors.textGrey, fontSize: 16.f),
+          prefixIcon: Icon(icon, color: AppColors.textGrey, size: 18.s),
         ),
       ),
     );
@@ -528,8 +535,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   Widget _buildLanguageSelector() {
     return _GlassEffectContainer(
-      borderRadius: BorderRadius.circular(12),
-      padding: const EdgeInsets.all(5),
+      borderRadius: BorderRadius.circular(12.r),
+      padding: EdgeInsets.all(5.s),
       child: Row(children: [_buildLangOption('EN'), _buildLangOption('PT')]),
     );
   }
@@ -540,10 +547,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       child: GestureDetector(
         onTap: () => setState(() => _selectedLang = lang),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: ResponsiveUtils.pSymmetric(vertical: 10),
           decoration: BoxDecoration(
             color: isActive ? AppColors.angolaYellow : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
           ),
           child: Text(
             lang,

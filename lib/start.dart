@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hustlecoin/utils/localization.dart';
+import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'app_colors.dart';
 import 'login.dart';
 
@@ -70,11 +71,13 @@ class _StartScreenState extends ConsumerState<StartScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.angolaBlack,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [_buildBackgroundSlider(), _buildContentOverlay()],
+    return ResponsiveBuilder(
+      builder: (context) => Scaffold(
+        backgroundColor: AppColors.angolaBlack,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [_buildBackgroundSlider(), _buildContentOverlay()],
+        ),
       ),
     );
   }
@@ -114,7 +117,7 @@ class _StartScreenState extends ConsumerState<StartScreen>
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: ResponsiveUtils.p(20.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -125,7 +128,7 @@ class _StartScreenState extends ConsumerState<StartScreen>
                   ref.t(LocalizationKeys.welcomeToHustleCoin),
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 50, // Adjusted for better fit on various screens
+                    fontSize: 50.f, // Responsive font size
                     fontWeight: FontWeight.w800,
                     color: AppColors.textLight,
                     height: 1.1,
@@ -139,11 +142,11 @@ class _StartScreenState extends ConsumerState<StartScreen>
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10.s),
               Text(
                 ref.t(LocalizationKeys.earnByHustlingDaily),
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 20.f,
                   color: Color(0xFFCCCCCC),
                   shadows: [
                     Shadow(
@@ -181,9 +184,9 @@ class _StartScreenState extends ConsumerState<StartScreen>
         animation: _glowController,
         builder: (context, child) {
           return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
+            padding: ResponsiveUtils.pSymmetric(horizontal: 40, vertical: 18),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(15.r),
               gradient: const LinearGradient(
                 colors: [AppColors.angolaYellow, AppColors.angolaRed],
                 begin: Alignment.topLeft,
@@ -208,7 +211,7 @@ class _StartScreenState extends ConsumerState<StartScreen>
         child: Text(
           ref.t(LocalizationKeys.startMyHustle),
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 18.f,
             fontWeight: FontWeight.w700,
             color: Colors.white,
             letterSpacing: 1,

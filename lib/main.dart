@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'start.dart';
-import 'app_colors.dart';
 
 import 'package:hustlecoin/home_screen.dart';
 
 import 'package:hustlecoin/state/all_states.dart';
-import 'package:hustlecoin/utils/localization.dart';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hustlecoin/services/admob_service.dart';
 import 'package:hustlecoin/services/sound_service.dart';
+import 'package:hustlecoin/utils/responsive_utils.dart';
+import 'package:hustlecoin/theme/responsive_theme.dart';
 
 // We need to initialize the server time sync after the app starts
 // Create a StatefulWidget that will synchronize with server on initialization
@@ -157,16 +156,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Hustle Coin',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: AppColors.angolaBlack,
-        textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
-        useMaterial3: true,
+    return ResponsiveBuilder(
+      builder: (context) => MaterialApp(
+        title: 'Hustle Coin',
+        theme: ResponsiveTheme.buildTheme(context),
+        home: const AuthWrapper(),
+        debugShowCheckedModeBanner: false,
       ),
-      home: const AuthWrapper(),
-      debugShowCheckedModeBanner: false,
     );
   }
 }

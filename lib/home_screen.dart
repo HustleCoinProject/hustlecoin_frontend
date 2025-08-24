@@ -10,6 +10,7 @@ import 'package:hustlecoin/widgets/banner_ad_widget.dart';
 import 'package:hustlecoin/utils/ad_helper.dart';
 import 'package:hustlecoin/utils/localization.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
+import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'dart:async'; // For Timer
 import 'app_colors.dart';
 import 'shop.dart';
@@ -298,15 +299,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Column(
               children: [
                 // Banner ad at the top
-                const BannerAdWidget(
-                  margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                BannerAdWidget(
+                  margin: ResponsiveUtils.pSymmetric(
+                    horizontal: 15,
+                    vertical: 5,
+                  ),
                 ),
                 _buildTopBar(user),
                 Text(
                   ref.t(LocalizationKeys.hustleCoin),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textGrey,
-                    fontSize: 14,
+                    fontSize: 14.f,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 3,
                     shadows: [Shadow(blurRadius: 4, color: Colors.black87)],
@@ -325,23 +329,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildTopBar(User user) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+      padding: ResponsiveUtils.pSymmetric(horizontal: 15.0, vertical: 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _GlassEffectContainer(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: ResponsiveUtils.p(8.0),
               child: Row(
                 children: [
                   Container(
-                    width: 38,
-                    height: 38,
-                    margin: const EdgeInsets.only(right: 8),
+                    width: 38.s,
+                    height: 38.s,
+                    margin: EdgeInsets.only(right: 8.s),
                     decoration: BoxDecoration(
                       color: AppColors.angolaRed,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(10.r),
                       boxShadow: const [
                         BoxShadow(
                           color: AppColors.glowRed,
@@ -350,9 +354,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       FontAwesomeIcons.star,
-                      size: 18,
+                      size: 18.s,
                       color: AppColors.textLight,
                     ),
                   ),
@@ -361,58 +365,58 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     children: [
                       Text(
                         '${user.hcBalance} HC',
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: 16.f,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       Text(
                         '≈ Kz ${user.kzBalance}',
-                        style: const TextStyle(
-                          fontSize: 12,
+                        style: TextStyle(
+                          fontSize: 12.f,
                           color: AppColors.textGrey,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.s),
                 ],
               ),
             ),
           ),
           Container(
-            width: 54,
-            height: 54,
-            padding: const EdgeInsets.all(3),
+            width: 54.s,
+            height: 54.s,
+            padding: ResponsiveUtils.p(3),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [AppColors.angolaYellow, AppColors.angolaRed],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
             ),
             child: _GlassEffectContainer(
-              borderRadius: BorderRadius.circular(13),
-              child: const Icon(FontAwesomeIcons.user, size: 28),
+              borderRadius: BorderRadius.circular(13.r),
+              child: Icon(FontAwesomeIcons.user, size: 28.s),
             ),
           ),
           PressableWidget(
             onTap: () => _toggleLanguage(user.language),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             soundType:
                 SoundType.switchSound, // Use switch sound for language toggle
             child: _GlassEffectContainer(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
+                padding: ResponsiveUtils.pSymmetric(
                   horizontal: 8.0,
                   vertical: 4.0,
                 ),
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(
+                      padding: ResponsiveUtils.pSymmetric(
                         horizontal: 8,
                         vertical: 4,
                       ),
@@ -420,7 +424,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         color: user.language.toUpperCase() == 'EN'
                             ? AppColors.angolaYellow
                             : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Text(
                         'EN',
@@ -429,12 +433,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ? AppColors.angolaBlack
                               : AppColors.textGrey,
                           fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                          fontSize: 14.f,
                         ),
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(
+                      padding: ResponsiveUtils.pSymmetric(
                         horizontal: 8,
                         vertical: 4,
                       ),
@@ -442,7 +446,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         color: user.language.toUpperCase() == 'PT'
                             ? AppColors.angolaYellow
                             : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Text(
                         'PT',
@@ -451,7 +455,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ? AppColors.angolaBlack
                               : AppColors.textGrey,
                           fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                          fontSize: 14.f,
                         ),
                       ),
                     ),
@@ -521,10 +525,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           onTap: isDisabled ? null : () => taskController.completeTask(),
           scaleFactor: 0.9,
           borderRadius: BorderRadius.circular(
-            30,
+            30.r,
           ), // Approximates the star shape
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+            padding: ResponsiveUtils.pSymmetric(horizontal: 28, vertical: 14),
             decoration: ShapeDecoration(
               shape: StarBorder(
                 points: 10,
@@ -557,8 +561,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       SizedBox(
-                        width: 14,
-                        height: 14,
+                        width: 14.s,
+                        height: 14.s,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor: AlwaysStoppedAnimation<Color>(
@@ -566,13 +570,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.s),
                       Text(
                         buttonText,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.angolaBlack,
                           fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                          fontSize: 14.f,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -582,10 +586,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   // Regular text for other states
                   Text(
                     buttonText,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textLight,
                       fontWeight: FontWeight.w700,
-                      fontSize: 14,
+                      fontSize: 14.f,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -597,14 +601,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildGameArea(User user) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+      padding: ResponsiveUtils.pSymmetric(horizontal: 15.0),
       child: Stack(
         alignment: Alignment.center,
         children: [
           Align(
             alignment: Alignment.topCenter,
             child: Padding(
-              padding: const EdgeInsets.only(top: 20.0),
+              padding: EdgeInsets.only(top: 20.s),
               // *** FIX: Replaced method call with new widget ***
               child: _StatsContainer(user: user),
             ),
@@ -618,9 +622,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildDailyTapButton(),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15.s),
                   _buildWatchAdButton(),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15.s),
                   _buildQuizButton(),
                 ],
               ),
@@ -646,7 +650,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       );
                     },
                   ),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15.s),
                   _actionButton(
                     FontAwesomeIcons.calendarAlt,
                     ref.t(LocalizationKeys.events),
@@ -656,7 +660,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
           _buildMainTapButton(),
-          Positioned(bottom: 100, child: _buildDailyRewardButton()),
+          Positioned(bottom: 100.s, child: _buildDailyRewardButton()),
         ],
       ),
     );
@@ -725,21 +729,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _actionButton(IconData icon, String label, {VoidCallback? onTap}) {
     return PressableWidget(
       onTap: onTap ?? () {},
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(16.r),
       child: _GlassEffectContainer(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         child: SizedBox(
-          width: 64,
-          height: 64,
+          width: 64.s,
+          height: 64.s,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              FaIcon(icon, size: 24, color: AppColors.textGrey),
-              const SizedBox(height: 4),
+              FaIcon(icon, size: 24.s, color: AppColors.textGrey),
+              SizedBox(height: 4.s),
               Text(
                 label.toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 9,
+                style: TextStyle(
+                  fontSize: 9.f,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textGrey,
                 ),
@@ -753,11 +757,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildUpgradesSection() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+      padding: ResponsiveUtils.pLTRB(15, 10, 15, 10),
       child: Row(
         children: [
           _upgradeItem(FontAwesomeIcons.robot, ref.t(LocalizationKeys.chatBot)),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.s),
           _upgradeItem(
             FontAwesomeIcons.rocket,
             ref.t(LocalizationKeys.boosts),
@@ -770,7 +774,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               );
             },
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.s),
           _upgradeItem(
             FontAwesomeIcons.key,
             ref.t(LocalizationKeys.keys),
@@ -784,7 +788,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               );
             },
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.s),
           _upgradeItem(
             FontAwesomeIcons.store,
             ref.t(LocalizationKeys.shop),
@@ -813,9 +817,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     Widget content;
     if (isShop) {
       content = Container(
-        height: 65,
+        height: 65.s,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           gradient: const LinearGradient(
             colors: [AppColors.angolaYellow, AppColors.angolaRed],
             begin: Alignment.topLeft,
@@ -833,9 +837,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     } else {
       content = _GlassEffectContainer(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: SizedBox(
-          height: 65,
+          height: 65.s,
           child: _upgradeItemContent(icon, label, AppColors.textGrey),
         ),
       );
@@ -843,7 +847,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Expanded(
       child: PressableWidget(
         onTap: onTap ?? () {},
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: content,
       ),
     );
@@ -853,13 +857,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        FaIcon(icon, size: 22, color: color),
-        const SizedBox(height: 4),
+        FaIcon(icon, size: 22.s, color: color),
+        SizedBox(height: 4.s),
         Text(
           label.toUpperCase(),
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 12.f,
             fontWeight: FontWeight.w600,
             color: color,
           ),
@@ -872,9 +876,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return _GlassEffectContainer(
       borderRadius: BorderRadius.zero,
       child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20.0)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
+          padding: ResponsiveUtils.pLTRB(0, 8, 0, 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -905,7 +909,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final bool isActive = _activeNavIndex == index;
     final color = isActive ? AppColors.angolaYellow : AppColors.textGrey;
     final shadows = isActive
-        ? [const Shadow(color: AppColors.glowYellow, blurRadius: 10)]
+        ? [Shadow(color: AppColors.glowYellow, blurRadius: 10)]
         : <Shadow>[];
 
     return Expanded(
@@ -919,16 +923,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         splashColor: AppColors.angolaYellow.withOpacity(0.15),
         highlightColor: AppColors.angolaYellow.withOpacity(0.1),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          padding: ResponsiveUtils.pSymmetric(vertical: 4.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              FaIcon(icon, size: 22, color: color, shadows: shadows),
-              const SizedBox(height: 4),
+              FaIcon(icon, size: 22.s, color: color, shadows: shadows),
+              SizedBox(height: 4.s),
               Text(
                 label.toUpperCase(),
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 10.f,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.5,
                   color: color,
@@ -963,16 +967,16 @@ class _StatsContainer extends ConsumerWidget {
             children: [
               Text(
                 ref.t(LocalizationKeys.hustleLevel),
-                style: const TextStyle(
-                  fontSize: 12,
+                style: TextStyle(
+                  fontSize: 12.f,
                   color: AppColors.textGrey,
                   shadows: textShadow,
                 ),
               ),
               Text(
                 HustleUtils.getCurrentHustleDisplayName(user.currentHustle),
-                style: const TextStyle(
-                  fontSize: 20,
+                style: TextStyle(
+                  fontSize: 20.f,
                   color: AppColors.textLight,
                   fontWeight: FontWeight.w700,
                   height: 1.1,
@@ -981,17 +985,17 @@ class _StatsContainer extends ConsumerWidget {
               ),
               Text(
                 '${ref.t(LocalizationKeys.level)} ${user.level}',
-                style: const TextStyle(
-                  fontSize: 12,
+                style: TextStyle(
+                  fontSize: 12.f,
                   color: AppColors.textGrey,
                   shadows: textShadow,
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.s),
               Text(
                 '${ref.t(LocalizationKeys.dailyStreak)}: ${user.dailyStreak}',
-                style: const TextStyle(
-                  fontSize: 12,
+                style: TextStyle(
+                  fontSize: 12.f,
                   color: AppColors.textGrey,
                   fontWeight: FontWeight.w600,
                   shadows: textShadow,
@@ -1000,7 +1004,7 @@ class _StatsContainer extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(width: 15),
+        SizedBox(width: 15.s),
         Expanded(
           child: levelStatusAsync.when(
             data: (status) {
@@ -1010,13 +1014,13 @@ class _StatsContainer extends ConsumerWidget {
                   children: [
                     Text(
                       ref.t(LocalizationKeys.nextLevel),
-                      style: const TextStyle(
-                        fontSize: 12,
+                      style: TextStyle(
+                        fontSize: 12.f,
                         color: AppColors.textGrey,
                         shadows: textShadow,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.s),
                     Text("${ref.t(LocalizationKeys.statsLoading)}"),
                   ],
                 );
@@ -1031,20 +1035,20 @@ class _StatsContainer extends ConsumerWidget {
                 children: [
                   Text(
                     ref.t(LocalizationKeys.nextLevel),
-                    style: const TextStyle(
-                      fontSize: 12,
+                    style: TextStyle(
+                      fontSize: 12.f,
                       color: AppColors.textGrey,
                       shadows: textShadow,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.s),
                   _GlassEffectContainer(
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(6.r),
                     child: Container(
                       width: double.infinity,
-                      height: 12,
+                      height: 12.s,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(6.r),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.4),
@@ -1055,7 +1059,7 @@ class _StatsContainer extends ConsumerWidget {
                         ],
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(6.r),
                         child: LinearProgressIndicator(
                           value: progressValue,
                           backgroundColor: Colors.transparent,
@@ -1064,22 +1068,22 @@ class _StatsContainer extends ConsumerWidget {
                                 ? Colors.green.shade500
                                 : AppColors.angolaYellow,
                           ),
-                          minHeight: 12,
+                          minHeight: 12.s,
                           color: AppColors.angolaRed,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.s),
                   Text(
                     '${status.hcEarnedInLevelProgress} / ${status.hcEarnedInLevelRequired} HC',
-                    style: const TextStyle(
-                      fontSize: 11,
+                    style: TextStyle(
+                      fontSize: 11.f,
                       color: AppColors.textGrey,
                       shadows: textShadow,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.s),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -1096,7 +1100,7 @@ class _StatsContainer extends ConsumerWidget {
                                   : -2,
                             ),
                           ],
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(10.r),
                         ),
                         child: _UpgradeButtonAnimator(
                           isEnabled: status.isEligibleForUpgrade,
@@ -1172,9 +1176,9 @@ class _StatsContainer extends ConsumerWidget {
                                 color: status.isEligibleForUpgrade
                                     ? AppColors.angolaYellow
                                     : AppColors.orange,
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(10.r),
                               ),
-                              padding: const EdgeInsets.symmetric(
+                              padding: ResponsiveUtils.pSymmetric(
                                 horizontal: 14,
                                 vertical: 8,
                               ),
@@ -1182,7 +1186,7 @@ class _StatsContainer extends ConsumerWidget {
                                 '${status.upgradeFee} HC',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 14,
+                                  fontSize: 14.f,
                                   color: AppColors.angolaBlack,
                                 ),
                               ),
@@ -1190,11 +1194,11 @@ class _StatsContainer extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2.s),
                       Text(
                         ref.t(LocalizationKeys.upgradeLevel),
-                        style: const TextStyle(
-                          fontSize: 10,
+                        style: TextStyle(
+                          fontSize: 10.f,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textGrey,
                           shadows: textShadow,
@@ -1342,12 +1346,12 @@ class _DailyTapButtonState extends ConsumerState<_DailyTapButton> {
 
     return PressableWidget(
       onTap: isDisabled ? null : () => widget.taskController.completeTask(),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(16.r),
       child: _GlassEffectContainer(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         child: SizedBox(
-          width: 64,
-          height: 64,
+          width: 64.s,
+          height: 64.s,
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -1356,9 +1360,9 @@ class _DailyTapButtonState extends ConsumerState<_DailyTapButton> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (currentTaskState == TaskState.loading)
-                    const SizedBox(
-                      width: 24,
-                      height: 24,
+                    SizedBox(
+                      width: 24.s,
+                      height: 24.s,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
@@ -1369,17 +1373,17 @@ class _DailyTapButtonState extends ConsumerState<_DailyTapButton> {
                   else
                     FaIcon(
                       FontAwesomeIcons.handPointer,
-                      size: 24,
+                      size: 24.s,
                       color: isDisabled
                           ? AppColors.textGrey.withOpacity(0.5)
                           : AppColors.textGrey,
                     ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.s),
                   Text(
                     _getButtonText(currentTaskState),
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 9,
+                      fontSize: 9.f,
                       fontWeight: FontWeight.w600,
                       color: _getTextColor(currentTaskState),
                     ),
@@ -1688,12 +1692,12 @@ class _WatchAdButtonState extends ConsumerState<_WatchAdButton> {
 
     return PressableWidget(
       onTap: isDisabled ? null : _watchAd,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(16.r),
       child: _GlassEffectContainer(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         child: SizedBox(
-          width: 64,
-          height: 64,
+          width: 64.s,
+          height: 64.s,
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -1702,9 +1706,9 @@ class _WatchAdButtonState extends ConsumerState<_WatchAdButton> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (currentTaskState == TaskState.loading || _isShowingAd)
-                    const SizedBox(
-                      width: 24,
-                      height: 24,
+                    SizedBox(
+                      width: 24.s,
+                      height: 24.s,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
@@ -1715,17 +1719,17 @@ class _WatchAdButtonState extends ConsumerState<_WatchAdButton> {
                   else
                     FaIcon(
                       FontAwesomeIcons.circlePlay,
-                      size: 24,
+                      size: 24.s,
                       color: isDisabled
                           ? AppColors.textGrey.withOpacity(0.5)
                           : AppColors.textGrey,
                     ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.s),
                   Text(
                     _getButtonText(currentTaskState),
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 9,
+                      fontSize: 9.f,
                       fontWeight: FontWeight.w600,
                       color: _getTextColor(currentTaskState),
                     ),
@@ -1925,12 +1929,12 @@ class _QuizButtonState extends ConsumerState<_QuizButton> {
               Map<String, dynamic> payload = globalQuizResult?.toJson() ?? {};
               widget.taskController.completeTask(payload: payload);
             },
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(16.r),
       child: _GlassEffectContainer(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         child: SizedBox(
-          width: 64,
-          height: 64,
+          width: 64.s,
+          height: 64.s,
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -1939,9 +1943,9 @@ class _QuizButtonState extends ConsumerState<_QuizButton> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (currentTaskState == TaskState.loading)
-                    const SizedBox(
-                      width: 24,
-                      height: 24,
+                    SizedBox(
+                      width: 24.s,
+                      height: 24.s,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
@@ -1952,16 +1956,16 @@ class _QuizButtonState extends ConsumerState<_QuizButton> {
                   else
                     FaIcon(
                       FontAwesomeIcons.handPointer,
-                      size: 24,
+                      size: 24.s,
                       color: isDisabled
                           ? AppColors.textGrey.withOpacity(0.5)
                           : AppColors.textGrey,
                     ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.s),
                   Text(
                     _getButtonText(currentTaskState),
                     style: TextStyle(
-                      fontSize: 9,
+                      fontSize: 9.f,
                       fontWeight: FontWeight.w600,
                       color: _getTextColor(currentTaskState),
                     ),
@@ -2044,19 +2048,19 @@ class _MainTapButton extends ConsumerWidget {
           : () {
               taskController.completeTask();
             },
-      borderRadius: BorderRadius.circular(80),
+      borderRadius: BorderRadius.circular(80.r),
       child: _GlassEffectContainer(
         isCircle: true,
         child: SizedBox(
-          width: 160,
-          height: 160,
+          width: 160.s,
+          height: 160.s,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (taskState == TaskState.loading)
-                const SizedBox(
-                  width: 50,
-                  height: 50,
+                SizedBox(
+                  width: 50.s,
+                  height: 50.s,
                   child: CircularProgressIndicator(
                     strokeWidth: 4,
                     valueColor: AlwaysStoppedAnimation<Color>(
@@ -2067,7 +2071,7 @@ class _MainTapButton extends ConsumerWidget {
               else
                 FaIcon(
                   FontAwesomeIcons.coins,
-                  size: 50,
+                  size: 50.s,
                   color: isDisabled
                       ? AppColors.textGrey.withOpacity(0.5)
                       : AppColors.angolaYellow,
@@ -2080,12 +2084,12 @@ class _MainTapButton extends ConsumerWidget {
                           ),
                         ],
                 ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10.s),
               Text(
                 ref.t(LocalizationKeys.tap),
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  fontSize: 18,
+                  fontSize: 18.f,
                   letterSpacing: 1,
                   color: isDisabled
                       ? AppColors.textGrey.withOpacity(0.5)

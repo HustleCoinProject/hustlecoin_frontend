@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hustlecoin/home_screen.dart';
+import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'app_colors.dart';
 import 'state/all_states.dart';
 
@@ -139,176 +140,187 @@ class _SelectHustleScreenState extends ConsumerState<SelectHustleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/${widget.newHustle}.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
+    return ResponsiveBuilder(
+      builder: (context) => Scaffold(
+        body: Container(
           decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.center,
-              radius: 1.0,
-              colors: [
-                const Color(0xFF101010).withOpacity(0.4),
-                const Color(0xFF101010).withOpacity(0.9),
-              ],
+            image: DecorationImage(
+              image: AssetImage('assets/images/${widget.newHustle}.png'),
+              fit: BoxFit.cover,
             ),
           ),
-          child: SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Show error message if any
-                    if (_errorMessage != null)
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 20),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 10,
-                          horizontal: 15,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: Colors.red.withOpacity(0.6),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment.center,
+                radius: 1.0,
+                colors: [
+                  const Color(0xFF101010).withOpacity(0.4),
+                  const Color(0xFF101010).withOpacity(0.9),
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: ResponsiveUtils.pSymmetric(horizontal: 20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Show error message if any
+                      if (_errorMessage != null)
+                        Container(
+                          margin: EdgeInsets.only(bottom: 20.s),
+                          padding: ResponsiveUtils.pSymmetric(
+                            vertical: 10,
+                            horizontal: 15,
                           ),
-                        ),
-                        child: Text(
-                          _errorMessage!,
-                          style: const TextStyle(color: Colors.white),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-
-                    // Congratulations header
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 15,
-                        horizontal: 20,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.angolaYellow.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.angolaYellow.withOpacity(0.6),
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          const Text(
-                            '🎉 CONGRATULATIONS! 🎉',
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(8.r),
+                            border: Border.all(
+                              color: Colors.red.withOpacity(0.6),
+                            ),
+                          ),
+                          child: Text(
+                            _errorMessage!,
                             style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.angolaYellow,
+                              color: Colors.white,
+                              fontSize: 14.f,
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'You\'ve been promoted to Level ${widget.newLevel}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: AppColors.textLight,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-                    const Text(
-                      'Choose Your New Hustle',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Select a hustle to reflect your new status',
-                      style: TextStyle(fontSize: 16, color: AppColors.textGrey),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 30),
-
-                    // Hustle carousel
-                    if (_isLoading)
-                      const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.angolaYellow,
                         ),
-                      )
-                    else if (_availableHustles.isEmpty)
-                      const Text(
-                        'No hustles available. Please try again later.',
-                        style: TextStyle(color: AppColors.textGrey),
-                        textAlign: TextAlign.center,
-                      )
-                    else
-                      SizedBox(
-                        height: 350, // Give the carousel a fixed height
-                        child: PageView.builder(
-                          controller: _hustleController,
-                          itemCount: _availableHustles.length,
-                          itemBuilder: (context, index) {
-                            return _buildHustleCard(index);
-                          },
+
+                      // Congratulations header
+                      Container(
+                        padding: ResponsiveUtils.pSymmetric(
+                          vertical: 15,
+                          horizontal: 20,
                         ),
-                      ),
-
-                    const SizedBox(height: 30),
-
-                    // Confirm button
-                    PressableWidget(
-                      onTap: (_isLoading || _isSubmitting)
-                          ? null
-                          : _confirmHustleSelection,
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          gradient: const LinearGradient(
-                            colors: [
-                              AppColors.angolaYellow,
-                              AppColors.angolaRed,
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                          color: AppColors.angolaYellow.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: AppColors.angolaYellow.withOpacity(0.6),
                           ),
                         ),
-                        child: _isSubmitting
-                            ? const Center(
-                                child: SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(
+                        child: Column(
+                          children: [
+                            Text(
+                              '🎉 CONGRATULATIONS! 🎉',
+                              style: TextStyle(
+                                fontSize: 20.f,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.angolaYellow,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 8.s),
+                            Text(
+                              'You\'ve been promoted to Level ${widget.newLevel}',
+                              style: TextStyle(
+                                fontSize: 16.f,
+                                color: AppColors.textLight,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(height: 30.s),
+                      Text(
+                        'Choose Your New Hustle',
+                        style: TextStyle(
+                          fontSize: 28.f,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 10.s),
+                      Text(
+                        'Select a hustle to reflect your new status',
+                        style: TextStyle(
+                          fontSize: 16.f,
+                          color: AppColors.textGrey,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 30.s),
+
+                      // Hustle carousel
+                      if (_isLoading)
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.angolaYellow,
+                          ),
+                        )
+                      else if (_availableHustles.isEmpty)
+                        Text(
+                          'No hustles available. Please try again later.',
+                          style: TextStyle(
+                            color: AppColors.textGrey,
+                            fontSize: 14.f,
+                          ),
+                          textAlign: TextAlign.center,
+                        )
+                      else
+                        SizedBox(
+                          height: 350.s, // Give the carousel a fixed height
+                          child: PageView.builder(
+                            controller: _hustleController,
+                            itemCount: _availableHustles.length,
+                            itemBuilder: (context, index) {
+                              return _buildHustleCard(index);
+                            },
+                          ),
+                        ),
+
+                      SizedBox(height: 30.s),
+
+                      // Confirm button
+                      PressableWidget(
+                        onTap: (_isLoading || _isSubmitting)
+                            ? null
+                            : _confirmHustleSelection,
+                        child: Container(
+                          width: double.infinity,
+                          padding: ResponsiveUtils.pSymmetric(vertical: 15),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12.r),
+                            gradient: const LinearGradient(
+                              colors: [
+                                AppColors.angolaYellow,
+                                AppColors.angolaRed,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: _isSubmitting
+                              ? Center(
+                                  child: SizedBox(
+                                    width: 24.s,
+                                    height: 24.s,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                )
+                              : Text(
+                                  'Confirm Selection',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
                                     color: Colors.white,
-                                    strokeWidth: 2,
+                                    fontSize: 16.f,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                              )
-                            : const Text(
-                                'Confirm Selection',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -330,33 +342,33 @@ class _SelectHustleScreenState extends ConsumerState<SelectHustleScreen> {
         opacity: isSelected ? 1.0 : 0.6,
         duration: const Duration(milliseconds: 300),
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 10),
+          margin: ResponsiveUtils.pSymmetric(horizontal: 10),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
               color: isSelected ? AppColors.angolaYellow : Colors.transparent,
-              width: 3,
+              width: 3.s,
             ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
                       color: AppColors.glowYellow,
-                      blurRadius: 25,
-                      spreadRadius: -5,
+                      blurRadius: 25.s,
+                      spreadRadius: -5.s,
                     ),
                   ]
                 : [],
           ),
           child: _GlassEffectContainer(
             borderRadius: BorderRadius.circular(
-              17,
+              17.r,
             ), // Slightly smaller to show border
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.s),
             child: Column(
               children: [
                 Expanded(
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(15.r),
                     child: Uri.parse(hustle['image']!).isAbsolute
                         ? Image.network(
                             hustle['image']!,
@@ -370,13 +382,10 @@ class _SelectHustleScreenState extends ConsumerState<SelectHustleScreen> {
                           ),
                   ),
                 ),
-                const SizedBox(height: 15),
+                SizedBox(height: 15.s),
                 Text(
                   hustle['name']!,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 18.f, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -406,9 +415,9 @@ class _GlassEffectContainer extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.glassBg,
         borderRadius: borderRadius ?? BorderRadius.zero,
-        border: Border.all(color: AppColors.glassBorder, width: 1),
+        border: Border.all(color: AppColors.glassBorder, width: 1.s),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10),
+          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10.s),
         ],
       ),
       child: child,

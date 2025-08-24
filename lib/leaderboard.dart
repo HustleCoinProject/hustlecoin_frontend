@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
+import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'app_colors.dart';
 import 'state/all_states.dart';
 import 'utils/localization.dart';

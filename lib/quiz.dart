@@ -8,6 +8,7 @@ import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/utils/ad_helper.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'package:hustlecoin/utils/localization.dart';
+import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'app_colors.dart';
 
 // --- Reusable Helper Widgets (copied from your original for completeness) ---
@@ -255,74 +256,76 @@ class _QuizContentState extends ConsumerState<_QuizContent> {
   Widget build(BuildContext context) {
     bool isButtonEnabled = _selectedOptionIndex != null;
 
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              children: [
-                const SizedBox(height: 20), // Add some top spacing
-                _GlassEffectContainer(
-                  borderRadius: BorderRadius.circular(16),
-                  padding: const EdgeInsets.all(20),
-                  child: Text(
-                    widget.quiz.question,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      height: 1.4,
+    return ResponsiveBuilder(
+      builder: (context) => Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(20.s),
+              child: Column(
+                children: [
+                  SizedBox(height: 20.s), // Add some top spacing
+                  _GlassEffectContainer(
+                    borderRadius: BorderRadius.circular(16.r),
+                    padding: EdgeInsets.all(20.s),
+                    child: Text(
+                      widget.quiz.question,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20.f,
+                        fontWeight: FontWeight.w600,
+                        height: 1.4,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 25),
-                ...widget.quiz.options.asMap().entries.map((entry) {
-                  int index = entry.key;
-                  String optionText = entry.value;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 15.0),
-                    child: _buildOptionCard(optionText, index),
-                  );
-                }),
-                const SizedBox(height: 100), // Add space for button
-              ],
+                  SizedBox(height: 25.s),
+                  ...widget.quiz.options.asMap().entries.map((entry) {
+                    int index = entry.key;
+                    String optionText = entry.value;
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 15.s),
+                      child: _buildOptionCard(optionText, index),
+                    );
+                  }),
+                  SizedBox(height: 100.s), // Add space for button
+                ],
+              ),
             ),
           ),
-        ),
-        // Fixed submit button at bottom
-        Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: AnimatedOpacity(
-            opacity: isButtonEnabled ? 1.0 : 0.5,
-            duration: const Duration(milliseconds: 200),
-            child: PressableWidget(
-              onTap: isButtonEnabled ? _submitAnswer : null,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: const LinearGradient(
-                    colors: [AppColors.angolaYellow, AppColors.angolaRed],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+          // Fixed submit button at bottom
+          Padding(
+            padding: EdgeInsets.all(20.s),
+            child: AnimatedOpacity(
+              opacity: isButtonEnabled ? 1.0 : 0.5,
+              duration: const Duration(milliseconds: 200),
+              child: PressableWidget(
+                onTap: isButtonEnabled ? _submitAnswer : null,
+                child: Container(
+                  width: double.infinity,
+                  padding: ResponsiveUtils.pSymmetric(vertical: 15),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12.r),
+                    gradient: const LinearGradient(
+                      colors: [AppColors.angolaYellow, AppColors.angolaRed],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                   ),
-                ),
-                child: Text(
-                  ref.t(LocalizationKeys.submitAnswer),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                  child: Text(
+                    ref.t(LocalizationKeys.submitAnswer),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

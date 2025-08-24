@@ -6,6 +6,7 @@ import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'package:hustlecoin/utils/localization.dart';
+import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'app_colors.dart';
 
 // Provider to track loading state for each shop item
@@ -110,76 +111,78 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     // Get the shop items from the provider
     final shopItemsAsync = ref.watch(shopItemsProvider);
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(
-              'assets/images/${user != null ? HustleUtils.getCurrentHustleKey(user.currentHustle) : "Taxi Driver"}.png',
-            ),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
+    return ResponsiveBuilder(
+      builder: (context) => Scaffold(
+        body: Container(
           decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.center,
-              radius: 1.0,
-              colors: [
-                const Color(0xFF101010).withOpacity(0.4),
-                const Color(0xFF101010).withOpacity(0.9),
-              ],
+            image: DecorationImage(
+              image: AssetImage(
+                'assets/images/${user != null ? HustleUtils.getCurrentHustleKey(user.currentHustle) : "Taxi Driver"}.png',
+              ),
+              fit: BoxFit.cover,
             ),
           ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(context, user),
-                // Banner ad
-                const BannerAdWidget(
-                  margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                ),
-                // Display the title based on filter
-                _buildShopTitle(context),
-                // Show loading indicator or shop items
-                shopItemsAsync.when(
-                  data: (shopItems) {
-                    List<ShopItem> filteredItems = shopItems;
-
-                    // Filter by item type if specified
-                    if (widget.itemTypeFilter != null) {
-                      filteredItems = shopItems
-                          .where(
-                            (item) => item.itemType == widget.itemTypeFilter,
-                          )
-                          .toList();
-                    }
-
-                    // Exclude specified item types if provided
-                    if (widget.excludeTypes != null &&
-                        widget.excludeTypes!.isNotEmpty) {
-                      filteredItems = filteredItems
-                          .where(
-                            (item) =>
-                                !widget.excludeTypes!.contains(item.itemType),
-                          )
-                          .toList();
-                    }
-                    return _buildContent(context, ref, filteredItems);
-                  },
-                  loading: () => const Expanded(
-                    child: Center(child: CircularProgressIndicator()),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment.center,
+                radius: 1.0,
+                colors: [
+                  const Color(0xFF101010).withOpacity(0.4),
+                  const Color(0xFF101010).withOpacity(0.9),
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  _buildHeader(context, user),
+                  // Banner ad
+                  const BannerAdWidget(
+                    margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                   ),
-                  error: (e, st) => Expanded(
-                    child: Center(
-                      child: Text(
-                        'Failed to load shop items',
-                        style: TextStyle(color: AppColors.textGrey),
+                  // Display the title based on filter
+                  _buildShopTitle(context),
+                  // Show loading indicator or shop items
+                  shopItemsAsync.when(
+                    data: (shopItems) {
+                      List<ShopItem> filteredItems = shopItems;
+
+                      // Filter by item type if specified
+                      if (widget.itemTypeFilter != null) {
+                        filteredItems = shopItems
+                            .where(
+                              (item) => item.itemType == widget.itemTypeFilter,
+                            )
+                            .toList();
+                      }
+
+                      // Exclude specified item types if provided
+                      if (widget.excludeTypes != null &&
+                          widget.excludeTypes!.isNotEmpty) {
+                        filteredItems = filteredItems
+                            .where(
+                              (item) =>
+                                  !widget.excludeTypes!.contains(item.itemType),
+                            )
+                            .toList();
+                      }
+                      return _buildContent(context, ref, filteredItems);
+                    },
+                    loading: () => const Expanded(
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (e, st) => Expanded(
+                      child: Center(
+                        child: Text(
+                          'Failed to load shop items',
+                          style: TextStyle(color: AppColors.textGrey),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

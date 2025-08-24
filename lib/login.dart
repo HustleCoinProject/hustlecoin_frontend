@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/state/all_states.dart';
 import 'package:hustlecoin/utils/localization.dart';
+import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'app_colors.dart';
 import 'signup.dart';
 import 'home_screen.dart';
@@ -30,9 +31,9 @@ class _GlassEffectContainer extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.glassBg,
         borderRadius: borderRadius,
-        border: Border.all(color: AppColors.glassBorder, width: 1),
+        border: Border.all(color: AppColors.glassBorder, width: 1.s),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10),
+          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10.s),
         ],
       ),
       child: child,
@@ -135,95 +136,97 @@ class LoginScreen extends ConsumerWidget {
     final String randomImage =
         backgroundImages[DateTime.now().microsecond % backgroundImages.length];
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/$randomImage'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
+    return ResponsiveBuilder(
+      builder: (context) => Scaffold(
+        body: Container(
           decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.center,
-              radius: 1.0,
-              colors: [
-                const Color(0xFF101010).withOpacity(0.4),
-                const Color(0xFF101010).withOpacity(0.9),
-              ],
+            image: DecorationImage(
+              image: AssetImage('assets/images/$randomImage'),
+              fit: BoxFit.cover,
             ),
           ),
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: SizedBox(
-                width: 380,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Title and Subtitle
-                    Text(
-                      ref.t(LocalizationKeys.welcomeBack),
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment.center,
+                radius: 1.0,
+                colors: [
+                  const Color(0xFF101010).withOpacity(0.4),
+                  const Color(0xFF101010).withOpacity(0.9),
+                ],
+              ),
+            ),
+            child: Center(
+              child: SingleChildScrollView(
+                padding: ResponsiveUtils.pSymmetric(horizontal: 20.0),
+                child: SizedBox(
+                  width: 380.s,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Title and Subtitle
+                      Text(
+                        ref.t(LocalizationKeys.welcomeBack),
+                        style: TextStyle(
+                          fontSize: 28.f,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      ref.t(LocalizationKeys.logInToContinue),
-                      style: const TextStyle(
-                        color: AppColors.textGrey,
-                        fontSize: 16,
+                      SizedBox(height: 5.s),
+                      Text(
+                        ref.t(LocalizationKeys.logInToContinue),
+                        style: TextStyle(
+                          color: AppColors.textGrey,
+                          fontSize: 16.f,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 30),
+                      SizedBox(height: 30.s),
 
-                    // Input Fields
-                    _buildInputField(
-                      icon: FontAwesomeIcons.user,
-                      hintText:
-                          '${ref.t(LocalizationKeys.email)} ${ref.t(LocalizationKeys.username)}',
-                      controller: usernameController,
-                    ),
-                    const SizedBox(height: 20),
-                    _buildInputField(
-                      icon: FontAwesomeIcons.lock,
-                      hintText: ref.t(LocalizationKeys.password),
-                      controller: passwordController,
-                      obscureText: true,
-                    ),
-                    const SizedBox(height: 5),
+                      // Input Fields
+                      _buildInputField(
+                        icon: FontAwesomeIcons.user,
+                        hintText:
+                            '${ref.t(LocalizationKeys.email)} ${ref.t(LocalizationKeys.username)}',
+                        controller: usernameController,
+                      ),
+                      SizedBox(height: 20.s),
+                      _buildInputField(
+                        icon: FontAwesomeIcons.lock,
+                        hintText: ref.t(LocalizationKeys.password),
+                        controller: passwordController,
+                        obscureText: true,
+                      ),
+                      SizedBox(height: 5.s),
 
-                    // Forgot Password Link
-                    _buildForgotPasswordLink(ref),
-                    const SizedBox(height: 20),
+                      // Forgot Password Link
+                      _buildForgotPasswordLink(ref),
+                      SizedBox(height: 20.s),
 
-                    // Login Button
-                    _buildActionButton(
-                      text: ref.t(LocalizationKeys.logIn),
-                      onTap: () async {
-                        /*Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (_) => const HomeScreen()),
-                        );*/
-                        // Call the login method from the provider
-                        await ref
-                            .read(authControllerProvider.notifier)
-                            .login(
-                              usernameController.text.trim(),
-                              passwordController.text.trim(),
-                            );
-                        /*print(
-                          "Fetching user with tokens: ${ref.read(authControllerProvider).value != null ? 'TOKENS_AVAILABLE' : 'NO_TOKENS'}",
-                        );*/
-                      },
-                    ),
-                    const SizedBox(height: 30),
+                      // Login Button
+                      _buildActionButton(
+                        text: ref.t(LocalizationKeys.logIn),
+                        onTap: () async {
+                          /*Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (_) => const HomeScreen()),
+                          );*/
+                          // Call the login method from the provider
+                          await ref
+                              .read(authControllerProvider.notifier)
+                              .login(
+                                usernameController.text.trim(),
+                                passwordController.text.trim(),
+                              );
+                          /*print(
+                            "Fetching user with tokens: ${ref.read(authControllerProvider).value != null ? 'TOKENS_AVAILABLE' : 'NO_TOKENS'}",
+                          );*/
+                        },
+                      ),
+                      SizedBox(height: 30.s),
 
-                    // Sign Up Link
-                    _buildSignUpLink(context, ref),
-                  ],
+                      // Sign Up Link
+                      _buildSignUpLink(context, ref),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -242,17 +245,17 @@ class LoginScreen extends ConsumerWidget {
     required TextEditingController? controller,
   }) {
     return _GlassEffectContainer(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       child: TextField(
         controller: controller,
         obscureText: obscureText,
-        style: const TextStyle(color: AppColors.textLight, fontSize: 16),
+        style: TextStyle(color: AppColors.textLight, fontSize: 16.f),
         decoration: InputDecoration(
           border: InputBorder.none,
           hintText: hintText,
-          hintStyle: const TextStyle(color: AppColors.textGrey),
-          prefixIcon: Icon(icon, color: AppColors.textGrey, size: 18),
-          contentPadding: const EdgeInsets.symmetric(vertical: 15.0),
+          hintStyle: TextStyle(color: AppColors.textGrey, fontSize: 16.f),
+          prefixIcon: Icon(icon, color: AppColors.textGrey, size: 18.s),
+          contentPadding: ResponsiveUtils.pSymmetric(vertical: 15.0),
         ),
       ),
     );
@@ -268,7 +271,7 @@ class LoginScreen extends ConsumerWidget {
           },
           child: Text(
             ref.t(LocalizationKeys.forgotPassword),
-            style: const TextStyle(color: AppColors.textGrey, fontSize: 14),
+            style: TextStyle(color: AppColors.textGrey, fontSize: 14.f),
           ),
         ),
       ],
@@ -283,9 +286,9 @@ class LoginScreen extends ConsumerWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 15),
+        padding: ResponsiveUtils.pSymmetric(vertical: 15),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           gradient: const LinearGradient(
             colors: [AppColors.angolaYellow, AppColors.angolaRed],
             begin: Alignment.topLeft,
@@ -295,9 +298,9 @@ class LoginScreen extends ConsumerWidget {
         child: Text(
           text,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
-            fontSize: 16,
+            fontSize: 16.f,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -308,18 +311,19 @@ class LoginScreen extends ConsumerWidget {
   Widget _buildSignUpLink(BuildContext context, WidgetRef ref) {
     return RichText(
       text: TextSpan(
-        style: const TextStyle(
+        style: TextStyle(
           color: AppColors.textGrey,
-          fontSize: 14,
+          fontSize: 14.f,
           fontFamily: 'Poppins',
         ),
         children: [
           TextSpan(text: "${ref.t(LocalizationKeys.dontHaveAccount)} "),
           TextSpan(
             text: ref.t(LocalizationKeys.signUp),
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.angolaYellow,
               fontWeight: FontWeight.w600,
+              fontSize: 14.f,
             ),
             recognizer: TapGestureRecognizer()
               ..onTap = () {
