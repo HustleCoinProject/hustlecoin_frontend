@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/state/all_states.dart';
 import 'package:hustlecoin/services/admob_service.dart';
+import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
 import 'package:hustlecoin/utils/ad_helper.dart';
 import 'package:hustlecoin/utils/localization.dart';
@@ -24,6 +25,7 @@ class PressableWidget extends StatefulWidget {
   final VoidCallback? onTap;
   final double scaleFactor;
   final BorderRadius borderRadius;
+  final SoundType? soundType; // Optional sound type to override default click
 
   const PressableWidget({
     super.key,
@@ -31,6 +33,7 @@ class PressableWidget extends StatefulWidget {
     this.onTap,
     this.scaleFactor = 0.95,
     this.borderRadius = BorderRadius.zero,
+    this.soundType,
   });
 
   @override
@@ -46,7 +49,11 @@ class _PressableWidgetState extends State<PressableWidget> {
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) {
         setState(() => _isPressed = false);
-        widget.onTap?.call();
+        if (widget.onTap != null) {
+          // Play sound before calling onTap
+          SoundService().playSound(widget.soundType ?? SoundType.click);
+          widget.onTap!.call();
+        }
       },
       onTapCancel: () => setState(() => _isPressed = false),
       child: AnimatedScale(
@@ -150,6 +157,9 @@ class TaskController {
       await ref
           .read(userControllerProvider.notifier)
           .completeTask(taskId, payload: payload);
+
+      // Play earn coins sound on successful task completion
+      SoundService().playEarnCoins();
 
       // Show interstitial ad after task completion
       AdHelper.showInterstitialAfterTask();
@@ -390,6 +400,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           PressableWidget(
             onTap: () => _toggleLanguage(user.language),
             borderRadius: BorderRadius.circular(12),
+            soundType:
+                SoundType.switchSound, // Use switch sound for language toggle
             child: _GlassEffectContainer(
               borderRadius: BorderRadius.circular(12),
               child: Padding(
@@ -898,7 +910,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Expanded(
       child: InkWell(
-        onTap: () => _onNavItemTapped(index),
+        onTap: () {
+          // Play click sound before navigation
+          SoundService().playClick();
+          _onNavItemTapped(index);
+        },
         customBorder: const CircleBorder(),
         splashColor: AppColors.angolaYellow.withOpacity(0.15),
         highlightColor: AppColors.angolaYellow.withOpacity(0.1),

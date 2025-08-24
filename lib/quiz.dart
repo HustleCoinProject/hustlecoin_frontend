@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/state/all_states.dart';
+import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/utils/ad_helper.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'package:hustlecoin/utils/localization.dart';
@@ -68,7 +69,11 @@ class _PressableWidgetState extends State<PressableWidget> {
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) {
         setState(() => _isPressed = false);
-        widget.onTap?.call();
+        if (widget.onTap != null) {
+          // Play click sound before calling onTap
+          SoundService().playClick();
+          widget.onTap!.call();
+        }
       },
       onTapCancel: () => setState(() => _isPressed = false),
       child: AnimatedScale(
@@ -235,6 +240,9 @@ class _QuizContentState extends ConsumerState<_QuizContent> {
 
     // Store the result globally (hack)
     globalQuizResult = result;
+
+    // Play earn coins sound when quiz is completed
+    SoundService().playEarnCoins();
 
     // Show interstitial ad after quiz completion
     AdHelper.showInterstitialAfterTask();

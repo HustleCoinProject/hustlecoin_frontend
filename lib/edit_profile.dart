@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hustlecoin/services/sound_service.dart';
 import 'app_colors.dart';
 import 'state/all_states.dart';
 import 'start.dart';
@@ -67,7 +68,11 @@ class _PressableWidgetState extends State<PressableWidget> {
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) {
         setState(() => _isPressed = false);
-        widget.onTap?.call();
+        if (widget.onTap != null) {
+          // Play click sound before calling onTap
+          SoundService().playClick();
+          widget.onTap!.call();
+        }
       },
       onTapCancel: () => setState(() => _isPressed = false),
       child: AnimatedScale(

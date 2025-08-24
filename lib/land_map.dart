@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:h3_flutter/h3_flutter.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:hustlecoin/services/sound_service.dart';
 
 import 'state/all_states.dart';
 import 'app_colors.dart';
@@ -402,7 +403,10 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
             top: 15,
             left: 15,
             child: GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
+              onTap: () {
+                SoundService().playClick();
+                Navigator.of(context).pop();
+              },
               child: _GlassEffectContainer(
                 borderRadius: const BorderRadius.all(Radius.circular(12)),
                 padding: const EdgeInsets.symmetric(
@@ -487,7 +491,12 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
             ),
             const SizedBox(width: 15),
             GestureDetector(
-              onTap: !_isSelling ? _sellLand : null,
+              onTap: !_isSelling
+                  ? () {
+                      SoundService().playClick();
+                      _sellLand();
+                    }
+                  : null,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(
@@ -570,7 +579,12 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
             ),
             const SizedBox(width: 15),
             GestureDetector(
-              onTap: (canAfford && !_isPurchasing) ? _purchaseLand : null,
+              onTap: (canAfford && !_isPurchasing)
+                  ? () {
+                      SoundService().playClick();
+                      _purchaseLand();
+                    }
+                  : null,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(

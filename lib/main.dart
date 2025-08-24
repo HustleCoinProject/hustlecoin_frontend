@@ -12,6 +12,7 @@ import 'package:hustlecoin/utils/localization.dart';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hustlecoin/services/admob_service.dart';
+import 'package:hustlecoin/services/sound_service.dart';
 
 // We need to initialize the server time sync after the app starts
 // Create a StatefulWidget that will synchronize with server on initialization
@@ -133,6 +134,11 @@ Future<void> main() async {
   // Get SharedPreferences instance
   print('DEBUG: main() - Getting SharedPreferences instance...');
   final prefs = await SharedPreferences.getInstance();
+
+  // Initialize sound service
+  print('DEBUG: main() - Initializing sound service...');
+  await SoundService().initialize();
+  print('DEBUG: main() - ✅ Sound service initialized');
 
   // Start the app with a single ProviderScope
   runApp(
