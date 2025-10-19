@@ -13,84 +13,10 @@ import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'package:hustlecoin/utils/localization.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
-
-// --- Reusable Helper Widgets (copied from your original for completeness) ---
-
-class _GlassEffectContainer extends StatelessWidget {
-  final Widget child;
-  final BorderRadius borderRadius;
-  final EdgeInsetsGeometry padding;
-  final Border? border;
-  final List<BoxShadow>? boxShadow;
-
-  const _GlassEffectContainer({
-    required this.child,
-    this.borderRadius = BorderRadius.zero,
-    this.padding = EdgeInsets.zero,
-    this.border,
-    this.boxShadow,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: AppColors.glassBg,
-        borderRadius: borderRadius,
-        border: border ?? Border.all(color: AppColors.glassBorder, width: 1),
-        boxShadow:
-            boxShadow ??
-            [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10)],
-      ),
-      child: child,
-    );
-  }
-}
-
-class PressableWidget extends StatefulWidget {
-  final Widget child;
-  final VoidCallback? onTap;
-  final double scaleFactor;
-
-  const PressableWidget({
-    super.key,
-    required this.child,
-    this.onTap,
-    this.scaleFactor = 0.97,
-  });
-
-  @override
-  State<PressableWidget> createState() => _PressableWidgetState();
-}
-
-class _PressableWidgetState extends State<PressableWidget> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) {
-        setState(() => _isPressed = false);
-        if (widget.onTap != null) {
-          // Play click sound before calling onTap
-          SoundService().playClick();
-          widget.onTap!.call();
-        }
-      },
-      onTapCancel: () => setState(() => _isPressed = false),
-      child: AnimatedScale(
-        scale: _isPressed ? widget.scaleFactor : 1.0,
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
-        child: widget.child,
-      ),
-    );
-  }
-}
-
-// --- Main Quiz Screen Widget ---
+import 'package:hustlecoin/widgets/pressable_scale_widget.dart';
+import 'package:hustlecoin/widgets/glass_container.dart';
+import 'package:hustlecoin/widgets/primary_action_button.dart';
+import 'package:hustlecoin/widgets/screen_header.dart';
 
 class QuizScreen extends ConsumerWidget {
   const QuizScreen({super.key});
@@ -123,7 +49,50 @@ class QuizScreen extends ConsumerWidget {
           child: SafeArea(
             child: Column(
               children: [
-                _buildHeader(context, ref),
+                ScreenHeader(
+                  title: ref.t(LocalizationKeys.dailyQuiz),
+                  trailingWidget: GlassContainer(
+                    borderRadius: 12,
+                    padding: const EdgeInsets.all(8),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                            color: AppColors.angolaRed,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            FontAwesomeIcons.star,
+                            size: 18,
+                            color: AppColors.textLight,
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${user?.hcBalance ?? 0} HC',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              '≈ Kz ${user?.kzBalance ?? 0}',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textGrey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 Expanded(
                   child: quizAsync.when(
                     loading: () =>
@@ -136,80 +105,6 @@ class QuizScreen extends ConsumerWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(userControllerProvider).value;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
-      child: Row(
-        children: [
-          PressableWidget(
-            onTap: () => Navigator.of(context).pop(), // Pop without a result
-            child: const _GlassEffectContainer(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              child: SizedBox(
-                width: 54,
-                height: 54,
-                child: Icon(FontAwesomeIcons.arrowLeft, size: 20),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              ref.t(LocalizationKeys.dailyQuiz),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                shadows: [Shadow(blurRadius: 4, color: Colors.black87)],
-              ),
-            ),
-          ),
-          _GlassEffectContainer(
-            borderRadius: BorderRadius.circular(12),
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.angolaRed,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    FontAwesomeIcons.star,
-                    size: 18,
-                    color: AppColors.textLight,
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${user?.hcBalance ?? 0} HC',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      '≈ Kz ${user?.kzBalance ?? 0}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textGrey,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -268,8 +163,8 @@ class _QuizContentState extends ConsumerState<_QuizContent> {
               child: Column(
                 children: [
                   SizedBox(height: 20.s), // Add some top spacing
-                  _GlassEffectContainer(
-                    borderRadius: BorderRadius.circular(16.r),
+                  GlassContainer(
+                    borderRadius: 16,
                     padding: EdgeInsets.all(20.s),
                     child: Text(
                       widget.quiz.question,
@@ -295,35 +190,14 @@ class _QuizContentState extends ConsumerState<_QuizContent> {
               ),
             ),
           ),
-          // Fixed submit button at bottom
+          // submit button at bottom
           Padding(
             padding: EdgeInsets.all(20.s),
-            child: AnimatedOpacity(
-              opacity: isButtonEnabled ? 1.0 : 0.5,
-              duration: const Duration(milliseconds: 200),
-              child: PressableWidget(
+            child: SizedBox(
+              width: double.infinity, // Wrap in SizedBox to enforce full width
+              child: PrimaryActionButton(
+                text: ref.t(LocalizationKeys.submitAnswer),
                 onTap: isButtonEnabled ? _submitAnswer : null,
-                child: Container(
-                  width: double.infinity,
-                  padding: ResponsiveUtils.pSymmetric(vertical: 15),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12.r),
-                    gradient: const LinearGradient(
-                      colors: [AppColors.angolaYellow, AppColors.angolaRed],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: Text(
-                    ref.t(LocalizationKeys.submitAnswer),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
               ),
             ),
           ),
@@ -334,10 +208,10 @@ class _QuizContentState extends ConsumerState<_QuizContent> {
 
   Widget _buildOptionCard(String text, int index) {
     bool isSelected = _selectedOptionIndex == index;
-    return PressableWidget(
+    return PressableScaleWidget(
       onTap: () => _selectOption(index),
-      child: _GlassEffectContainer(
-        borderRadius: BorderRadius.circular(12),
+      child: GlassContainer(
+        borderRadius: 12,
         padding: const EdgeInsets.all(18),
         border: Border.all(
           color: isSelected ? AppColors.angolaYellow : AppColors.glassBorder,

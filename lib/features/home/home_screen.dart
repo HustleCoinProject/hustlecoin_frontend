@@ -1,5 +1,3 @@
-// lib/home_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -24,53 +22,8 @@ import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'dart:async'; // For Timer
 import 'package:hustlecoin/theme/app_colors.dart';
-
-// A custom, lightweight widget for press feedback.
-class PressableWidget extends StatefulWidget {
-  final Widget child;
-  final VoidCallback? onTap;
-  final double scaleFactor;
-  final BorderRadius borderRadius;
-  final SoundType? soundType; // Optional sound type to override default click
-
-  const PressableWidget({
-    super.key,
-    required this.child,
-    this.onTap,
-    this.scaleFactor = 0.95,
-    this.borderRadius = BorderRadius.zero,
-    this.soundType,
-  });
-
-  @override
-  State<PressableWidget> createState() => _PressableWidgetState();
-}
-
-class _PressableWidgetState extends State<PressableWidget> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) {
-        setState(() => _isPressed = false);
-        if (widget.onTap != null) {
-          // Play sound before calling onTap
-          SoundService().playSound(widget.soundType ?? SoundType.click);
-          widget.onTap!.call();
-        }
-      },
-      onTapCancel: () => setState(() => _isPressed = false),
-      child: AnimatedScale(
-        scale: _isPressed ? widget.scaleFactor : 1.0,
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
-        child: widget.child,
-      ),
-    );
-  }
-}
+import 'package:hustlecoin/widgets/glass_container.dart';
+import 'package:hustlecoin/widgets/pressable_scale_widget.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -338,8 +291,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _GlassEffectContainer(
-            borderRadius: BorderRadius.circular(12.r),
+          GlassContainer(
+            borderRadius: 12,
             child: Padding(
               padding: ResponsiveUtils.p(8.0),
               child: Row(
@@ -401,18 +354,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               borderRadius: BorderRadius.circular(16.r),
             ),
-            child: _GlassEffectContainer(
-              borderRadius: BorderRadius.circular(13.r),
+            child: GlassContainer(
+              borderRadius: 13,
               child: Icon(FontAwesomeIcons.user, size: 28.s),
             ),
           ),
-          PressableWidget(
+          PressableScaleWidget(
             onTap: () => _toggleLanguage(user.language),
-            borderRadius: BorderRadius.circular(12.r),
             soundType:
                 SoundType.switchSound, // Use switch sound for language toggle
-            child: _GlassEffectContainer(
-              borderRadius: BorderRadius.circular(12.r),
+            child: GlassContainer(
+              borderRadius: 12,
               child: Padding(
                 padding: ResponsiveUtils.pSymmetric(
                   horizontal: 8.0,
@@ -526,12 +478,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ? AppColors.orange.withOpacity(0.5)
             : AppColors.orange;
 
-        return PressableWidget(
+        return PressableScaleWidget(
           onTap: isDisabled ? null : () => taskController.completeTask(),
           scaleFactor: 0.9,
-          borderRadius: BorderRadius.circular(
-            30.r,
-          ), // Approximates the star shape
           child: Container(
             padding: ResponsiveUtils.pSymmetric(horizontal: 28, vertical: 14),
             decoration: ShapeDecoration(
@@ -614,7 +563,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             alignment: Alignment.topCenter,
             child: Padding(
               padding: EdgeInsets.only(top: 20.s),
-              // *** FIX: Replaced method call with new widget ***
               child: _StatsContainer(user: user),
             ),
           ),
@@ -626,11 +574,69 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildDailyTapButton(),
+                  // USAGE 1: Daily Tap Button
+                  CooldownTaskButton(
+                    taskId: 'daily_tap',
+                    icon: FontAwesomeIcons.handPointer,
+                    label: ref.t(LocalizationKeys.dailyTap),
+                    onTap: (controller) => controller.completeTask(),
+                  ),
                   SizedBox(height: 15.s),
-                  _buildWatchAdButton(),
+
+                  // USAGE 2: Watch Ad Button
+                  CooldownTaskButton(
+                    taskId: 'watch_ad',
+                    icon: FontAwesomeIcons.circlePlay,
+                    label: ref.t(LocalizationKeys.watchAd),
+                    actionLoadingLabel: ref.t(LocalizationKeys.loadingAd),
+                    onTap: (controller) async {
+                      final adMobService = AdMobService();
+                      if (!adMobService.isAdLoaded) {
+                        await adMobService.loadRewardedAd();
+                      }
+                      if (!mounted) return;
+
+                      if (!adMobService.isAdLoaded) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              ref.t(LocalizationKeys.adNotReadyTryAgain),
+                            ),
+                            backgroundColor: Colors.orange,
+                          ),
+                        );
+                        return;
+                      }
+
+                      final adWatched = await adMobService.showRewardedAd();
+                      if (adWatched) {
+                        await controller.completeTask();
+                      }
+                    },
+                  ),
                   SizedBox(height: 15.s),
-                  _buildQuizButton(),
+
+                  // USAGE 3: Quiz Button
+                  CooldownTaskButton(
+                    taskId: 'quiz_game',
+                    icon:
+                        FontAwesomeIcons.questionCircle, // A more fitting icon
+                    label: ref.t(LocalizationKeys.quiz),
+                    onTap: (controller) async {
+                      // Navigate to quiz and wait for the result
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const QuizScreen()),
+                      );
+
+                      // The quiz screen should update the globalQuizResult
+                      // which we can then use as the payload.
+                      Map<String, dynamic> payload =
+                          globalQuizResult?.toJson() ?? {};
+
+                      // Complete the task with the quiz result payload
+                      await controller.completeTask(payload: payload);
+                    },
+                  ),
                 ],
               ),
             ),
@@ -684,59 +690,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildDailyTapButton() {
-    return Consumer(
-      builder: (context, ref, child) {
-        final taskState = ref.watch(taskStateProvider('daily_tap'));
-        final taskController = TaskController(ref, 'daily_tap');
-
-        return _DailyTapButton(
-          taskState: taskState,
-          taskController: taskController,
-        );
-      },
-    );
-  }
-
-  Widget _buildWatchAdButton() {
-    print('DEBUG: HomeScreen - _buildWatchAdButton() called');
-    return Consumer(
-      builder: (context, ref, child) {
-        final taskState = ref.watch(taskStateProvider('watch_ad'));
-        final taskController = TaskController(ref, 'watch_ad');
-
-        print('DEBUG: HomeScreen - Watch ad task state: $taskState');
-        print('DEBUG: HomeScreen - Task controller created for watch_ad');
-
-        return _WatchAdButton(
-          taskState: taskState,
-          taskController: taskController,
-        );
-      },
-    );
-  }
-
-  Widget _buildQuizButton() {
-    return Consumer(
-      builder: (context, ref, child) {
-        // Watch the state directly from the provider.
-        final taskState = ref.watch(taskStateProvider('quiz_game'));
-        final taskController = TaskController(ref, 'quiz_game');
-
-        return _QuizButton(
-          taskState: taskState,
-          taskController: taskController,
-        );
-      },
-    );
-  }
-
   Widget _actionButton(IconData icon, String label, {VoidCallback? onTap}) {
-    return PressableWidget(
+    return PressableScaleWidget(
       onTap: onTap ?? () {},
-      borderRadius: BorderRadius.circular(16.r),
-      child: _GlassEffectContainer(
-        borderRadius: BorderRadius.circular(16.r),
+      child: GlassContainer(
+        borderRadius: 16,
         child: SizedBox(
           width: 64.s,
           height: 64.s,
@@ -847,8 +805,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: _upgradeItemContent(icon, label, AppColors.textLight),
       );
     } else {
-      content = _GlassEffectContainer(
-        borderRadius: BorderRadius.circular(12.r),
+      content = GlassContainer(
+        borderRadius: 12,
         child: SizedBox(
           height: 65.s,
           child: _upgradeItemContent(icon, label, AppColors.textGrey),
@@ -856,11 +814,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }
     return Expanded(
-      child: PressableWidget(
-        onTap: onTap ?? () {},
-        borderRadius: BorderRadius.circular(12.r),
-        child: content,
-      ),
+      child: PressableScaleWidget(onTap: onTap ?? () {}, child: content),
     );
   }
 
@@ -884,8 +838,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildBottomNavBar() {
-    return _GlassEffectContainer(
-      borderRadius: BorderRadius.zero,
+    return GlassContainer(
+      borderRadius: 0,
       child: ClipRRect(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
         child: Padding(
@@ -1053,8 +1007,8 @@ class _StatsContainer extends ConsumerWidget {
                     ),
                   ),
                   SizedBox(height: 4.s),
-                  _GlassEffectContainer(
-                    borderRadius: BorderRadius.circular(6.r),
+                  GlassContainer(
+                    borderRadius: 6,
                     child: Container(
                       width: double.infinity,
                       height: 12.s,
@@ -1115,7 +1069,7 @@ class _StatsContainer extends ConsumerWidget {
                         ),
                         child: _UpgradeButtonAnimator(
                           isEnabled: status.isEligibleForUpgrade,
-                          child: PressableWidget(
+                          child: PressableScaleWidget(
                             onTap: status.isEligibleForUpgrade
                                 ? () async {
                                     try {
@@ -1230,815 +1184,6 @@ class _StatsContainer extends ConsumerWidget {
   }
 }
 
-// Daily Tap Button Widget
-class _DailyTapButton extends ConsumerStatefulWidget {
-  final TaskState taskState;
-  final TaskController taskController;
-
-  const _DailyTapButton({
-    required this.taskState,
-    required this.taskController,
-  });
-
-  @override
-  ConsumerState<_DailyTapButton> createState() => _DailyTapButtonState();
-}
-
-class _DailyTapButtonState extends ConsumerState<_DailyTapButton> {
-  Timer? _cooldownTimer;
-  Duration? _remainingTime;
-  Duration? _totalCooldownTime;
-
-  @override
-  void initState() {
-    super.initState();
-    _updateRemainingTime();
-
-    // Start the timer if on cooldown
-    if (widget.taskState == TaskState.cooldown) {
-      _startCooldownTimer();
-    }
-  }
-
-  @override
-  void didUpdateWidget(_DailyTapButton oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.taskState != oldWidget.taskState) {
-      _updateRemainingTime();
-
-      // Start or cancel timer based on the new state
-      if (widget.taskState == TaskState.cooldown) {
-        _startCooldownTimer();
-      } else {
-        _cooldownTimer?.cancel();
-      }
-    }
-  }
-
-  void _updateRemainingTime() {
-    if (widget.taskState == TaskState.cooldown) {
-      setState(() {
-        // Get the remaining cooldown based on server time
-        _remainingTime = widget.taskController.remainingCooldown;
-        // Store initial total time for progress calculation
-        if (_totalCooldownTime == null && _remainingTime != null) {
-          _totalCooldownTime = _remainingTime;
-        }
-      });
-    } else {
-      setState(() {
-        _remainingTime = null;
-        _totalCooldownTime = null;
-      });
-    }
-  }
-
-  void _startCooldownTimer() {
-    _cooldownTimer?.cancel();
-    // Update every second, but the actual time is based on server time
-    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        final newRemainingTime = widget.taskController.remainingCooldown;
-
-        setState(() {
-          _remainingTime = newRemainingTime;
-        });
-
-        // Cancel timer and invalidate state if cooldown has expired
-        if (newRemainingTime == null || newRemainingTime.inSeconds <= 0) {
-          _cooldownTimer?.cancel();
-          // Force state invalidation to update the task state
-          widget.taskController.ref.invalidate(
-            taskStateProvider(widget.taskController.taskId),
-          );
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _cooldownTimer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Watch both the task state and loading state
-    final taskState = ref.watch(
-      taskStateProvider(widget.taskController.taskId),
-    );
-    final isLoading = ref.watch(
-      taskLoadingStateProvider(widget.taskController.taskId),
-    );
-
-    // Determine the current effective state
-    TaskState currentTaskState = isLoading ? TaskState.loading : taskState;
-
-    // Update our local state if the watched state differs from widget state
-    if (currentTaskState != widget.taskState) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _updateRemainingTime();
-          if (currentTaskState == TaskState.cooldown) {
-            _startCooldownTimer();
-          } else {
-            _cooldownTimer?.cancel();
-          }
-        }
-      });
-    }
-
-    final bool isDisabled =
-        currentTaskState == TaskState.cooldown ||
-        currentTaskState == TaskState.loading ||
-        currentTaskState == TaskState.disabled;
-
-    return PressableWidget(
-      onTap: isDisabled ? null : () => widget.taskController.completeTask(),
-      borderRadius: BorderRadius.circular(16.r),
-      child: _GlassEffectContainer(
-        borderRadius: BorderRadius.circular(16.r),
-        child: SizedBox(
-          width: 64.s,
-          height: 64.s,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Content
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (currentTaskState == TaskState.loading)
-                    SizedBox(
-                      width: 24.s,
-                      height: 24.s,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.angolaYellow,
-                        ),
-                      ),
-                    )
-                  else
-                    FaIcon(
-                      FontAwesomeIcons.handPointer,
-                      size: 24.s,
-                      color: isDisabled
-                          ? AppColors.textGrey.withOpacity(0.5)
-                          : AppColors.textGrey,
-                    ),
-                  SizedBox(height: 4.s),
-                  Text(
-                    _getButtonText(currentTaskState),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 9.f,
-                      fontWeight: FontWeight.w600,
-                      color: _getTextColor(currentTaskState),
-                    ),
-                  ),
-                ],
-              ),
-
-              // Cooldown overlay
-              if (currentTaskState == TaskState.cooldown &&
-                  _remainingTime != null &&
-                  _totalCooldownTime != null)
-                CircularProgressIndicator(
-                  value:
-                      1 -
-                      (_remainingTime!.inSeconds /
-                          _totalCooldownTime!.inSeconds),
-                  strokeWidth: 2,
-                  backgroundColor: Colors.transparent,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppColors.angolaYellow,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _getButtonText(TaskState taskState) {
-    switch (taskState) {
-      case TaskState.loading:
-        return ref.t(LocalizationKeys.loading);
-      case TaskState.cooldown:
-        final minutes = _remainingTime?.inMinutes.remainder(60) ?? 0;
-        final seconds = _remainingTime?.inSeconds.remainder(60) ?? 0;
-        return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-      default:
-        return ref.t(LocalizationKeys.dailyTap);
-    }
-  }
-
-  Color _getTextColor(TaskState taskState) {
-    switch (taskState) {
-      case TaskState.available:
-        return AppColors.textLight;
-      case TaskState.cooldown:
-        return AppColors.angolaYellow;
-      default:
-        return AppColors.textGrey;
-    }
-  }
-}
-
-//
-//
-//
-//
-
-// Watch Ad Button Widget
-class _WatchAdButton extends ConsumerStatefulWidget {
-  final TaskState taskState;
-  final TaskController taskController;
-
-  const _WatchAdButton({required this.taskState, required this.taskController});
-
-  @override
-  ConsumerState<_WatchAdButton> createState() => _WatchAdButtonState();
-}
-
-class _WatchAdButtonState extends ConsumerState<_WatchAdButton> {
-  Timer? _cooldownTimer;
-  Duration? _remainingTime;
-  Duration? _totalCooldownTime;
-  bool _isShowingAd = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _updateRemainingTime();
-
-    // Start the timer if on cooldown
-    if (widget.taskState == TaskState.cooldown) {
-      _startCooldownTimer();
-    }
-  }
-
-  @override
-  void didUpdateWidget(_WatchAdButton oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.taskState != oldWidget.taskState) {
-      _updateRemainingTime();
-
-      // Start or cancel timer based on the new state
-      if (widget.taskState == TaskState.cooldown) {
-        _startCooldownTimer();
-      } else {
-        _cooldownTimer?.cancel();
-      }
-    }
-  }
-
-  void _updateRemainingTime() {
-    if (widget.taskState == TaskState.cooldown) {
-      setState(() {
-        // Get the remaining cooldown based on server time
-        _remainingTime = widget.taskController.remainingCooldown;
-        // Store initial total time for progress calculation
-        if (_totalCooldownTime == null && _remainingTime != null) {
-          _totalCooldownTime = _remainingTime;
-        }
-      });
-    } else {
-      setState(() {
-        _remainingTime = null;
-        _totalCooldownTime = null;
-      });
-    }
-  }
-
-  void _startCooldownTimer() {
-    _cooldownTimer?.cancel();
-    // Update every second, but the actual time is based on server time
-    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        final newRemainingTime = widget.taskController.remainingCooldown;
-
-        setState(() {
-          _remainingTime = newRemainingTime;
-        });
-
-        // Cancel timer and invalidate state if cooldown has expired
-        if (newRemainingTime == null || newRemainingTime.inSeconds <= 0) {
-          _cooldownTimer?.cancel();
-          // Force state invalidation to update the task state
-          widget.taskController.ref.invalidate(
-            taskStateProvider(widget.taskController.taskId),
-          );
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _cooldownTimer?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _watchAd() async {
-    print('DEBUG: _WatchAdButton - _watchAd() called');
-    print('DEBUG: _WatchAdButton - Current state: _isShowingAd=$_isShowingAd');
-
-    if (_isShowingAd) {
-      print('DEBUG: _WatchAdButton - Already showing ad, returning early');
-      return;
-    }
-
-    print('DEBUG: _WatchAdButton - Setting _isShowingAd to true');
-    setState(() {
-      _isShowingAd = true;
-    });
-
-    try {
-      print('DEBUG: _WatchAdButton - Getting AdMobService instance');
-      final adMobService = AdMobService();
-      print('DEBUG: _WatchAdButton - AdMobService instance obtained');
-      print(
-        'DEBUG: _WatchAdButton - Checking if ad is loaded: ${adMobService.isAdLoaded}',
-      );
-
-      if (!adMobService.isAdLoaded) {
-        print('DEBUG: _WatchAdButton - Ad not loaded, attempting to load...');
-        await adMobService.loadRewardedAd();
-        print(
-          'DEBUG: _WatchAdButton - Load attempt completed, checking state: ${adMobService.isAdLoaded}',
-        );
-
-        if (!adMobService.isAdLoaded) {
-          print('DEBUG: _WatchAdButton - ❌ Ad still not loaded after attempt');
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(ref.t(LocalizationKeys.adNotReadyTryAgain)),
-                backgroundColor: Colors.orange,
-              ),
-            );
-          }
-          return;
-        }
-      }
-
-      print('DEBUG: _WatchAdButton - ✅ Ad is loaded, attempting to show...');
-      // Try to show the ad
-      final adWatched = await adMobService.showRewardedAd();
-      print('DEBUG: _WatchAdButton - showRewardedAd() returned: $adWatched');
-
-      if (adWatched) {
-        print(
-          'DEBUG: _WatchAdButton - ✅ Ad was watched successfully, completing task...',
-        );
-        // Ad was watched successfully, complete the task
-        await widget.taskController.completeTask();
-        print('DEBUG: _WatchAdButton - ✅ Task completed successfully');
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Ad watched successfully! Reward earned.'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } else {
-        print('DEBUG: _WatchAdButton - ❌ Ad was not watched or failed to show');
-        // Ad failed to show or wasn't watched
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Ad failed to load. Please try again later.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      print('DEBUG: _WatchAdButton - ❌ Exception in _watchAd(): $e');
-      print(
-        'DEBUG: _WatchAdButton - Exception stack trace: ${StackTrace.current}',
-      );
-      // Handle any errors
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error showing ad: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      print(
-        'DEBUG: _WatchAdButton - Finally block: setting _isShowingAd to false',
-      );
-      if (mounted) {
-        setState(() {
-          _isShowingAd = false;
-        });
-        print(
-          'DEBUG: _WatchAdButton - State updated: _isShowingAd=$_isShowingAd',
-        );
-      } else {
-        print(
-          'DEBUG: _WatchAdButton - Widget not mounted, skipping state update',
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    print('DEBUG: _WatchAdButton - build() called');
-
-    // Watch both the task state and loading state
-    final taskState = ref.watch(
-      taskStateProvider(widget.taskController.taskId),
-    );
-    final isLoading = ref.watch(
-      taskLoadingStateProvider(widget.taskController.taskId),
-    );
-
-    // Determine the current effective state
-    TaskState currentTaskState = isLoading ? TaskState.loading : taskState;
-
-    // Update our local state if the watched state differs from widget state
-    if (currentTaskState != widget.taskState) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _updateRemainingTime();
-          if (currentTaskState == TaskState.cooldown) {
-            _startCooldownTimer();
-          } else {
-            _cooldownTimer?.cancel();
-          }
-        }
-      });
-    }
-
-    print(
-      'DEBUG: _WatchAdButton - Widget state: taskState=$currentTaskState, _isShowingAd=$_isShowingAd',
-    );
-
-    final bool isDisabled =
-        currentTaskState == TaskState.cooldown ||
-        currentTaskState == TaskState.loading ||
-        currentTaskState == TaskState.disabled ||
-        _isShowingAd;
-
-    print('DEBUG: _WatchAdButton - Button isDisabled: $isDisabled');
-    print(
-      'DEBUG: _WatchAdButton - Button text: ${_getButtonText(currentTaskState)}',
-    );
-    print(
-      'DEBUG: _WatchAdButton - Text color: ${_getTextColor(currentTaskState)}',
-    );
-
-    return PressableWidget(
-      onTap: isDisabled ? null : _watchAd,
-      borderRadius: BorderRadius.circular(16.r),
-      child: _GlassEffectContainer(
-        borderRadius: BorderRadius.circular(16.r),
-        child: SizedBox(
-          width: 64.s,
-          height: 64.s,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Content
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (currentTaskState == TaskState.loading || _isShowingAd)
-                    SizedBox(
-                      width: 24.s,
-                      height: 24.s,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.angolaYellow,
-                        ),
-                      ),
-                    )
-                  else
-                    FaIcon(
-                      FontAwesomeIcons.circlePlay,
-                      size: 24.s,
-                      color: isDisabled
-                          ? AppColors.textGrey.withOpacity(0.5)
-                          : AppColors.textGrey,
-                    ),
-                  SizedBox(height: 4.s),
-                  Text(
-                    _getButtonText(currentTaskState),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 9.f,
-                      fontWeight: FontWeight.w600,
-                      color: _getTextColor(currentTaskState),
-                    ),
-                  ),
-                ],
-              ),
-
-              // Cooldown overlay
-              if (currentTaskState == TaskState.cooldown &&
-                  _remainingTime != null &&
-                  _totalCooldownTime != null)
-                CircularProgressIndicator(
-                  value:
-                      1 -
-                      (_remainingTime!.inSeconds /
-                          _totalCooldownTime!.inSeconds),
-                  strokeWidth: 2,
-                  backgroundColor: Colors.transparent,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppColors.angolaYellow,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _getButtonText(TaskState taskState) {
-    if (_isShowingAd) {
-      return ref.t(LocalizationKeys.loadingAd);
-    }
-
-    switch (taskState) {
-      case TaskState.loading:
-        return ref.t(LocalizationKeys.loading);
-      case TaskState.cooldown:
-        final minutes = _remainingTime?.inMinutes.remainder(60) ?? 0;
-        final seconds = _remainingTime?.inSeconds.remainder(60) ?? 0;
-        return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-      default:
-        return ref.t(LocalizationKeys.watchAd);
-    }
-  }
-
-  Color _getTextColor(TaskState taskState) {
-    if (_isShowingAd) {
-      return AppColors.angolaYellow;
-    }
-
-    switch (taskState) {
-      case TaskState.available:
-        return AppColors.textLight;
-      case TaskState.cooldown:
-        return AppColors.angolaYellow;
-      default:
-        return AppColors.textGrey;
-    }
-  }
-}
-
-//
-//
-//
-//
-
-class _QuizButton extends ConsumerStatefulWidget {
-  final TaskState taskState;
-  final TaskController taskController;
-
-  const _QuizButton({required this.taskState, required this.taskController});
-
-  @override
-  ConsumerState<_QuizButton> createState() => _QuizButtonState();
-}
-
-class _QuizButtonState extends ConsumerState<_QuizButton> {
-  Timer? _cooldownTimer;
-  Duration? _remainingTime;
-  Duration? _totalCooldownTime;
-
-  @override
-  void initState() {
-    super.initState();
-    _updateRemainingTime();
-
-    // Start the timer if on cooldown
-    if (widget.taskState == TaskState.cooldown) {
-      _startCooldownTimer();
-    }
-  }
-
-  @override
-  void didUpdateWidget(_QuizButton oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.taskState != oldWidget.taskState) {
-      _updateRemainingTime();
-
-      // Start or cancel timer based on the new state
-      if (widget.taskState == TaskState.cooldown) {
-        _startCooldownTimer();
-      } else {
-        _cooldownTimer?.cancel();
-      }
-    }
-  }
-
-  void _updateRemainingTime() {
-    if (widget.taskState == TaskState.cooldown) {
-      setState(() {
-        // Get the remaining cooldown based on server time
-        _remainingTime = widget.taskController.remainingCooldown;
-        // Store initial total time for progress calculation
-        if (_totalCooldownTime == null && _remainingTime != null) {
-          _totalCooldownTime = _remainingTime;
-        }
-      });
-    } else {
-      setState(() {
-        _remainingTime = null;
-        _totalCooldownTime = null;
-      });
-    }
-  }
-
-  void _startCooldownTimer() {
-    _cooldownTimer?.cancel();
-    // Update every second, but the actual time is based on server time
-    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        final newRemainingTime = widget.taskController.remainingCooldown;
-
-        setState(() {
-          _remainingTime = newRemainingTime;
-        });
-
-        // Cancel timer and invalidate state if cooldown has expired
-        if (newRemainingTime == null || newRemainingTime.inSeconds <= 0) {
-          _cooldownTimer?.cancel();
-          // Force state invalidation to update the task state
-          widget.taskController.ref.invalidate(
-            taskStateProvider(widget.taskController.taskId),
-          );
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _cooldownTimer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Watch both the task state and loading state
-    final taskState = ref.watch(
-      taskStateProvider(widget.taskController.taskId),
-    );
-    final isLoading = ref.watch(
-      taskLoadingStateProvider(widget.taskController.taskId),
-    );
-
-    // Determine the current effective state
-    TaskState currentTaskState = isLoading ? TaskState.loading : taskState;
-
-    // Update our local state if the watched state differs from widget state
-    if (currentTaskState != widget.taskState) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _updateRemainingTime();
-          if (currentTaskState == TaskState.cooldown) {
-            _startCooldownTimer();
-          } else {
-            _cooldownTimer?.cancel();
-          }
-        }
-      });
-    }
-
-    final bool isDisabled =
-        currentTaskState == TaskState.cooldown ||
-        currentTaskState == TaskState.loading ||
-        currentTaskState == TaskState.disabled;
-
-    return PressableWidget(
-      onTap: isDisabled
-          ? null
-          : () async {
-              await Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const QuizScreen()));
-
-              Map<String, dynamic> payload = globalQuizResult?.toJson() ?? {};
-              widget.taskController.completeTask(payload: payload);
-            },
-      borderRadius: BorderRadius.circular(16.r),
-      child: _GlassEffectContainer(
-        borderRadius: BorderRadius.circular(16.r),
-        child: SizedBox(
-          width: 64.s,
-          height: 64.s,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Content
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (currentTaskState == TaskState.loading)
-                    SizedBox(
-                      width: 24.s,
-                      height: 24.s,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.angolaYellow,
-                        ),
-                      ),
-                    )
-                  else
-                    FaIcon(
-                      FontAwesomeIcons.handPointer,
-                      size: 24.s,
-                      color: isDisabled
-                          ? AppColors.textGrey.withOpacity(0.5)
-                          : AppColors.textGrey,
-                    ),
-                  SizedBox(height: 4.s),
-                  Text(
-                    _getButtonText(currentTaskState),
-                    style: TextStyle(
-                      fontSize: 9.f,
-                      fontWeight: FontWeight.w600,
-                      color: _getTextColor(currentTaskState),
-                    ),
-                  ),
-                ],
-              ),
-
-              // Cooldown overlay
-              if (currentTaskState == TaskState.cooldown &&
-                  _remainingTime != null &&
-                  _totalCooldownTime != null)
-                CircularProgressIndicator(
-                  value:
-                      1 -
-                      (_remainingTime!.inSeconds /
-                          _totalCooldownTime!.inSeconds),
-                  strokeWidth: 2,
-                  backgroundColor: Colors.transparent,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppColors.angolaYellow,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _getButtonText(TaskState taskState) {
-    switch (taskState) {
-      case TaskState.loading:
-        return ref.t(LocalizationKeys.loading);
-      case TaskState.cooldown:
-        final minutes = _remainingTime?.inMinutes.remainder(60) ?? 0;
-        final seconds = _remainingTime?.inSeconds.remainder(60) ?? 0;
-        return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-      default:
-        return ref.t(LocalizationKeys.quiz);
-    }
-  }
-
-  Color _getTextColor(TaskState taskState) {
-    switch (taskState) {
-      case TaskState.available:
-        return AppColors.textLight;
-      case TaskState.cooldown:
-        return AppColors.angolaYellow;
-      default:
-        return AppColors.textGrey;
-    }
-  }
-}
-
-//
-//
-//
-//
-//
-//
-//
-
 // Main Tap Button Widget
 class _MainTapButton extends ConsumerWidget {
   final TaskState taskState;
@@ -2053,15 +1198,13 @@ class _MainTapButton extends ConsumerWidget {
         taskState == TaskState.loading ||
         taskState == TaskState.disabled;
 
-    return PressableWidget(
+    return PressableScaleWidget(
       onTap: isDisabled
           ? null
           : () {
               taskController.completeTask();
             },
-      borderRadius: BorderRadius.circular(80.r),
-      child: _GlassEffectContainer(
-        isCircle: true,
+      child: GlassContainer(
         child: SizedBox(
           width: 160.s,
           height: 160.s,
@@ -2111,35 +1254,6 @@ class _MainTapButton extends ConsumerWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-// HIGH-PERFORMANCE VERSION: No blur, just a semi-transparent container.
-class _GlassEffectContainer extends StatelessWidget {
-  final Widget child;
-  final BorderRadius? borderRadius;
-  final bool isCircle;
-
-  const _GlassEffectContainer({
-    required this.child,
-    this.borderRadius,
-    this.isCircle = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.glassBg,
-        shape: isCircle ? BoxShape.circle : BoxShape.rectangle,
-        borderRadius: isCircle ? null : borderRadius,
-        border: Border.all(color: AppColors.glassBorder, width: 1),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10),
-        ],
-      ),
-      child: child,
     );
   }
 }
@@ -2205,5 +1319,251 @@ class _UpgradeButtonAnimatorState extends State<_UpgradeButtonAnimator>
       },
       child: widget.child,
     );
+  }
+}
+
+/// A reusable button for tasks that have a cooldown period.
+///
+/// This widget manages its own state for the cooldown timer, progress
+/// indicator, and loading states, based on the provided [taskId].
+class CooldownTaskButton extends ConsumerStatefulWidget {
+  /// The unique identifier for the task.
+  final String taskId;
+
+  /// The icon to display when the button is in its default, available state.
+  final IconData icon;
+
+  /// The text label to display below the icon.
+  final String label;
+
+  /// Optional text to display when the custom [onTap] action is in progress.
+  final String? actionLoadingLabel;
+
+  /// The asynchronous callback function to execute when the button is tapped.
+  /// It receives a [TaskController] instance to allow the action to complete
+  /// the task on the backend.
+  final Future<void> Function(TaskController controller) onTap;
+
+  const CooldownTaskButton({
+    super.key,
+    required this.taskId,
+    required this.icon,
+    required this.label,
+    this.actionLoadingLabel,
+    required this.onTap,
+  });
+
+  @override
+  ConsumerState<CooldownTaskButton> createState() => _CooldownTaskButtonState();
+}
+
+class _CooldownTaskButtonState extends ConsumerState<CooldownTaskButton> {
+  Timer? _cooldownTimer;
+  Duration? _remainingTime;
+  Duration? _totalCooldownTime;
+
+  // Local state to handle loading for actions that happen before
+  // the backend task is called (e.g., showing an ad).
+  bool _isActionInProgress = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Use a post-frame callback to ensure ref is available.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _initializeState();
+    });
+  }
+
+  @override
+  void didUpdateWidget(CooldownTaskButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If the task ID changes (unlikely but good practice) or the state
+    // from the provider changes, we re-initialize.
+    _initializeState();
+  }
+
+  void _initializeState() {
+    final taskState = ref.read(taskStateProvider(widget.taskId));
+    if (taskState == TaskState.cooldown) {
+      _updateRemainingTime();
+      _startCooldownTimer();
+    } else {
+      _cooldownTimer?.cancel();
+    }
+  }
+
+  void _updateRemainingTime() {
+    final taskController = TaskController(ref, widget.taskId);
+    final remaining = taskController.remainingCooldown;
+    if (mounted) {
+      setState(() {
+        _remainingTime = remaining;
+        // Store initial total time for progress calculation.
+        // This ensures the progress ring starts full.
+        if (_totalCooldownTime == null && _remainingTime != null) {
+          _totalCooldownTime = _remainingTime;
+        }
+      });
+    }
+  }
+
+  void _startCooldownTimer() {
+    _cooldownTimer?.cancel();
+    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) {
+        _cooldownTimer?.cancel();
+        return;
+      }
+      _updateRemainingTime();
+
+      // If cooldown expires, cancel the timer. The provider will handle the state change.
+      if (_remainingTime == null || _remainingTime!.inSeconds <= 0) {
+        _cooldownTimer?.cancel();
+        // Invalidate the provider to force a state refresh from available->cooldown.
+        ref.invalidate(taskStateProvider(widget.taskId));
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _cooldownTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Create the controller here to ensure it uses the latest ref.
+    final taskController = TaskController(ref, widget.taskId);
+
+    // Watch providers for real-time updates.
+    final taskState = ref.watch(taskStateProvider(widget.taskId));
+    final isLoading = ref.watch(taskLoadingStateProvider(widget.taskId));
+
+    // Determine the current effective state for the UI.
+    final bool isApiLoading = isLoading || taskState == TaskState.loading;
+    final bool isCooldown = taskState == TaskState.cooldown;
+
+    // The button is disabled if any loading is happening, or it's on cooldown.
+    final bool isDisabled = isApiLoading || isCooldown || _isActionInProgress;
+
+    return PressableScaleWidget(
+      onTap: isDisabled
+          ? null
+          : () async {
+              if (_isActionInProgress) return;
+
+              setState(() => _isActionInProgress = true);
+              try {
+                // Execute the custom tap action.
+                await widget.onTap(taskController);
+              } finally {
+                // Ensure the loading state is reset even if an error occurs.
+                if (mounted) {
+                  setState(() => _isActionInProgress = false);
+                }
+              }
+            },
+      child: GlassContainer(
+        borderRadius: 16,
+        child: SizedBox(
+          width: 64.s,
+          height: 64.s,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Main content (Icon, Text, or Loader)
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (isApiLoading || _isActionInProgress)
+                    SizedBox(
+                      width: 24.s,
+                      height: 24.s,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.angolaYellow,
+                        ),
+                      ),
+                    )
+                  else
+                    FaIcon(
+                      widget.icon,
+                      size: 24.s,
+                      color: isCooldown
+                          ? AppColors.textGrey.withOpacity(0.5)
+                          : AppColors.textGrey,
+                    ),
+                  SizedBox(height: 4.s),
+                  Text(
+                    _getButtonText(taskState),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 9.f,
+                      fontWeight: FontWeight.w600,
+                      color: _getTextColor(taskState),
+                    ),
+                  ),
+                ],
+              ),
+
+              // Cooldown circular progress overlay
+              if (isCooldown &&
+                  _remainingTime != null &&
+                  _totalCooldownTime != null &&
+                  _totalCooldownTime!.inSeconds > 0)
+                SizedBox(
+                  width: 48.s,
+                  height: 48.s,
+                  child: CircularProgressIndicator(
+                    value:
+                        1 -
+                        (_remainingTime!.inSeconds.clamp(
+                              0,
+                              _totalCooldownTime!.inSeconds,
+                            ) /
+                            _totalCooldownTime!.inSeconds),
+                    strokeWidth: 2.5,
+                    backgroundColor: Colors.white.withOpacity(0.1),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.angolaYellow,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getButtonText(TaskState taskState) {
+    if (_isActionInProgress) {
+      return widget.actionLoadingLabel ?? ref.t(LocalizationKeys.loading);
+    }
+    if (taskState == TaskState.loading) {
+      return ref.t(LocalizationKeys.loading);
+    }
+    if (taskState == TaskState.cooldown && _remainingTime != null) {
+      final minutes = _remainingTime!.inMinutes.remainder(60);
+      final seconds = _remainingTime!.inSeconds.remainder(60);
+      return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    }
+    return widget.label;
+  }
+
+  Color _getTextColor(TaskState taskState) {
+    if (_isActionInProgress) return AppColors.angolaYellow;
+
+    switch (taskState) {
+      case TaskState.available:
+        return AppColors.textLight;
+      case TaskState.cooldown:
+        return AppColors.angolaYellow;
+      default:
+        return AppColors.textGrey;
+    }
   }
 }

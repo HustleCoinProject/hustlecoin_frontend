@@ -6,85 +6,10 @@ import 'package:hustlecoin/data/repositories/api_repository.dart';
 import 'package:hustlecoin/features/auth/login_screen.dart';
 import 'package:hustlecoin/features/home/home_screen.dart';
 import 'package:hustlecoin/providers/auth_provider.dart';
-import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
-
-// --- Reusable Widgets (can be moved to their own files later) ---
-
-// High-performance "smoky glass" container without blur
-class _GlassEffectContainer extends StatelessWidget {
-  final Widget child;
-  final BorderRadius? borderRadius;
-  final EdgeInsetsGeometry padding;
-
-  const _GlassEffectContainer({
-    required this.child,
-    this.borderRadius,
-    this.padding = EdgeInsets.zero,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: AppColors.glassBg,
-        borderRadius: borderRadius ?? BorderRadius.zero,
-        border: Border.all(color: AppColors.glassBorder, width: 1.s),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10.s),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
-// Lightweight press feedback widget
-class PressableWidget extends StatefulWidget {
-  final Widget child;
-  final VoidCallback? onTap;
-  final double scaleFactor;
-
-  const PressableWidget({
-    super.key,
-    required this.child,
-    this.onTap,
-    this.scaleFactor = 0.97,
-  });
-
-  @override
-  State<PressableWidget> createState() => _PressableWidgetState();
-}
-
-class _PressableWidgetState extends State<PressableWidget> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) {
-        setState(() => _isPressed = false);
-        if (widget.onTap != null) {
-          // Play click sound before calling onTap
-          SoundService().playClick();
-          widget.onTap!.call();
-        }
-      },
-      onTapCancel: () => setState(() => _isPressed = false),
-      child: AnimatedScale(
-        scale: _isPressed ? widget.scaleFactor : 1.0,
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
-        child: widget.child,
-      ),
-    );
-  }
-}
-
-// --- Main Sign Up Screen Widget ---
+import 'package:hustlecoin/widgets/glass_container.dart';
+import 'package:hustlecoin/widgets/primary_action_button.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -429,7 +354,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         SizedBox(height: 20.s),
         _buildLanguageSelector(),
         SizedBox(height: 20.s),
-        _buildActionButton(text: 'Next', onTap: () => _goToStep(1)),
+        PrimaryActionButton(text: 'Next', onTap: () => _goToStep(1)),
         SizedBox(height: 20.s),
         // Already have account link
         RichText(
@@ -494,9 +419,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             ),
           ),
         const SizedBox(height: 30),
-        _buildActionButton(
+        PrimaryActionButton(
           text: 'Create Account',
           onTap: _isLoading ? null : () => _registerUser(),
+          isLoading: _isLoading,
         ),
         const SizedBox(height: 10),
         GestureDetector(
@@ -518,8 +444,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     bool obscureText = false,
     TextEditingController? controller,
   }) {
-    return _GlassEffectContainer(
-      borderRadius: BorderRadius.circular(12.r),
+    return GlassContainer(
+      borderRadius: 12,
       child: TextField(
         controller: controller,
         obscureText: obscureText,
@@ -535,8 +461,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   }
 
   Widget _buildLanguageSelector() {
-    return _GlassEffectContainer(
-      borderRadius: BorderRadius.circular(12.r),
+    return GlassContainer(
+      borderRadius: 12,
       padding: EdgeInsets.all(5.s),
       child: Row(children: [_buildLangOption('EN'), _buildLangOption('PT')]),
     );
@@ -560,33 +486,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               fontWeight: FontWeight.w600,
               color: isActive ? AppColors.angolaBlack : AppColors.textLight,
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton({required String text, VoidCallback? onTap}) {
-    return PressableWidget(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 15),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          gradient: const LinearGradient(
-            colors: [AppColors.angolaYellow, AppColors.angolaRed],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -622,10 +521,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ]
                 : [],
           ),
-          child: _GlassEffectContainer(
-            borderRadius: BorderRadius.circular(
-              17,
-            ), // Slightly smaller to show border
+          child: GlassContainer(
+            borderRadius: 17,
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [

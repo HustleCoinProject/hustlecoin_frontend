@@ -7,41 +7,8 @@ import 'package:hustlecoin/providers/user_provider.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'package:hustlecoin/utils/localization.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
-
-// --- Reusable Helper Widgets ---
-
-// High-performance "smoky glass" container without blur
-class _GlassEffectContainer extends StatelessWidget {
-  final Widget child;
-  final BorderRadius borderRadius;
-  final EdgeInsetsGeometry padding;
-  final Border? border;
-  final List<BoxShadow>? boxShadow;
-
-  const _GlassEffectContainer({
-    required this.child,
-    this.borderRadius = BorderRadius.zero,
-    this.padding = EdgeInsets.zero,
-    this.border,
-    this.boxShadow,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: AppColors.glassBg,
-        borderRadius: borderRadius,
-        border: border ?? Border.all(color: AppColors.glassBorder, width: 1),
-        boxShadow:
-            boxShadow ??
-            [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10)],
-      ),
-      child: child,
-    );
-  }
-}
+import 'package:hustlecoin/widgets/glass_container.dart';
+import 'package:hustlecoin/widgets/screen_header.dart';
 
 // Local data model for a leaderboard entry UI
 class LeaderboardEntryUI {
@@ -104,44 +71,13 @@ class LeaderboardScreen extends ConsumerWidget {
           child: SafeArea(
             child: Column(
               children: [
-                _buildHeader(context, ref),
+                ScreenHeader(title: ref.t(LocalizationKeys.leaderboard)),
                 _buildContent(leaderboardAsync, ref),
                 _buildPlayerHighlight(),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: const _GlassEffectContainer(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              child: SizedBox(
-                width: 54,
-                height: 54,
-                child: Icon(FontAwesomeIcons.arrowLeft, size: 20),
-              ),
-            ),
-          ),
-          Text(
-            ref.t(LocalizationKeys.leaderboard),
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              shadows: [Shadow(blurRadius: 4, color: Colors.black87)],
-            ),
-          ),
-          const SizedBox(width: 54), // Placeholder to keep title centered
-        ],
       ),
     );
   }
@@ -243,8 +179,8 @@ class LeaderboardScreen extends ConsumerWidget {
       ];
     }
 
-    return _GlassEffectContainer(
-      borderRadius: BorderRadius.circular(12),
+    return GlassContainer(
+      borderRadius: 12,
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       border: Border.all(
         color: isPlayer ? AppColors.angolaYellow : borderColor,

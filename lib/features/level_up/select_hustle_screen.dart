@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hustlecoin/features/auth/signup_screen.dart';
 import 'package:hustlecoin/providers/foundational_providers.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
+import 'package:hustlecoin/widgets/glass_container.dart';
+import 'package:hustlecoin/widgets/primary_action_button.dart';
 
 class SelectHustleScreen extends ConsumerStatefulWidget {
   final int newLevel;
@@ -279,44 +280,13 @@ class _SelectHustleScreenState extends ConsumerState<SelectHustleScreen> {
                       SizedBox(height: 30.s),
 
                       // Confirm button
-                      PressableWidget(
-                        onTap: (_isLoading || _isSubmitting)
-                            ? null
-                            : _confirmHustleSelection,
-                        child: Container(
-                          width: double.infinity,
-                          padding: ResponsiveUtils.pSymmetric(vertical: 15),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12.r),
-                            gradient: const LinearGradient(
-                              colors: [
-                                AppColors.angolaYellow,
-                                AppColors.angolaRed,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                          ),
-                          child: _isSubmitting
-                              ? Center(
-                                  child: SizedBox(
-                                    width: 24.s,
-                                    height: 24.s,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                )
-                              : Text(
-                                  'Confirm Selection',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16.f,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
+                      SizedBox(
+                        width: double
+                            .infinity, // Wrap in SizedBox to enforce full width
+                        child: PrimaryActionButton(
+                          text: 'Confirm Selection',
+                          onTap: _confirmHustleSelection,
+                          isLoading: _isSubmitting,
                         ),
                       ),
                     ],
@@ -359,10 +329,8 @@ class _SelectHustleScreenState extends ConsumerState<SelectHustleScreen> {
                   ]
                 : [],
           ),
-          child: _GlassEffectContainer(
-            borderRadius: BorderRadius.circular(
-              17.r,
-            ), // Slightly smaller to show border
+          child: GlassContainer(
+            borderRadius: 17,
             padding: EdgeInsets.all(20.s),
             child: Column(
               children: [
@@ -392,35 +360,6 @@ class _SelectHustleScreenState extends ConsumerState<SelectHustleScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-// HIGH-PERFORMANCE VERSION: No blur, just a semi-transparent container.
-class _GlassEffectContainer extends StatelessWidget {
-  final Widget child;
-  final BorderRadius? borderRadius;
-  final EdgeInsetsGeometry padding;
-
-  const _GlassEffectContainer({
-    required this.child,
-    this.borderRadius,
-    this.padding = EdgeInsets.zero,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: AppColors.glassBg,
-        borderRadius: borderRadius ?? BorderRadius.zero,
-        border: Border.all(color: AppColors.glassBorder, width: 1.s),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10.s),
-        ],
-      ),
-      child: child,
     );
   }
 }

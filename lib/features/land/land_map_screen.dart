@@ -10,42 +10,10 @@ import 'package:hustlecoin/data/models/land_tile_info.dart';
 import 'package:hustlecoin/providers/land_provider.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
 import 'package:hustlecoin/utils/localization.dart';
+import 'package:hustlecoin/widgets/glass_container.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
-
-// --- Reusable "Smoky Glass" Widget ---
-class _GlassEffectContainer extends StatelessWidget {
-  final Widget child;
-  final BorderRadius borderRadius;
-  final EdgeInsetsGeometry padding;
-  final Key? key;
-
-  const _GlassEffectContainer({
-    this.key,
-    required this.child,
-    this.borderRadius = BorderRadius.zero,
-    this.padding = EdgeInsets.zero,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: AppColors.glassBg,
-        borderRadius: borderRadius,
-        border: Border.all(color: AppColors.glassBorder, width: 1),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 15),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
-// --- Main Land Map Screen Widget ---
 
 class LandMapScreen extends ConsumerStatefulWidget {
   const LandMapScreen({super.key});
@@ -410,8 +378,8 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
                 SoundService().playClick();
                 Navigator.of(context).pop();
               },
-              child: _GlassEffectContainer(
-                borderRadius: const BorderRadius.all(Radius.circular(12)),
+              child: GlassContainer(
+                borderRadius: 12,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 15,
                   vertical: 8,
@@ -440,8 +408,8 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 60), // Space for back button
-                _GlassEffectContainer(
-                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                GlassContainer(
+                  borderRadius: 12,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 15,
                     vertical: 12,
@@ -502,9 +470,9 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
 
     if (_isOwnedLand) {
       // Show sell panel for owned land
-      return _GlassEffectContainer(
+      return GlassContainer(
         key: const ValueKey('sell_panel'),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: 16,
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
         child: Row(
           children: [
@@ -590,9 +558,9 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
       // Show purchase panel for unowned land
       final canAfford = user != null && user.hcBalance >= LAND_PRICE;
 
-      return _GlassEffectContainer(
+      return GlassContainer(
         key: const ValueKey('purchase_panel'),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: 16,
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
         child: Row(
           children: [

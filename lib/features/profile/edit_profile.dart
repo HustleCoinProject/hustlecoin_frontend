@@ -5,87 +5,13 @@ import 'package:hustlecoin/features/auth/start_screen.dart';
 import 'package:hustlecoin/providers/auth_provider.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
 import 'package:hustlecoin/providers/user_specific_data_provider.dart';
-import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'package:hustlecoin/utils/localization.dart';
-
-// --- Reusable Helper Widgets ---
-
-// High-performance "smoky glass" container without blur
-class _GlassEffectContainer extends StatelessWidget {
-  final Widget child;
-  final BorderRadius borderRadius;
-  final EdgeInsetsGeometry padding;
-  final BoxShape shape;
-
-  const _GlassEffectContainer({
-    required this.child,
-    this.borderRadius = BorderRadius.zero,
-    this.padding = EdgeInsets.zero,
-    this.shape = BoxShape.rectangle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: AppColors.glassBg,
-        borderRadius: shape == BoxShape.rectangle ? borderRadius : null,
-        shape: shape,
-        border: Border.all(color: AppColors.glassBorder, width: 1),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
-// Lightweight press feedback widget
-class PressableWidget extends StatefulWidget {
-  final Widget child;
-  final VoidCallback? onTap;
-  final double scaleFactor;
-
-  const PressableWidget({
-    super.key,
-    required this.child,
-    this.onTap,
-    this.scaleFactor = 0.97,
-  });
-
-  @override
-  State<PressableWidget> createState() => _PressableWidgetState();
-}
-
-class _PressableWidgetState extends State<PressableWidget> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) {
-        setState(() => _isPressed = false);
-        if (widget.onTap != null) {
-          // Play click sound before calling onTap
-          SoundService().playClick();
-          widget.onTap!.call();
-        }
-      },
-      onTapCancel: () => setState(() => _isPressed = false),
-      child: AnimatedScale(
-        scale: _isPressed ? widget.scaleFactor : 1.0,
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
-        child: widget.child,
-      ),
-    );
-  }
-}
+import 'package:hustlecoin/widgets/pressable_scale_widget.dart';
+import 'package:hustlecoin/widgets/glass_container.dart';
+import 'package:hustlecoin/widgets/primary_action_button.dart';
+import 'package:hustlecoin/widgets/screen_header.dart';
 
 // --- Main Edit Profile Screen Widget ---
 
@@ -225,60 +151,35 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
           ),
           child: SafeArea(
-            child: Column(children: [_buildHeader(context), _buildContent()]),
+            child: Column(
+              children: [
+                ScreenHeader(
+                  title: ref.t(LocalizationKeys.viewEditProfile),
+                  trailingWidget: PressableScaleWidget(
+                    onTap: () {
+                      // Handle logout logic
+                      ref.read(authControllerProvider.notifier).logout();
+                      // Navigate to StartScreen and remove all previous routes
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const StartScreen()),
+                        (route) => false, // This removes all previous routes
+                      );
+                    },
+                    child: const GlassContainer(
+                      borderRadius: 12,
+                      child: SizedBox(
+                        width: 54,
+                        height: 54,
+                        child: Icon(FontAwesomeIcons.signOutAlt, size: 20),
+                      ),
+                    ),
+                  ),
+                ),
+                _buildContent(),
+              ],
+            ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
-      child: Row(
-        children: [
-          PressableWidget(
-            onTap: () => Navigator.of(context).pop(),
-            child: const _GlassEffectContainer(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              child: SizedBox(
-                width: 54,
-                height: 54,
-                child: Icon(FontAwesomeIcons.arrowLeft, size: 20),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              ref.t(LocalizationKeys.viewEditProfile),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                shadows: [Shadow(blurRadius: 4, color: Colors.black87)],
-              ),
-            ),
-          ),
-          PressableWidget(
-            onTap: () {
-              // Handle logout logic
-              ref.read(authControllerProvider.notifier).logout();
-              // Navigate to StartScreen and remove all previous routes
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const StartScreen()),
-                (route) => false, // This removes all previous routes
-              );
-            },
-            child: const _GlassEffectContainer(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              child: SizedBox(
-                width: 54,
-                height: 54,
-                child: Icon(FontAwesomeIcons.signOutAlt, size: 20),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -308,7 +209,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             shape: BoxShape.circle,
             border: Border.all(color: AppColors.angolaYellow, width: 3),
           ),
-          child: const _GlassEffectContainer(
+          child: const GlassContainer(
             shape: BoxShape.circle,
             child: Center(child: Text('😎', style: TextStyle(fontSize: 60))),
           ),
@@ -316,7 +217,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         Positioned(
           bottom: 0,
           right: 0,
-          child: PressableWidget(
+          child: PressableScaleWidget(
             onTap: () {
               // Handle change avatar logic
             },
@@ -369,8 +270,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             // Username (read-only)
             _buildInputField(
               label: ref.t(LocalizationKeys.username),
-              child: _GlassEffectContainer(
-                borderRadius: BorderRadius.circular(10),
+              child: GlassContainer(
+                borderRadius: 10,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 15,
                   vertical: 12,
@@ -519,39 +420,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ),
 
             // --- Update Button ---
-            PressableWidget(
-              onTap: _isLoading ? null : _saveProfile,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: const LinearGradient(
-                    colors: [AppColors.angolaYellow, AppColors.angolaRed],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: _isLoading
-                    ? const Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        ),
-                      )
-                    : Text(
-                        ref.t(LocalizationKeys.updateProfile),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+            SizedBox(
+              width: double.infinity, // Wrap in SizedBox to enforce full width
+              child: PrimaryActionButton(
+                text: ref.t(LocalizationKeys.updateProfile),
+                onTap: _saveProfile,
+                isLoading: _isLoading,
               ),
             ),
           ],
@@ -561,8 +435,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildLanguageSelector() {
-    return _GlassEffectContainer(
-      borderRadius: BorderRadius.circular(10),
+    return GlassContainer(
+      borderRadius: 10,
       padding: const EdgeInsets.all(5),
       child: Row(
         children: [_buildLanguageOption('en'), _buildLanguageOption('pt')],
@@ -596,8 +470,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildHustleSelector(Map<String, String> availableHustles) {
-    return _GlassEffectContainer(
-      borderRadius: BorderRadius.circular(10),
+    return GlassContainer(
+      borderRadius: 10,
       child: DropdownButtonFormField<String>(
         value: _selectedHustle,
         dropdownColor: AppColors.glassBg,
@@ -650,8 +524,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     TextEditingController? controller,
     String? Function(String?)? validator,
   }) {
-    return _GlassEffectContainer(
-      borderRadius: BorderRadius.circular(10),
+    return GlassContainer(
+      borderRadius: 10,
       child: TextFormField(
         initialValue: controller == null ? initialValue : null,
         controller: controller,

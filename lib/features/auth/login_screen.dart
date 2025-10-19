@@ -6,87 +6,12 @@ import 'package:hustlecoin/data/models/user.dart';
 import 'package:hustlecoin/features/home/home_screen.dart';
 import 'package:hustlecoin/providers/auth_provider.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
-import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/utils/localization.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
+import 'package:hustlecoin/widgets/primary_action_button.dart';
 import 'signup_screen.dart';
-
-// --- Reusable Helper Widgets ---
-
-// High-performance "smoky glass" container without blur
-class _GlassEffectContainer extends StatelessWidget {
-  final Widget child;
-  final BorderRadius borderRadius;
-  final EdgeInsetsGeometry padding;
-
-  const _GlassEffectContainer({
-    required this.child,
-    this.borderRadius = BorderRadius.zero,
-    this.padding = EdgeInsets.zero,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: AppColors.glassBg,
-        borderRadius: borderRadius,
-        border: Border.all(color: AppColors.glassBorder, width: 1.s),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10.s),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
-// Lightweight press feedback widget
-class PressableWidget extends StatefulWidget {
-  final Widget child;
-  final VoidCallback? onTap;
-  final double scaleFactor;
-
-  const PressableWidget({
-    super.key,
-    required this.child,
-    this.onTap,
-    this.scaleFactor = 0.97,
-  });
-
-  @override
-  State<PressableWidget> createState() => _PressableWidgetState();
-}
-
-class _PressableWidgetState extends State<PressableWidget> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) {
-        setState(() => _isPressed = false);
-        if (widget.onTap != null) {
-          // Play click sound before calling onTap
-          SoundService().playClick();
-          widget.onTap!.call();
-        }
-      },
-      onTapCancel: () => setState(() => _isPressed = false),
-      child: AnimatedScale(
-        scale: _isPressed ? widget.scaleFactor : 1.0,
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
-        child: widget.child,
-      ),
-    );
-  }
-}
-
-// --- Main Login Screen Widget ---
+import 'package:hustlecoin/widgets/glass_container.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
@@ -205,7 +130,7 @@ class LoginScreen extends ConsumerWidget {
                       SizedBox(height: 20.s),
 
                       // Login Button
-                      _buildActionButton(
+                      PrimaryActionButton(
                         text: ref.t(LocalizationKeys.logIn),
                         onTap: () async {
                           /*Navigator.of(context).pushReplacement(
@@ -246,8 +171,8 @@ class LoginScreen extends ConsumerWidget {
     bool obscureText = false,
     required TextEditingController? controller,
   }) {
-    return _GlassEffectContainer(
-      borderRadius: BorderRadius.circular(12.r),
+    return GlassContainer(
+      borderRadius: 12,
       child: TextField(
         controller: controller,
         obscureText: obscureText,
@@ -277,36 +202,6 @@ class LoginScreen extends ConsumerWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildActionButton({
-    required String text,
-    required VoidCallback onTap,
-  }) {
-    return PressableWidget(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: ResponsiveUtils.pSymmetric(vertical: 15),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12.r),
-          gradient: const LinearGradient(
-            colors: [AppColors.angolaYellow, AppColors.angolaRed],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16.f,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
     );
   }
 

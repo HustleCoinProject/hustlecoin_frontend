@@ -2,96 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/data/models/shop_item.dart';
-import 'package:hustlecoin/data/models/user.dart';
 import 'package:hustlecoin/providers/game_data_provider.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
-import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'package:hustlecoin/utils/localization.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
+import 'package:hustlecoin/widgets/glass_container.dart';
+import 'package:hustlecoin/widgets/primary_action_button.dart';
+import 'package:hustlecoin/widgets/screen_header.dart';
 
 // Provider to track loading state for each shop item
 final itemPurchasingProvider = StateProvider.autoDispose.family<bool, String>(
   (ref, itemId) => false,
 );
-
-// --- Reusable Helper Widgets ---
-
-// High-performance "smoky glass" container without blur
-class _GlassEffectContainer extends StatelessWidget {
-  final Widget child;
-  final BorderRadius borderRadius;
-  final EdgeInsetsGeometry padding;
-
-  const _GlassEffectContainer({
-    required this.child,
-    this.borderRadius = BorderRadius.zero,
-    this.padding = EdgeInsets.zero,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: AppColors.glassBg,
-        borderRadius: borderRadius,
-        border: Border.all(color: AppColors.glassBorder, width: 1),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
-// Lightweight press feedback widget
-class PressableWidget extends StatefulWidget {
-  final Widget child;
-  final VoidCallback? onTap;
-  final double scaleFactor;
-
-  const PressableWidget({
-    super.key,
-    required this.child,
-    this.onTap,
-    this.scaleFactor = 0.97,
-  });
-
-  @override
-  State<PressableWidget> createState() => _PressableWidgetState();
-}
-
-class _PressableWidgetState extends State<PressableWidget> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) {
-        setState(() => _isPressed = false);
-        if (widget.onTap != null) {
-          // Play click sound before calling onTap
-          SoundService().playClick();
-          widget.onTap!.call();
-        }
-      },
-      onTapCancel: () => setState(() => _isPressed = false),
-      child: AnimatedScale(
-        scale: _isPressed ? widget.scaleFactor : 1.0,
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
-        child: widget.child,
-      ),
-    );
-  }
-}
-
-// --- Main Shop Screen Widget ---
 
 class ShopScreen extends ConsumerStatefulWidget {
   final String? itemTypeFilter;
@@ -139,13 +64,54 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
             child: SafeArea(
               child: Column(
                 children: [
-                  _buildHeader(context, user),
+                  ScreenHeader(
+                    title: _getShopTitle(ref),
+                    trailingWidget: GlassContainer(
+                      borderRadius: 12,
+                      padding: const EdgeInsets.all(8),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 38,
+                            height: 38,
+                            margin: const EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              color: AppColors.angolaRed,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              FontAwesomeIcons.star,
+                              size: 18,
+                              color: AppColors.textLight,
+                            ),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${user?.hcBalance ?? 0} HC',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              Text(
+                                '≈ Kz ${user?.kzBalance ?? 0}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textGrey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   // Banner ad
                   const BannerAdWidget(
                     margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                   ),
-                  // Display the title based on filter
-                  _buildShopTitle(context),
                   // Show loading indicator or shop items
                   shopItemsAsync.when(
                     data: (shopItems) {
@@ -201,86 +167,6 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       return ref.t(LocalizationKeys.keys);
     }
     return ref.t(LocalizationKeys.shop);
-  }
-
-  // Build the shop title
-  Widget _buildShopTitle(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(
-        _getShopTitle(ref),
-        style: const TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textLight,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, User? user) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
-      child: Row(
-        children: [
-          PressableWidget(
-            onTap: () {
-              Navigator.of(context).pop();
-            },
-            child: const _GlassEffectContainer(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              child: SizedBox(
-                width: 54,
-                height: 54,
-                child: Icon(FontAwesomeIcons.arrowLeft, size: 20),
-              ),
-            ),
-          ),
-          const Spacer(),
-          _GlassEffectContainer(
-            borderRadius: BorderRadius.circular(12),
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.angolaRed,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    FontAwesomeIcons.star,
-                    size: 18,
-                    color: AppColors.textLight,
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${user?.hcBalance ?? 0} HC',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      '≈ Kz ${user?.kzBalance ?? 0}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textGrey,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildContent(
@@ -341,8 +227,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   Widget _buildProductCard(BuildContext context, WidgetRef ref, ShopItem item) {
     // Watch the purchase state for this specific item
     final isPurchasing = ref.watch(itemPurchasingProvider(item.itemId));
-    return _GlassEffectContainer(
-      borderRadius: BorderRadius.circular(16),
+    return GlassContainer(
+      borderRadius: 16,
       padding: const EdgeInsets.all(15),
       child: Column(
         children: [
@@ -378,11 +264,13 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
             ),
           ),
           const SizedBox(height: 15),
-          // Use InkWell instead of GestureDetector for visual feedback with ripple effect
-          InkWell(
-            borderRadius: BorderRadius.circular(10),
-            splashColor: Colors.white.withOpacity(0.3),
-            highlightColor: Colors.white.withOpacity(0.1),
+
+          PrimaryActionButton(
+            text: '${item.price} HC',
+            isLoading: isPurchasing,
+            padding: const EdgeInsets.symmetric(
+              vertical: 12,
+            ), // Override padding to match original
             onTap: isPurchasing
                 ? null
                 : () {
@@ -438,60 +326,6 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                       }
                     });
                   },
-            // Using Material for better ink effects and feedback
-            child: Material(
-              color: Colors.transparent,
-              child: Ink(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  gradient: LinearGradient(
-                    colors: isPurchasing
-                        ? [
-                            AppColors.angolaYellow.withOpacity(0.5),
-                            AppColors.angolaRed.withOpacity(0.5),
-                          ]
-                        : [AppColors.angolaYellow, AppColors.angolaRed],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (isPurchasing)
-                        // Show a small loading indicator when purchasing
-                        Container(
-                          width: 14,
-                          height: 14,
-                          margin: const EdgeInsets.only(right: 8),
-                          child: const CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      else
-                        const FaIcon(
-                          FontAwesomeIcons.coins,
-                          size: 14,
-                          color: Colors.white,
-                        ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${item.price} HC',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
           ),
         ],
       ),
