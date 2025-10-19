@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hustlecoin/state/all_states.dart';
+import 'package:hustlecoin/providers/user_provider.dart';
 
 // Language enum for type safety
 enum Language { en, pt }

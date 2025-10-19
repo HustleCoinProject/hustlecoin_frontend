@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hustlecoin/utils/localization.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
-import 'app_colors.dart';
-import 'login.dart';
+import 'package:hustlecoin/theme/app_colors.dart';
+import 'login_screen.dart';
 
 // --- Main Start Screen Widget ---
 

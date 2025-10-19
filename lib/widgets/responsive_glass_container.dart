@@ -1,7 +1,7 @@
 // lib/widgets/responsive_glass_container.dart
 
 import 'package:flutter/material.dart';
-import 'package:hustlecoin/app_colors.dart';
+import 'package:hustlecoin/theme/app_colors.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 
 /// High-performance responsive "smoky glass" container without blur

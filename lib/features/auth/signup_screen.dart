@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hustlecoin/data/repositories/api_repository.dart';
+import 'package:hustlecoin/features/auth/login_screen.dart';
+import 'package:hustlecoin/features/home/home_screen.dart';
+import 'package:hustlecoin/providers/auth_provider.dart';
 import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
-import 'app_colors.dart';
-import 'home_screen.dart';
-import 'login.dart';
-import 'state/all_states.dart';
+import 'package:hustlecoin/theme/app_colors.dart';
 
 // --- Reusable Widgets (can be moved to their own files later) ---
 

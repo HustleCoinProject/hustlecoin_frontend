@@ -1,5 +1,3 @@
-// lib/utils/responsive_utils.dart
-
 import 'package:flutter/material.dart';
 
 /// Responsive utility class that adapts sizes based on screen dimensions

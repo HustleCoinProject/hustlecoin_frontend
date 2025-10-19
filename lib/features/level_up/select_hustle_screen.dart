@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hustlecoin/home_screen.dart';
+import 'package:hustlecoin/features/auth/signup_screen.dart';
+import 'package:hustlecoin/providers/foundational_providers.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
-import 'app_colors.dart';
-import 'state/all_states.dart';
+import 'package:hustlecoin/theme/app_colors.dart';
 
 class SelectHustleScreen extends ConsumerStatefulWidget {
   final int newLevel;

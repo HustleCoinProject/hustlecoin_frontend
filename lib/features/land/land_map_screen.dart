@@ -6,12 +6,13 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:h3_flutter/h3_flutter.dart';
+import 'package:hustlecoin/data/models/land_tile_info.dart';
+import 'package:hustlecoin/providers/land_provider.dart';
+import 'package:hustlecoin/providers/user_provider.dart';
+import 'package:hustlecoin/utils/localization.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:hustlecoin/services/sound_service.dart';
-
-import 'state/all_states.dart';
-import 'app_colors.dart';
-import 'utils/localization.dart';
+import 'package:hustlecoin/theme/app_colors.dart';
 
 // --- Reusable "Smoky Glass" Widget ---
 class _GlassEffectContainer extends StatelessWidget {

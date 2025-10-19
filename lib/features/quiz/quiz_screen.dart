@@ -3,13 +3,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:hustlecoin/state/all_states.dart';
+import 'package:hustlecoin/data/models/quiz_question.dart';
+import 'package:hustlecoin/data/models/quiz_result.dart';
+import 'package:hustlecoin/providers/quiz_provider.dart';
+import 'package:hustlecoin/providers/user_provider.dart';
 import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/utils/ad_helper.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'package:hustlecoin/utils/localization.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
-import 'app_colors.dart';
+import 'package:hustlecoin/theme/app_colors.dart';
 
 // --- Reusable Helper Widgets (copied from your original for completeness) ---
 

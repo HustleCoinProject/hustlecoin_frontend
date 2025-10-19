@@ -1,5 +1,3 @@
-// lib/utils/responsive_mixin.dart
-
 import 'package:flutter/material.dart';
 import 'responsive_utils.dart';
 

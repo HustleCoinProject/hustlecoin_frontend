@@ -1,0 +1,79 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'foundational_providers.dart';
+
+// --- Server Time Synchronization ---
+
+final serverTimeProvider =
+    StateNotifierProvider<ServerTimeController, AsyncValue<Duration>>((ref) {
+      return ServerTimeController(ref);
+    }, dependencies: [apiRepositoryProvider]);
+
+class ServerTimeController extends StateNotifier<AsyncValue<Duration>> {
+  final Ref _ref;
+  static const refreshInterval = Duration(minutes: 10);
+  Timer? _refreshTimer;
+
+  ServerTimeController(this._ref) : super(const AsyncValue.loading()) {
+    syncWithServer();
+    _refreshTimer = Timer.periodic(refreshInterval, (_) => syncWithServer());
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  Duration get timeOffset => state.value ?? Duration.zero;
+
+  DateTime get currentServerTime {
+    final offset = state.value ?? Duration.zero;
+    return DateTime.now().add(offset);
+  }
+
+  Future<void> syncWithServer() async {
+    try {
+      final api = _ref.read(apiRepositoryProvider);
+      final localTimeBefore = DateTime.now();
+      final serverTime = await api.getServerTime();
+      final localTimeAfter = DateTime.now();
+      final latency = localTimeAfter.difference(localTimeBefore) ~/ 2;
+      final adjustedServerTime = serverTime.add(latency);
+      final offset = adjustedServerTime.difference(localTimeAfter);
+      state = AsyncValue.data(offset);
+
+      debugPrint(
+        "Server time sync completed. Offset: ${offset.inMilliseconds}ms",
+      );
+    } catch (e, st) {
+      debugPrint("Failed to sync with server time: $e");
+      if (state.value == null) {
+        state = AsyncValue.data(Duration.zero);
+      }
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  bool isTaskInCooldown(String taskId, Map<String, DateTime> cooldowns) {
+    if (!cooldowns.containsKey(taskId)) return false;
+    final cooldownEndTime = cooldowns[taskId]!;
+    return currentServerTime.isBefore(cooldownEndTime);
+  }
+
+  Duration getRemainingCooldown(
+    String taskId,
+    Map<String, DateTime> cooldowns,
+  ) {
+    if (!cooldowns.containsKey(taskId)) return Duration.zero;
+    final cooldownEndTime = cooldowns[taskId]!;
+    if (currentServerTime.isAfter(cooldownEndTime)) return Duration.zero;
+    return cooldownEndTime.difference(currentServerTime);
+  }
+}
+
+final currentServerTimeProvider = Provider<DateTime>((ref) {
+  final serverTimeController = ref.watch(serverTimeProvider.notifier);
+  return serverTimeController.currentServerTime;
+}, dependencies: [serverTimeProvider]);

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'start.dart';
+import 'package:hustlecoin/features/auth/start_screen.dart';
 
-import 'package:hustlecoin/home_screen.dart';
+import 'package:hustlecoin/features/home/home_screen.dart';
 
-import 'package:hustlecoin/state/all_states.dart';
+import 'package:hustlecoin/providers/auth_provider.dart';
+import 'package:hustlecoin/providers/foundational_providers.dart';
+import 'package:hustlecoin/providers/time_provider.dart';
+import 'package:hustlecoin/providers/user_provider.dart';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hustlecoin/services/admob_service.dart';

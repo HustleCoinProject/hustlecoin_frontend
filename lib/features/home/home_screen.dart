@@ -3,7 +3,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:hustlecoin/state/all_states.dart';
+import 'package:hustlecoin/data/models/quiz_result.dart';
+import 'package:hustlecoin/data/models/user.dart';
+import 'package:hustlecoin/features/land/land_map_screen.dart';
+import 'package:hustlecoin/features/leaderboard/leaderboard_screen.dart';
+import 'package:hustlecoin/features/level_up/select_hustle_screen.dart';
+import 'package:hustlecoin/features/profile/edit_profile.dart';
+import 'package:hustlecoin/features/quiz/quiz_screen.dart';
+import 'package:hustlecoin/features/shop/shop_screen.dart';
+import 'package:hustlecoin/providers/foundational_providers.dart';
+import 'package:hustlecoin/providers/time_provider.dart';
+import 'package:hustlecoin/providers/user_provider.dart';
+import 'package:hustlecoin/providers/user_specific_data_provider.dart';
 import 'package:hustlecoin/services/admob_service.dart';
 import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
@@ -12,13 +23,7 @@ import 'package:hustlecoin/utils/localization.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'dart:async'; // For Timer
-import 'app_colors.dart';
-import 'shop.dart';
-import 'leaderboard.dart';
-import 'edit_profile.dart';
-import 'quiz.dart';
-import 'land_map.dart';
-import 'select_hustle.dart';
+import 'package:hustlecoin/theme/app_colors.dart';
 
 // A custom, lightweight widget for press feedback.
 class PressableWidget extends StatefulWidget {
