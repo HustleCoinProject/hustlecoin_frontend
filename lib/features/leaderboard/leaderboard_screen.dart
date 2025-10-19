@@ -8,6 +8,7 @@ import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'package:hustlecoin/utils/localization.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
 import 'package:hustlecoin/widgets/glass_container.dart';
+import 'package:hustlecoin/widgets/screen_background.dart';
 import 'package:hustlecoin/widgets/screen_header.dart';
 
 // Local data model for a leaderboard entry UI
@@ -48,34 +49,16 @@ class LeaderboardScreen extends ConsumerWidget {
     final user = userState.value;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(
-              'assets/images/${user != null ? HustleUtils.getCurrentHustleKey(user.currentHustle) : "Taxi Driver"}.png',
-            ),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.center,
-              radius: 1.0,
-              colors: [
-                const Color(0xFF101010).withOpacity(0.4),
-                const Color(0xFF101010).withOpacity(0.9),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                ScreenHeader(title: ref.t(LocalizationKeys.leaderboard)),
-                _buildContent(leaderboardAsync, ref),
-                _buildPlayerHighlight(),
-              ],
-            ),
+      body: ScreenBackground(
+        imagePath:
+            'assets/images/${user != null ? HustleUtils.getCurrentHustleKey(user.currentHustle) : "Taxi Driver"}.png',
+        child: SafeArea(
+          child: Column(
+            children: [
+              ScreenHeader(title: ref.t(LocalizationKeys.leaderboard)),
+              _buildContent(leaderboardAsync, ref),
+              _buildPlayerHighlight(),
+            ],
           ),
         ),
       ),

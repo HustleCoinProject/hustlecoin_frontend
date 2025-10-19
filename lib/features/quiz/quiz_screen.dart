@@ -16,6 +16,7 @@ import 'package:hustlecoin/theme/app_colors.dart';
 import 'package:hustlecoin/widgets/pressable_scale_widget.dart';
 import 'package:hustlecoin/widgets/glass_container.dart';
 import 'package:hustlecoin/widgets/primary_action_button.dart';
+import 'package:hustlecoin/widgets/screen_background.dart';
 import 'package:hustlecoin/widgets/screen_header.dart';
 
 class QuizScreen extends ConsumerWidget {
@@ -26,83 +27,65 @@ class QuizScreen extends ConsumerWidget {
     final quizAsync = ref.watch(quizQuestionProvider);
     final user = ref.watch(userControllerProvider).value;
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(
-              'assets/images/${user != null ? HustleUtils.getCurrentHustleKey(user.currentHustle) : "Taxi Driver"}.png',
-            ),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.center,
-              radius: 1.0,
-              colors: [
-                const Color(0xFF101010).withOpacity(0.4),
-                const Color(0xFF101010).withOpacity(0.9),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                ScreenHeader(
-                  title: ref.t(LocalizationKeys.dailyQuiz),
-                  trailingWidget: GlassContainer(
-                    borderRadius: 12,
-                    padding: const EdgeInsets.all(8),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 38,
-                          height: 38,
-                          margin: const EdgeInsets.only(right: 8),
-                          decoration: BoxDecoration(
-                            color: AppColors.angolaRed,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            FontAwesomeIcons.star,
-                            size: 18,
-                            color: AppColors.textLight,
-                          ),
+      body: ScreenBackground(
+        imagePath:
+            'assets/images/${user != null ? HustleUtils.getCurrentHustleKey(user.currentHustle) : "Taxi Driver"}.png',
+        child: SafeArea(
+          child: Column(
+            children: [
+              ScreenHeader(
+                title: ref.t(LocalizationKeys.dailyQuiz),
+                trailingWidget: GlassContainer(
+                  borderRadius: 12,
+                  padding: const EdgeInsets.all(8),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.angolaRed,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${user?.hcBalance ?? 0} HC',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              '≈ Kz ${user?.kzBalance ?? 0}',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textGrey,
-                              ),
-                            ),
-                          ],
+                        child: const Icon(
+                          FontAwesomeIcons.star,
+                          size: 18,
+                          color: AppColors.textLight,
                         ),
-                      ],
-                    ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${user?.hcBalance ?? 0} HC',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            '≈ Kz ${user?.kzBalance ?? 0}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textGrey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                Expanded(
-                  child: quizAsync.when(
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (err, stack) => Center(child: Text('Error: $err')),
-                    data: (quiz) => _QuizContent(quiz: quiz),
-                  ),
+              ),
+              Expanded(
+                child: quizAsync.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (err, stack) => Center(child: Text('Error: $err')),
+                  data: (quiz) => _QuizContent(quiz: quiz),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

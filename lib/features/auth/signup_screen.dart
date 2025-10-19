@@ -10,6 +10,7 @@ import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
 import 'package:hustlecoin/widgets/glass_container.dart';
 import 'package:hustlecoin/widgets/primary_action_button.dart';
+import 'package:hustlecoin/widgets/screen_background.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -247,72 +248,53 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
     return ResponsiveBuilder(
       builder: (context) => Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/$randomImage'),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: Alignment.center,
-                radius: 1.0,
-                colors: [
-                  const Color(0xFF101010).withOpacity(0.4),
-                  const Color(0xFF101010).withOpacity(0.9),
-                ],
-              ),
-            ),
-            child: Center(
-              child: SingleChildScrollView(
-                padding: ResponsiveUtils.pSymmetric(horizontal: 20.0),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.85,
-                  child: Column(
-                    children: [
-                      // Show error message if any
-                      if (_errorMessage != null)
-                        Container(
-                          margin: EdgeInsets.only(bottom: 20.s),
-                          padding: ResponsiveUtils.pSymmetric(
-                            vertical: 10,
-                            horizontal: 15,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(8.r),
-                            border: Border.all(
-                              color: Colors.red.withOpacity(0.6),
-                            ),
-                          ),
-                          child: Text(
-                            _errorMessage!,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14.f,
-                            ),
-                            textAlign: TextAlign.center,
+        body: ScreenBackground(
+          imagePath: 'assets/images/$randomImage',
+          child: Center(
+            child: SingleChildScrollView(
+              padding: ResponsiveUtils.pSymmetric(horizontal: 20.0),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.85,
+                child: Column(
+                  children: [
+                    // Show error message if any
+                    if (_errorMessage != null)
+                      Container(
+                        margin: EdgeInsets.only(bottom: 20.s),
+                        padding: ResponsiveUtils.pSymmetric(
+                          vertical: 10,
+                          horizontal: 15,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(8.r),
+                          border: Border.all(
+                            color: Colors.red.withOpacity(0.6),
                           ),
                         ),
-
-                      // Main content
-                      Expanded(
-                        child: PageView(
-                          controller: _stepController,
-                          physics: const NeverScrollableScrollPhysics(),
-                          children: [_buildStep1(), _buildStep2()],
+                        child: Text(
+                          _errorMessage!,
+                          style: TextStyle(color: Colors.white, fontSize: 14.f),
+                          textAlign: TextAlign.center,
                         ),
                       ),
-                    ],
-                  ),
-                ), // Closing SizedBox
-              ),
+
+                    // Main content
+                    Expanded(
+                      child: PageView(
+                        controller: _stepController,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: [_buildStep1(), _buildStep2()],
+                      ),
+                    ),
+                  ],
+                ),
+              ), // Closing SizedBox
             ),
           ),
         ),
-      ), // Closing ResponsiveBuilder
+      ),
+      // Closing ResponsiveBuilder
     );
   }
 
@@ -354,7 +336,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         SizedBox(height: 20.s),
         _buildLanguageSelector(),
         SizedBox(height: 20.s),
-        PrimaryActionButton(text: 'Next', onTap: () => _goToStep(1)),
+        SizedBox(
+          width: double.infinity,
+          child: PrimaryActionButton(text: 'Next', onTap: () => _goToStep(1)),
+        ),
         SizedBox(height: 20.s),
         // Already have account link
         RichText(
@@ -419,10 +404,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             ),
           ),
         const SizedBox(height: 30),
-        PrimaryActionButton(
-          text: 'Create Account',
-          onTap: _isLoading ? null : () => _registerUser(),
-          isLoading: _isLoading,
+        SizedBox(
+          width: double.infinity,
+          child: PrimaryActionButton(
+            text: 'Create Account',
+            onTap: _isLoading ? null : () => _registerUser(),
+            isLoading: _isLoading,
+          ),
         ),
         const SizedBox(height: 10),
         GestureDetector(

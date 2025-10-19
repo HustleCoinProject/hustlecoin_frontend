@@ -11,6 +11,7 @@ import 'package:hustlecoin/utils/localization.dart';
 import 'package:hustlecoin/widgets/pressable_scale_widget.dart';
 import 'package:hustlecoin/widgets/glass_container.dart';
 import 'package:hustlecoin/widgets/primary_action_button.dart';
+import 'package:hustlecoin/widgets/screen_background.dart';
 import 'package:hustlecoin/widgets/screen_header.dart';
 
 // --- Main Edit Profile Screen Widget ---
@@ -132,52 +133,35 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         : "Taxi Driver";
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/$hustleKey.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.center,
-              radius: 1.0,
-              colors: [
-                const Color(0xFF101010).withOpacity(0.4),
-                const Color(0xFF101010).withOpacity(0.9),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                ScreenHeader(
-                  title: ref.t(LocalizationKeys.viewEditProfile),
-                  trailingWidget: PressableScaleWidget(
-                    onTap: () {
-                      // Handle logout logic
-                      ref.read(authControllerProvider.notifier).logout();
-                      // Navigate to StartScreen and remove all previous routes
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const StartScreen()),
-                        (route) => false, // This removes all previous routes
-                      );
-                    },
-                    child: const GlassContainer(
-                      borderRadius: 12,
-                      child: SizedBox(
-                        width: 54,
-                        height: 54,
-                        child: Icon(FontAwesomeIcons.signOutAlt, size: 20),
-                      ),
+      body: ScreenBackground(
+        imagePath: 'assets/images/$hustleKey.png',
+        child: SafeArea(
+          child: Column(
+            children: [
+              ScreenHeader(
+                title: ref.t(LocalizationKeys.viewEditProfile),
+                trailingWidget: PressableScaleWidget(
+                  onTap: () {
+                    // Handle logout logic
+                    ref.read(authControllerProvider.notifier).logout();
+                    // Navigate to StartScreen and remove all previous routes
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => const StartScreen()),
+                      (route) => false, // This removes all previous routes
+                    );
+                  },
+                  child: const GlassContainer(
+                    borderRadius: 12,
+                    child: SizedBox(
+                      width: 54,
+                      height: 54,
+                      child: Icon(FontAwesomeIcons.signOutAlt, size: 20),
                     ),
                   ),
                 ),
-                _buildContent(),
-              ],
-            ),
+              ),
+              _buildContent(),
+            ],
           ),
         ),
       ),

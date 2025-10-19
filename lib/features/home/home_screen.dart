@@ -24,6 +24,7 @@ import 'dart:async'; // For Timer
 import 'package:hustlecoin/theme/app_colors.dart';
 import 'package:hustlecoin/widgets/glass_container.dart';
 import 'package:hustlecoin/widgets/pressable_scale_widget.dart';
+import 'package:hustlecoin/widgets/screen_background.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -233,51 +234,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(
-              'assets/images/${HustleUtils.getCurrentHustleKey(user.currentHustle)}.png',
-            ),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.center,
-              radius: 1.0,
-              colors: [
-                const Color(0xFF101010).withOpacity(0.4),
-                const Color(0xFF101010).withOpacity(0.9),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                // Banner ad at the top
-                BannerAdWidget(
-                  margin: ResponsiveUtils.pSymmetric(
-                    horizontal: 15,
-                    vertical: 5,
-                  ),
+      body: ScreenBackground(
+        imagePath:
+            'assets/images/${HustleUtils.getCurrentHustleKey(user.currentHustle)}.png',
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Banner ad at the top
+              BannerAdWidget(
+                margin: ResponsiveUtils.pSymmetric(horizontal: 15, vertical: 5),
+              ),
+              _buildTopBar(user),
+              Text(
+                ref.t(LocalizationKeys.hustleCoin),
+                style: TextStyle(
+                  color: AppColors.textGrey,
+                  fontSize: 14.f,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 3,
+                  shadows: [Shadow(blurRadius: 4, color: Colors.black87)],
                 ),
-                _buildTopBar(user),
-                Text(
-                  ref.t(LocalizationKeys.hustleCoin),
-                  style: TextStyle(
-                    color: AppColors.textGrey,
-                    fontSize: 14.f,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 3,
-                    shadows: [Shadow(blurRadius: 4, color: Colors.black87)],
-                  ),
-                ),
-                Expanded(child: _buildGameArea(user)),
-                _buildUpgradesSection(),
-              ],
-            ),
+              ),
+              Expanded(child: _buildGameArea(user)),
+              _buildUpgradesSection(),
+            ],
           ),
         ),
       ),
@@ -912,7 +892,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-// *** NEW: Extracted widget to solve the error and improve performance ***
 class _StatsContainer extends ConsumerWidget {
   final User user;
   const _StatsContainer({required this.user});

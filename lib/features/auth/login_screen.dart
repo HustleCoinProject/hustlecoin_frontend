@@ -12,6 +12,7 @@ import 'package:hustlecoin/theme/app_colors.dart';
 import 'package:hustlecoin/widgets/primary_action_button.dart';
 import 'signup_screen.dart';
 import 'package:hustlecoin/widgets/glass_container.dart';
+import 'package:hustlecoin/widgets/screen_background.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
@@ -65,72 +66,58 @@ class LoginScreen extends ConsumerWidget {
 
     return ResponsiveBuilder(
       builder: (context) => Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/$randomImage'),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: Alignment.center,
-                radius: 1.0,
-                colors: [
-                  const Color(0xFF101010).withOpacity(0.4),
-                  const Color(0xFF101010).withOpacity(0.9),
-                ],
-              ),
-            ),
-            child: Center(
-              child: SingleChildScrollView(
-                padding: ResponsiveUtils.pSymmetric(horizontal: 20.0),
-                child: SizedBox(
-                  width: 380.s,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Title and Subtitle
-                      Text(
-                        ref.t(LocalizationKeys.welcomeBack),
-                        style: TextStyle(
-                          fontSize: 28.f,
-                          fontWeight: FontWeight.w700,
-                        ),
+        body: ScreenBackground(
+          imagePath: 'assets/images/$randomImage',
+          child: Center(
+            child: SingleChildScrollView(
+              padding: ResponsiveUtils.pSymmetric(horizontal: 20.0),
+              child: SizedBox(
+                width: 380.s,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Title and Subtitle
+                    Text(
+                      ref.t(LocalizationKeys.welcomeBack),
+                      style: TextStyle(
+                        fontSize: 28.f,
+                        fontWeight: FontWeight.w700,
                       ),
-                      SizedBox(height: 5.s),
-                      Text(
-                        ref.t(LocalizationKeys.logInToContinue),
-                        style: TextStyle(
-                          color: AppColors.textGrey,
-                          fontSize: 16.f,
-                        ),
+                    ),
+                    SizedBox(height: 5.s),
+                    Text(
+                      ref.t(LocalizationKeys.logInToContinue),
+                      style: TextStyle(
+                        color: AppColors.textGrey,
+                        fontSize: 16.f,
                       ),
-                      SizedBox(height: 30.s),
+                    ),
+                    SizedBox(height: 30.s),
 
-                      // Input Fields
-                      _buildInputField(
-                        icon: FontAwesomeIcons.user,
-                        hintText:
-                            '${ref.t(LocalizationKeys.email)} ${ref.t(LocalizationKeys.username)}',
-                        controller: usernameController,
-                      ),
-                      SizedBox(height: 20.s),
-                      _buildInputField(
-                        icon: FontAwesomeIcons.lock,
-                        hintText: ref.t(LocalizationKeys.password),
-                        controller: passwordController,
-                        obscureText: true,
-                      ),
-                      SizedBox(height: 5.s),
+                    // Input Fields
+                    _buildInputField(
+                      icon: FontAwesomeIcons.user,
+                      hintText:
+                          '${ref.t(LocalizationKeys.email)} ${ref.t(LocalizationKeys.username)}',
+                      controller: usernameController,
+                    ),
+                    SizedBox(height: 20.s),
+                    _buildInputField(
+                      icon: FontAwesomeIcons.lock,
+                      hintText: ref.t(LocalizationKeys.password),
+                      controller: passwordController,
+                      obscureText: true,
+                    ),
+                    SizedBox(height: 5.s),
 
-                      // Forgot Password Link
-                      _buildForgotPasswordLink(ref),
-                      SizedBox(height: 20.s),
+                    // Forgot Password Link
+                    _buildForgotPasswordLink(ref),
+                    SizedBox(height: 20.s),
 
-                      // Login Button
-                      PrimaryActionButton(
+                    // Login Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: PrimaryActionButton(
                         text: ref.t(LocalizationKeys.logIn),
                         onTap: () async {
                           /*Navigator.of(context).pushReplacement(
@@ -148,12 +135,12 @@ class LoginScreen extends ConsumerWidget {
                           );*/
                         },
                       ),
-                      SizedBox(height: 30.s),
+                    ),
+                    SizedBox(height: 30.s),
 
-                      // Sign Up Link
-                      _buildSignUpLink(context, ref),
-                    ],
-                  ),
+                    // Sign Up Link
+                    _buildSignUpLink(context, ref),
+                  ],
                 ),
               ),
             ),

@@ -11,6 +11,7 @@ import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
 import 'package:hustlecoin/widgets/glass_container.dart';
 import 'package:hustlecoin/widgets/primary_action_button.dart';
+import 'package:hustlecoin/widgets/screen_background.dart';
 import 'package:hustlecoin/widgets/screen_header.dart';
 
 // Provider to track loading state for each shop item
@@ -41,117 +42,99 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
     return ResponsiveBuilder(
       builder: (context) => Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage(
-                'assets/images/${user != null ? HustleUtils.getCurrentHustleKey(user.currentHustle) : "Taxi Driver"}.png',
-              ),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: Alignment.center,
-                radius: 1.0,
-                colors: [
-                  const Color(0xFF101010).withOpacity(0.4),
-                  const Color(0xFF101010).withOpacity(0.9),
-                ],
-              ),
-            ),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  ScreenHeader(
-                    title: _getShopTitle(ref),
-                    trailingWidget: GlassContainer(
-                      borderRadius: 12,
-                      padding: const EdgeInsets.all(8),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 38,
-                            height: 38,
-                            margin: const EdgeInsets.only(right: 8),
-                            decoration: BoxDecoration(
-                              color: AppColors.angolaRed,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              FontAwesomeIcons.star,
-                              size: 18,
-                              color: AppColors.textLight,
-                            ),
+        body: ScreenBackground(
+          imagePath:
+              'assets/images/${user != null ? HustleUtils.getCurrentHustleKey(user.currentHustle) : "Taxi Driver"}.png',
+          child: SafeArea(
+            child: Column(
+              children: [
+                ScreenHeader(
+                  title: _getShopTitle(ref),
+                  trailingWidget: GlassContainer(
+                    borderRadius: 12,
+                    padding: const EdgeInsets.all(8),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                            color: AppColors.angolaRed,
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${user?.hcBalance ?? 0} HC',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              Text(
-                                '≈ Kz ${user?.kzBalance ?? 0}',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: AppColors.textGrey,
-                                ),
-                              ),
-                            ],
+                          child: const Icon(
+                            FontAwesomeIcons.star,
+                            size: 18,
+                            color: AppColors.textLight,
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Banner ad
-                  const BannerAdWidget(
-                    margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                  ),
-                  // Show loading indicator or shop items
-                  shopItemsAsync.when(
-                    data: (shopItems) {
-                      List<ShopItem> filteredItems = shopItems;
-
-                      // Filter by item type if specified
-                      if (widget.itemTypeFilter != null) {
-                        filteredItems = shopItems
-                            .where(
-                              (item) => item.itemType == widget.itemTypeFilter,
-                            )
-                            .toList();
-                      }
-
-                      // Exclude specified item types if provided
-                      if (widget.excludeTypes != null &&
-                          widget.excludeTypes!.isNotEmpty) {
-                        filteredItems = filteredItems
-                            .where(
-                              (item) =>
-                                  !widget.excludeTypes!.contains(item.itemType),
-                            )
-                            .toList();
-                      }
-                      return _buildContent(context, ref, filteredItems);
-                    },
-                    loading: () => const Expanded(
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                    error: (e, st) => Expanded(
-                      child: Center(
-                        child: Text(
-                          'Failed to load shop items',
-                          style: TextStyle(color: AppColors.textGrey),
                         ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${user?.hcBalance ?? 0} HC',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              '≈ Kz ${user?.kzBalance ?? 0}',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textGrey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Banner ad
+                const BannerAdWidget(
+                  margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                ),
+                // Show loading indicator or shop items
+                shopItemsAsync.when(
+                  data: (shopItems) {
+                    List<ShopItem> filteredItems = shopItems;
+
+                    // Filter by item type if specified
+                    if (widget.itemTypeFilter != null) {
+                      filteredItems = shopItems
+                          .where(
+                            (item) => item.itemType == widget.itemTypeFilter,
+                          )
+                          .toList();
+                    }
+
+                    // Exclude specified item types if provided
+                    if (widget.excludeTypes != null &&
+                        widget.excludeTypes!.isNotEmpty) {
+                      filteredItems = filteredItems
+                          .where(
+                            (item) =>
+                                !widget.excludeTypes!.contains(item.itemType),
+                          )
+                          .toList();
+                    }
+                    return _buildContent(context, ref, filteredItems);
+                  },
+                  loading: () => const Expanded(
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (e, st) => Expanded(
+                    child: Center(
+                      child: Text(
+                        'Failed to load shop items',
+                        style: TextStyle(color: AppColors.textGrey),
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -265,67 +248,72 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           ),
           const SizedBox(height: 15),
 
-          PrimaryActionButton(
-            text: '${item.price} HC',
-            isLoading: isPurchasing,
-            padding: const EdgeInsets.symmetric(
-              vertical: 12,
-            ), // Override padding to match original
-            onTap: isPurchasing
-                ? null
-                : () {
-                    // Set purchase in progress state IMMEDIATELY
-                    ref
-                            .read(itemPurchasingProvider(item.itemId).notifier)
-                            .state =
-                        true;
+          SizedBox(
+            width: double.infinity,
+            child: PrimaryActionButton(
+              text: '${item.price} HC',
+              isLoading: isPurchasing,
+              padding: const EdgeInsets.symmetric(
+                vertical: 12,
+              ), // Override padding to match original
+              onTap: isPurchasing
+                  ? null
+                  : () {
+                      // Set purchase in progress state IMMEDIATELY
+                      ref
+                              .read(
+                                itemPurchasingProvider(item.itemId).notifier,
+                              )
+                              .state =
+                          true;
 
-                    // Use Future.microtask to ensure UI updates before starting API call
-                    Future.microtask(() async {
-                      try {
-                        // Purchase the item with quantity = 1
-                        await ref
-                            .read(userControllerProvider.notifier)
-                            .purchaseItem(item.itemId);
+                      // Use Future.microtask to ensure UI updates before starting API call
+                      Future.microtask(() async {
+                        try {
+                          // Purchase the item with quantity = 1
+                          await ref
+                              .read(userControllerProvider.notifier)
+                              .purchaseItem(item.itemId);
 
-                        // Show success message
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Successfully purchased ${item.name}!',
+                          // Show success message
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Successfully purchased ${item.name}!',
+                                ),
+                                backgroundColor: Colors.green,
                               ),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        // Show error message
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Failed to purchase: ${e.toString()}',
+                            );
+                          }
+                        } catch (e) {
+                          // Show error message
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Failed to purchase: ${e.toString()}',
+                                ),
+                                backgroundColor: Colors.red,
                               ),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
+                            );
+                          }
+                        } finally {
+                          // Reset purchase in progress state
+                          if (context.mounted) {
+                            ref
+                                    .read(
+                                      itemPurchasingProvider(
+                                        item.itemId,
+                                      ).notifier,
+                                    )
+                                    .state =
+                                false;
+                          }
                         }
-                      } finally {
-                        // Reset purchase in progress state
-                        if (context.mounted) {
-                          ref
-                                  .read(
-                                    itemPurchasingProvider(
-                                      item.itemId,
-                                    ).notifier,
-                                  )
-                                  .state =
-                              false;
-                        }
-                      }
-                    });
-                  },
+                      });
+                    },
+            ),
           ),
         ],
       ),
