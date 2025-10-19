@@ -452,10 +452,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         // Determine UI appearance based on state
         final Color gradientStartColor = isDisabled
-            ? AppColors.angolaYellow.withOpacity(0.5)
+            ? AppColors.angolaYellow.withValues(alpha: 0.5)
             : AppColors.angolaYellow;
         final Color gradientEndColor = isDisabled
-            ? AppColors.orange.withOpacity(0.5)
+            ? AppColors.orange.withValues(alpha: 0.5)
             : AppColors.orange;
 
         return PressableScaleWidget(
@@ -469,7 +469,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 innerRadiusRatio: 0.7,
                 pointRounding: 0.3,
                 side: BorderSide(
-                  color: AppColors.angolaYellow.withOpacity(0.5),
+                  color: AppColors.angolaYellow.withValues(alpha: 0.5),
                   width: 1,
                 ),
               ),
@@ -480,8 +480,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               shadows: [
                 BoxShadow(
-                  color: AppColors.glowYellow.withOpacity(
-                    isDisabled ? 0.3 : 0.7,
+                  color: AppColors.glowYellow.withValues(
+                    alpha: isDisabled ? 0.3 : 0.7,
                   ),
                   blurRadius: 15,
                   spreadRadius: -2,
@@ -500,7 +500,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.angolaBlack.withOpacity(0.7),
+                            AppColors.angolaBlack.withValues(alpha: 0.7),
                           ),
                         ),
                       ),
@@ -865,8 +865,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _onNavItemTapped(index);
         },
         customBorder: const CircleBorder(),
-        splashColor: AppColors.angolaYellow.withOpacity(0.15),
-        highlightColor: AppColors.angolaYellow.withOpacity(0.1),
+        splashColor: AppColors.angolaYellow.withValues(alpha: 0.15),
+        highlightColor: AppColors.angolaYellow.withValues(alpha: 0.1),
         child: Padding(
           padding: ResponsiveUtils.pSymmetric(vertical: 4.0),
           child: Column(
@@ -995,7 +995,7 @@ class _StatsContainer extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(6.r),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.4),
+                            color: Colors.black.withValues(alpha: 0.4),
                             spreadRadius: 0,
                             blurRadius: 4,
                             offset: const Offset(0, 2),
@@ -1037,7 +1037,7 @@ class _StatsContainer extends ConsumerWidget {
                             BoxShadow(
                               color: status.isEligibleForUpgrade
                                   ? AppColors.glowYellow
-                                  : AppColors.orange.withOpacity(0.3),
+                                  : AppColors.orange.withValues(alpha: 0.3),
                               blurRadius: status.isEligibleForUpgrade ? 15 : 10,
                               spreadRadius: status.isEligibleForUpgrade
                                   ? 0
@@ -1206,13 +1206,13 @@ class _MainTapButton extends ConsumerWidget {
                   FontAwesomeIcons.coins,
                   size: 50.s,
                   color: isDisabled
-                      ? AppColors.textGrey.withOpacity(0.5)
+                      ? AppColors.textGrey.withValues(alpha: 0.5)
                       : AppColors.angolaYellow,
                   shadows: isDisabled
                       ? []
                       : [
                           Shadow(
-                            color: AppColors.glowYellow.withOpacity(0.8),
+                            color: AppColors.glowYellow.withValues(alpha: 0.8),
                             blurRadius: 15,
                           ),
                         ],
@@ -1225,7 +1225,7 @@ class _MainTapButton extends ConsumerWidget {
                   fontSize: 18.f,
                   letterSpacing: 1,
                   color: isDisabled
-                      ? AppColors.textGrey.withOpacity(0.5)
+                      ? AppColors.textGrey.withValues(alpha: 0.5)
                       : AppColors.textLight,
                 ),
               ),
@@ -1472,7 +1472,7 @@ class _CooldownTaskButtonState extends ConsumerState<CooldownTaskButton> {
                       widget.icon,
                       size: 24.s,
                       color: isCooldown
-                          ? AppColors.textGrey.withOpacity(0.5)
+                          ? AppColors.textGrey.withValues(alpha: 0.5)
                           : AppColors.textGrey,
                     ),
                   SizedBox(height: 4.s),
@@ -1505,7 +1505,7 @@ class _CooldownTaskButtonState extends ConsumerState<CooldownTaskButton> {
                             ) /
                             _totalCooldownTime!.inSeconds),
                     strokeWidth: 2.5,
-                    backgroundColor: Colors.white.withOpacity(0.1),
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
                     valueColor: const AlwaysStoppedAnimation<Color>(
                       AppColors.angolaYellow,
                     ),

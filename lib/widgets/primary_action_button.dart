@@ -30,7 +30,10 @@ class PrimaryActionButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12.r),
           gradient: LinearGradient(
             colors: (onTap == null || isLoading)
-                ? [AppColors.textGrey, AppColors.textGrey.withOpacity(0.7)]
+                ? [
+                    AppColors.textGrey,
+                    AppColors.textGrey.withValues(alpha: 0.7),
+                  ]
                 : [AppColors.angolaYellow, AppColors.angolaRed],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,

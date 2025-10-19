@@ -22,8 +22,8 @@ class ScreenBackground extends StatelessWidget {
             center: Alignment.center,
             radius: 1.0,
             colors: [
-              const Color(0xFF101010).withOpacity(0.4),
-              const Color(0xFF101010).withOpacity(0.9),
+              const Color(0xFF101010).withValues(alpha: 0.4),
+              const Color(0xFF101010).withValues(alpha: 0.9),
             ],
           ),
         ),

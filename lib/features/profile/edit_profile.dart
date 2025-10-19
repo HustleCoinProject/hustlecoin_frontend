@@ -333,7 +333,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
             Container(
               height: 1,
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               margin: const EdgeInsets.only(bottom: 15),
             ),
 

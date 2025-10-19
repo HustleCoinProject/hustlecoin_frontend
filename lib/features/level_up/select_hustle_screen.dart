@@ -162,10 +162,10 @@ class _SelectHustleScreenState extends ConsumerState<SelectHustleScreen> {
                           horizontal: 15,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.3),
+                          color: Colors.red.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(8.r),
                           border: Border.all(
-                            color: Colors.red.withOpacity(0.6),
+                            color: Colors.red.withValues(alpha: 0.6),
                           ),
                         ),
                         child: Text(
@@ -182,10 +182,10 @@ class _SelectHustleScreenState extends ConsumerState<SelectHustleScreen> {
                         horizontal: 20,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.angolaYellow.withOpacity(0.2),
+                        color: AppColors.angolaYellow.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(
-                          color: AppColors.angolaYellow.withOpacity(0.6),
+                          color: AppColors.angolaYellow.withValues(alpha: 0.6),
                         ),
                       ),
                       child: Column(

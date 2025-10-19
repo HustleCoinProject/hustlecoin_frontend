@@ -155,9 +155,10 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
       newHexes.add(
         Polygon(
           points: points,
-          borderColor: borderColor.withOpacity(borderOpacity),
+          borderColor: borderColor.withValues(alpha: borderOpacity),
           borderStrokeWidth: 1,
-          color: fillColor?.withOpacity(fillOpacity) ?? Colors.transparent,
+          color:
+              fillColor?.withValues(alpha: fillOpacity) ?? Colors.transparent,
         ),
       );
     }
@@ -686,7 +687,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
               fontWeight: FontWeight.bold,
               shadows: [
                 Shadow(
-                  color: Colors.black.withOpacity(0.8),
+                  color: Colors.black.withValues(alpha: 0.8),
                   blurRadius: 2,
                   offset: const Offset(0, 1),
                 ),

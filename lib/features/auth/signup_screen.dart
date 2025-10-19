@@ -266,10 +266,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           horizontal: 15,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.3),
+                          color: Colors.red.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(8.r),
                           border: Border.all(
-                            color: Colors.red.withOpacity(0.6),
+                            color: Colors.red.withValues(alpha: 0.6),
                           ),
                         ),
                         child: Text(

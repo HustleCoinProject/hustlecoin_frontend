@@ -207,9 +207,17 @@ class _QuizContentState extends ConsumerState<_QuizContent> {
                   blurRadius: 15,
                   spreadRadius: -3,
                 ),
-                BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 10,
+                ),
               ]
-            : [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10)],
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 10,
+                ),
+              ],
         child: Text(text, style: const TextStyle(fontSize: 16)),
       ),
     );

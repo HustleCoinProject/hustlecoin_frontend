@@ -110,8 +110,8 @@ class _StartScreenState extends ConsumerState<StartScreen>
           center: Alignment.center,
           radius: 1.0,
           colors: [
-            const Color(0xFF101010).withOpacity(0.3),
-            const Color(0xFF101010).withOpacity(0.95),
+            const Color(0xFF101010).withValues(alpha: 0.3),
+            const Color(0xFF101010).withValues(alpha: 0.95),
           ],
         ),
       ),
@@ -194,12 +194,12 @@ class _StartScreenState extends ConsumerState<StartScreen>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.angolaYellow.withOpacity(0.7),
+                  color: AppColors.angolaYellow.withValues(alpha: 0.7),
                   blurRadius: 35,
                   spreadRadius: glowTween.evaluate(_glowController),
                 ),
                 BoxShadow(
-                  color: AppColors.angolaRed.withOpacity(0.5),
+                  color: AppColors.angolaRed.withValues(alpha: 0.5),
                   blurRadius: 20,
                   spreadRadius: -5,
                 ),
