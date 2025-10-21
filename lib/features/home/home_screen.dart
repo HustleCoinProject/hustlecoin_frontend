@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/data/models/quiz_result.dart';
+import 'package:hustlecoin/data/models/task.dart';
 import 'package:hustlecoin/data/models/user.dart';
 import 'package:hustlecoin/features/land/land_map_screen.dart';
 import 'package:hustlecoin/features/leaderboard/leaderboard_screen.dart';
@@ -10,6 +11,7 @@ import 'package:hustlecoin/features/profile/edit_profile.dart';
 import 'package:hustlecoin/features/quiz/quiz_screen.dart';
 import 'package:hustlecoin/features/shop/shop_screen.dart';
 import 'package:hustlecoin/providers/foundational_providers.dart';
+import 'package:hustlecoin/providers/game_data_provider.dart';
 import 'package:hustlecoin/providers/time_provider.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
 import 'package:hustlecoin/providers/user_specific_data_provider.dart';
@@ -899,9 +901,62 @@ class _StatsContainer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final levelStatusAsync = ref.watch(levelStatusProvider);
+
+    // This is the main change. We use the AsyncValue directly to handle states.
+    return levelStatusAsync.when(
+      // When loading, check if we already have previous data to show.
+      loading: () {
+        // If there's already a value, display it to prevent the loading spinner flicker on refresh.
+        if (levelStatusAsync.hasValue) {
+          return _buildStatsContent(
+            context,
+            ref,
+            user,
+            levelStatusAsync.value!,
+          );
+        }
+        // Otherwise, it's the initial load, so show the spinner.
+        return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+      },
+      // When an error occurs, you can also optionally show old data if available.
+      error: (err, stack) {
+        if (levelStatusAsync.hasValue) {
+          return _buildStatsContent(
+            context,
+            ref,
+            user,
+            levelStatusAsync.value!,
+          );
+        }
+        return const Center(child: Text("Error"));
+      },
+      // When data is available, build the UI.
+      data: (status) {
+        if (status == null) {
+          // Handle the case where status might be null even on success
+          return const Center(child: Text("Could not load stats."));
+        }
+        return _buildStatsContent(context, ref, user, status);
+      },
+    );
+  }
+
+  // I've extracted the UI building logic into a separate method to avoid code duplication.
+  Widget _buildStatsContent(
+    BuildContext context,
+    WidgetRef ref,
+    User user,
+    dynamic status,
+  ) {
     const textShadow = [
       Shadow(color: Colors.black87, blurRadius: 4, offset: Offset(1, 1)),
     ];
+    final progress = status.hcEarnedInLevelProgress.toDouble();
+    final required = status.hcEarnedInLevelRequired.toDouble();
+    final progressValue = required > 0
+        ? (progress / required).clamp(0.0, 1.0)
+        : 0.0;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -950,212 +1005,166 @@ class _StatsContainer extends ConsumerWidget {
         ),
         SizedBox(width: 15.s),
         Expanded(
-          child: levelStatusAsync.when(
-            data: (status) {
-              if (status == null) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      ref.t(LocalizationKeys.nextLevel),
-                      style: TextStyle(
-                        fontSize: 12.f,
-                        color: AppColors.textGrey,
-                        shadows: textShadow,
-                      ),
-                    ),
-                    SizedBox(height: 4.s),
-                    Text("${ref.t(LocalizationKeys.statsLoading)}"),
-                  ],
-                );
-              }
-              final progress = status.hcEarnedInLevelProgress.toDouble();
-              final required = status.hcEarnedInLevelRequired.toDouble();
-              final progressValue = required > 0
-                  ? (progress / required).clamp(0.0, 1.0)
-                  : 0.0;
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    ref.t(LocalizationKeys.nextLevel),
-                    style: TextStyle(
-                      fontSize: 12.f,
-                      color: AppColors.textGrey,
-                      shadows: textShadow,
-                    ),
-                  ),
-                  SizedBox(height: 4.s),
-                  GlassContainer(
-                    borderRadius: 6,
-                    child: Container(
-                      width: double.infinity,
-                      height: 12.s,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(6.r),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.4),
-                            spreadRadius: 0,
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(6.r),
-                        child: LinearProgressIndicator(
-                          value: progressValue,
-                          backgroundColor: Colors.transparent,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            status.isEligibleForUpgrade
-                                ? Colors.green.shade500
-                                : AppColors.angolaYellow,
-                          ),
-                          minHeight: 12.s,
-                          color: AppColors.angolaRed,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 4.s),
-                  Text(
-                    '${status.hcEarnedInLevelProgress} / ${status.hcEarnedInLevelRequired} HC',
-                    style: TextStyle(
-                      fontSize: 11.f,
-                      color: AppColors.textGrey,
-                      shadows: textShadow,
-                    ),
-                  ),
-                  SizedBox(height: 12.s),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: status.isEligibleForUpgrade
-                                  ? AppColors.glowYellow
-                                  : AppColors.orange.withValues(alpha: 0.3),
-                              blurRadius: status.isEligibleForUpgrade ? 15 : 10,
-                              spreadRadius: status.isEligibleForUpgrade
-                                  ? 0
-                                  : -2,
-                            ),
-                          ],
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                        child: _UpgradeButtonAnimator(
-                          isEnabled: status.isEligibleForUpgrade,
-                          child: PressableScaleWidget(
-                            onTap: status.isEligibleForUpgrade
-                                ? () async {
-                                    try {
-                                      // Show loading state
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            ref.t(
-                                              LocalizationKeys
-                                                  .processingLevelUpgrade,
-                                            ),
-                                          ),
-                                          duration: const Duration(seconds: 2),
-                                        ),
-                                      );
-
-                                      // Call the level upgrade API
-                                      final apiRepo = ref.read(
-                                        apiRepositoryProvider,
-                                      );
-                                      final result = await apiRepo
-                                          .levelUpgrade();
-
-                                      // Extract the new level and hustle
-                                      final int newLevel = result['new_level'];
-                                      final dynamic newHustleObj =
-                                          result['new_hustle'];
-                                      // Extract the hustle key (English name) for the background image
-                                      final String newHustleKey =
-                                          HustleUtils.getCurrentHustleKey(
-                                            newHustleObj,
-                                          );
-
-                                      // Navigate to the hustle selection screen
-                                      if (context.mounted) {
-                                        await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => SelectHustleScreen(
-                                              newLevel: newLevel,
-                                              newHustle: newHustleKey,
-                                            ),
-                                          ),
-                                        );
-                                      }
-
-                                      // Refresh user data and level status
-                                      ref.invalidate(userControllerProvider);
-                                      ref.invalidate(levelStatusProvider);
-                                    } catch (e) {
-                                      // Show error message
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text('Error: $e'),
-                                            backgroundColor: Colors.red,
-                                          ),
-                                        );
-                                      }
-                                    }
-                                  }
-                                : null,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: status.isEligibleForUpgrade
-                                    ? AppColors.angolaYellow
-                                    : AppColors.orange,
-                                borderRadius: BorderRadius.circular(10.r),
-                              ),
-                              padding: ResponsiveUtils.pSymmetric(
-                                horizontal: 14,
-                                vertical: 8,
-                              ),
-                              child: Text(
-                                '${status.upgradeFee} HC',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14.f,
-                                  color: AppColors.angolaBlack,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 2.s),
-                      Text(
-                        ref.t(LocalizationKeys.upgradeLevel),
-                        style: TextStyle(
-                          fontSize: 10.f,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textGrey,
-                          shadows: textShadow,
-                        ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                ref.t(LocalizationKeys.nextLevel),
+                style: TextStyle(
+                  fontSize: 12.f,
+                  color: AppColors.textGrey,
+                  shadows: textShadow,
+                ),
+              ),
+              SizedBox(height: 4.s),
+              GlassContainer(
+                borderRadius: 6,
+                child: Container(
+                  width: double.infinity,
+                  height: 12.s,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        spreadRadius: 0,
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6.r),
+                    child: LinearProgressIndicator(
+                      value: progressValue,
+                      backgroundColor: Colors.transparent,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        status.isEligibleForUpgrade
+                            ? Colors.green.shade500
+                            : AppColors.angolaYellow,
+                      ),
+                      minHeight: 12.s,
+                      color: AppColors.angolaRed,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 4.s),
+              Text(
+                '${status.hcEarnedInLevelProgress} / ${status.hcEarnedInLevelRequired} HC',
+                style: TextStyle(
+                  fontSize: 11.f,
+                  color: AppColors.textGrey,
+                  shadows: textShadow,
+                ),
+              ),
+              SizedBox(height: 12.s),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: status.isEligibleForUpgrade
+                              ? AppColors.glowYellow
+                              : AppColors.orange.withValues(alpha: 0.3),
+                          blurRadius: status.isEligibleForUpgrade ? 15 : 10,
+                          spreadRadius: status.isEligibleForUpgrade ? 0 : -2,
+                        ),
+                      ],
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: _UpgradeButtonAnimator(
+                      isEnabled: status.isEligibleForUpgrade,
+                      child: PressableScaleWidget(
+                        onTap: status.isEligibleForUpgrade
+                            ? () async {
+                                // ... (rest of your onTap logic is unchanged)
+                                try {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        ref.t(
+                                          LocalizationKeys
+                                              .processingLevelUpgrade,
+                                        ),
+                                      ),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
+                                  final apiRepo = ref.read(
+                                    apiRepositoryProvider,
+                                  );
+                                  final result = await apiRepo.levelUpgrade();
+                                  final int newLevel = result['new_level'];
+                                  final dynamic newHustleObj =
+                                      result['new_hustle'];
+                                  final String newHustleKey =
+                                      HustleUtils.getCurrentHustleKey(
+                                        newHustleObj,
+                                      );
+                                  if (context.mounted) {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => SelectHustleScreen(
+                                          newLevel: newLevel,
+                                          newHustle: newHustleKey,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  ref.invalidate(userControllerProvider);
+                                  ref.invalidate(levelStatusProvider);
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Error: $e'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
+                              }
+                            : null,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: status.isEligibleForUpgrade
+                                ? AppColors.angolaYellow
+                                : AppColors.orange,
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          padding: ResponsiveUtils.pSymmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          child: Text(
+                            '${status.upgradeFee} HC',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14.f,
+                              color: AppColors.angolaBlack,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 2.s),
+                  Text(
+                    ref.t(LocalizationKeys.upgradeLevel),
+                    style: TextStyle(
+                      fontSize: 10.f,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textGrey,
+                      shadows: textShadow,
+                    ),
+                  ),
                 ],
-              );
-            },
-            loading: () =>
-                const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-            error: (e, st) => const Center(child: Text("Error")),
+              ),
+            ],
           ),
         ),
       ],
@@ -1177,10 +1186,30 @@ class _MainTapButton extends ConsumerWidget {
         taskState == TaskState.loading ||
         taskState == TaskState.disabled;
 
+    final tasksAsync = ref.watch(allTasksProvider);
+    final quickTapTask = tasksAsync.value?.firstWhere(
+      (task) => task.taskId == 'quick_tap',
+      orElse: () => const Task(
+        taskId: 'quick_tap',
+        description: '',
+        reward: 1,
+        type: '',
+        cooldownSeconds: 0,
+      ),
+    );
+    final rewardAmount = quickTapTask?.reward ?? 1; // Default to 1 if not found
+
     return PressableScaleWidget(
       onTap: isDisabled
           ? null
           : () {
+              // 1. Give immediate feedback
+              SoundService().playEarnCoins();
+
+              // 2. Optimistically update the UI
+              ref
+                  .read(userControllerProvider.notifier)
+                  .optimisticallyUpdateBalance(rewardAmount);
               taskController.completeTask();
             },
       child: GlassContainer(
