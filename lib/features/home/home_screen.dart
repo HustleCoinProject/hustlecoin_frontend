@@ -121,7 +121,7 @@ class TaskController {
           .completeTask(taskId, payload: payload);
 
       // Play earn coins sound on successful task completion
-      SoundService().playEarnCoins();
+      // (already called before completeTask() call) SoundService().playEarnCoins();
 
       // Show interstitial ad after task completion
       AdHelper.showInterstitialAfterTask();
