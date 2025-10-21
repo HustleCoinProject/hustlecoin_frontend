@@ -210,6 +210,11 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   Widget _buildProductCard(BuildContext context, WidgetRef ref, ShopItem item) {
     // Watch the purchase state for this specific item
     final isPurchasing = ref.watch(itemPurchasingProvider(item.itemId));
+
+    final user = ref.watch(userControllerProvider).value;
+    final userBalance = user?.hcBalance ?? 0;
+    final bool canAfford = userBalance >= item.price;
+
     return GlassContainer(
       borderRadius: 16,
       padding: const EdgeInsets.all(15),
@@ -256,7 +261,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               padding: const EdgeInsets.symmetric(
                 vertical: 12,
               ), // Override padding to match original
-              onTap: isPurchasing
+              onTap: (isPurchasing || !canAfford)
                   ? null
                   : () {
                       // Set purchase in progress state IMMEDIATELY

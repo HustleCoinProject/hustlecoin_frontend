@@ -31,22 +31,46 @@ class LeaderboardEntryUI {
 // --- Main Leaderboard Screen Widget ---
 
 class LeaderboardScreen extends ConsumerWidget {
-  LeaderboardScreen({super.key});
-
-  // Placeholder for the current player with dashes
-  final LeaderboardEntryUI playerEntry = LeaderboardEntryUI(
-    rank: 0,
-    username: 'You',
-    score: 0,
-    level: 0,
-  );
+  const LeaderboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Get leaderboard data from provider
+    // Get leaderboard and user data from providers
     final leaderboardAsync = ref.watch(leaderboardProvider);
     final userState = ref.watch(userControllerProvider);
     final user = userState.value;
+
+    // Determine the player's entry for the highlight bar at the bottom
+    final LeaderboardEntryUI playerEntryUI;
+
+    if (user != null) {
+      // We have user data, so we can show their real score
+      int rank = 0; // Default to 0 (unknown rank)
+      // If the leaderboard data has loaded, try to find the user's rank
+      if (leaderboardAsync.hasValue) {
+        final entries = leaderboardAsync.value!;
+        final userIndex = entries.indexWhere(
+          (e) => e.username == user.username,
+        );
+        if (userIndex != -1) {
+          rank = userIndex + 1;
+        }
+      }
+      playerEntryUI = LeaderboardEntryUI(
+        rank: rank,
+        username: 'You',
+        score: user.hcBalance,
+        level: user.level,
+      );
+    } else {
+      // User data isn't available yet, show a complete placeholder
+      playerEntryUI = LeaderboardEntryUI(
+        rank: 0,
+        username: 'You',
+        score: 0,
+        level: 0,
+      );
+    }
 
     return Scaffold(
       body: ScreenBackground(
@@ -57,7 +81,7 @@ class LeaderboardScreen extends ConsumerWidget {
             children: [
               ScreenHeader(title: ref.t(LocalizationKeys.leaderboard)),
               _buildContent(leaderboardAsync, ref),
-              _buildPlayerHighlight(),
+              _buildPlayerHighlight(playerEntryUI),
             ],
           ),
         ),
@@ -109,15 +133,7 @@ class LeaderboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPlayerHighlight() {
-    // Display player with dashes since the server doesn't provide this information
-    final playerEntryWithDashes = LeaderboardEntryUI(
-      rank: 0,
-      username: 'You',
-      score: 0,
-      level: 0,
-    );
-
+  Widget _buildPlayerHighlight(LeaderboardEntryUI playerEntry) {
     return Container(
       margin: const EdgeInsets.fromLTRB(15, 0, 15, 15),
       decoration: BoxDecoration(
@@ -133,7 +149,7 @@ class LeaderboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      child: _buildRankItem(playerEntryWithDashes, isPlayer: true),
+      child: _buildRankItem(playerEntry, isPlayer: true),
     );
   }
 
@@ -179,7 +195,9 @@ class LeaderboardScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  isPlayer ? '---' : '${entry.rank}',
+                  isPlayer
+                      ? (entry.rank > 0 ? '${entry.rank}' : '---')
+                      : '${entry.rank}',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -216,7 +234,7 @@ class LeaderboardScreen extends ConsumerWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            isPlayer ? '---' : entry.score.toString(),
+            entry.score.toString(),
             style: TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: 16,
