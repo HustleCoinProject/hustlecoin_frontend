@@ -28,11 +28,11 @@ class _PressableScaleWidgetState extends State<PressableScaleWidget> {
     return GestureDetector(
       onTapDown: (_) {
         if (widget.onTap != null) setState(() => _isPressed = true);
+        SoundService().playSound(widget.soundType ?? SoundType.click);
       },
       onTapUp: (_) {
         if (widget.onTap != null) {
           setState(() => _isPressed = false);
-          SoundService().playSound(widget.soundType ?? SoundType.click);
           widget.onTap!.call();
         }
       },
