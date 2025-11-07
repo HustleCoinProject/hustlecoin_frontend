@@ -12,12 +12,15 @@ import '../models/leaderboard_entry.dart';
 import '../models/quiz_question.dart';
 import '../models/land_tile_info.dart';
 import '../models/my_land_tiles.dart';
+import '../models/land_claim_status.dart';
+import '../models/land_claim_response.dart';
 import '../models/tap_response.dart';
 
 // This class handles all communication with your backend API.
 
 class ApiRepository {
-  final String _baseUrl = "https://hustlecoin-backend.fly.dev";
+  final String _baseUrl =
+      "http://10.147.59.235:8000"; // "https://hustlecoin-backend.fly.dev";
   String? _accessToken;
   String? _refreshToken;
 
@@ -418,6 +421,50 @@ class ApiRepository {
     );
     if (response.statusCode != 200) {
       throw Exception('Failed to sell land tile: ${response.body}');
+    }
+  }
+
+  // --- Land Income Claim System ---
+  Future<LandClaimStatus> getLandClaimStatus() async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(
+        Uri.parse('$_baseUrl/api/land/claim-status'),
+        headers: _headers,
+      ),
+    );
+    if (response.statusCode == 200) {
+      return LandClaimStatus.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to fetch land claim status: ${response.body}');
+    }
+  }
+
+  Future<LandClaimResponse> claimLandIncome() async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/api/land/claim-income'),
+        headers: _headers,
+      ),
+    );
+    if (response.statusCode == 200) {
+      return LandClaimResponse.fromJson(json.decode(response.body));
+    } else if (response.statusCode == 429) {
+      // Cooldown active
+      final errorData = json.decode(response.body);
+      throw Exception(
+        errorData['message'] ??
+            'Land income can only be claimed once every 24 hours',
+      );
+    } else if (response.statusCode == 404) {
+      // No land owned
+      final errorData = json.decode(response.body);
+      throw Exception(errorData['message'] ?? 'You don\'t own any land tiles');
+    } else if (response.statusCode == 400) {
+      // No income available
+      final errorData = json.decode(response.body);
+      throw Exception(errorData['message'] ?? 'No income available to claim');
+    } else {
+      throw Exception('Failed to claim land income: ${response.body}');
     }
   }
 

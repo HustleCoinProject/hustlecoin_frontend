@@ -117,6 +117,17 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
+  Future<void> claimLandIncome() async {
+    try {
+      await _api.claimLandIncome();
+      await _fetchUser(); // Refresh user data to get updated balance
+    } catch (e) {
+      debugPrint("Land income claim failed: $e");
+      await _fetchUser();
+      rethrow;
+    }
+  }
+
   Future<void> updateProfile({
     String? email,
     String? currentPassword,

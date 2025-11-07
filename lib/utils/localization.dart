@@ -100,6 +100,21 @@ class LocalizationKeys {
   static const String saleFailed = 'sale_failed';
   static const String landDailyIncomeInfo = 'land_daily_income_info';
 
+  // Land Income Claim
+  static const String landIncomeClaimedSuccessfully =
+      'land_income_claimed_successfully';
+  static const String landIncomeClaimFailed = 'land_income_claim_failed';
+  static const String claimReady = 'claim_ready';
+  static const String claimCooldown = 'claim_cooldown';
+  static const String claimAvailable = 'claim_available';
+  static const String nextClaimIn = 'next_claim_in';
+  static const String noIncomeAvailable = 'no_income_available';
+  static const String landTiles = 'land_tiles';
+  static const String readyToClaim = 'ready_to_claim';
+  static const String lastClaimedAt = 'last_claimed_at';
+  static const String claim = 'claim';
+  static const String generatingIncome = 'generating_income';
+
   // Errors and Validation
   static const String error = 'error';
   static const String statsLoading = 'stats_loading';
@@ -216,7 +231,22 @@ class _Translations {
       LocalizationKeys.purchaseFailed: 'Purchase failed',
       LocalizationKeys.saleFailed: 'Sale failed',
       LocalizationKeys.landDailyIncomeInfo:
-          'Purchasing a piece of land will give you daily income of 50 HC',
+          'Purchasing land gives 50 HC daily income that you can claim every 24 hours',
+
+      // Land Income Claim
+      LocalizationKeys.landIncomeClaimedSuccessfully:
+          'Land income claimed successfully!',
+      LocalizationKeys.landIncomeClaimFailed: 'Failed to claim land income',
+      LocalizationKeys.claimReady: 'Ready!',
+      LocalizationKeys.claimCooldown: 'Cooldown',
+      LocalizationKeys.claimAvailable: 'Available to claim',
+      LocalizationKeys.nextClaimIn: 'Next claim in',
+      LocalizationKeys.noIncomeAvailable: 'No income to claim yet',
+      LocalizationKeys.landTiles: 'land tiles',
+      LocalizationKeys.readyToClaim: 'ready to claim',
+      LocalizationKeys.lastClaimedAt: 'Last claimed',
+      LocalizationKeys.claim: 'Claim',
+      LocalizationKeys.generatingIncome: 'generating income...',
 
       // Errors and Validation
       LocalizationKeys.error: 'Error',
@@ -334,7 +364,23 @@ class _Translations {
       LocalizationKeys.purchaseFailed: 'Falha na compra',
       LocalizationKeys.saleFailed: 'Falha na venda',
       LocalizationKeys.landDailyIncomeInfo:
-          'Comprar um pedaço de terra lhe dará uma renda diária de 50 HC',
+          'Comprar terra dá renda diária de 50 HC que você pode reivindicar a cada 24 horas',
+
+      // Land Income Claim
+      LocalizationKeys.landIncomeClaimedSuccessfully:
+          'Renda da terra reivindicada com sucesso!',
+      LocalizationKeys.landIncomeClaimFailed:
+          'Falha ao reivindicar renda da terra',
+      LocalizationKeys.claimReady: 'Pronto!',
+      LocalizationKeys.claimCooldown: 'Tempo de Espera',
+      LocalizationKeys.claimAvailable: 'Disponível para reivindicar',
+      LocalizationKeys.nextClaimIn: 'Próxima reivindicação em',
+      LocalizationKeys.noIncomeAvailable: 'Ainda não há renda para reivindicar',
+      LocalizationKeys.landTiles: 'lotes de terra',
+      LocalizationKeys.readyToClaim: 'pronto para reivindicar',
+      LocalizationKeys.lastClaimedAt: 'Última reivindicação',
+      LocalizationKeys.claim: 'Reivindicar',
+      LocalizationKeys.generatingIncome: 'gerando renda...',
 
       // Errors and Validation
       LocalizationKeys.error: 'Erro',

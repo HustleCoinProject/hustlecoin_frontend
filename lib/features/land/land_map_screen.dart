@@ -8,7 +8,9 @@ import 'package:hustlecoin/data/models/land_tile_info.dart';
 import 'package:hustlecoin/providers/land_provider.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
 import 'package:hustlecoin/utils/localization.dart';
+
 import 'package:hustlecoin/widgets/glass_container.dart';
+import 'package:hustlecoin/widgets/land_income_claim_panel.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
@@ -33,6 +35,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
   bool _isPurchasing = false;
   bool _isSelling = false;
   bool _isOwnedLand = false; // Track if selected land is owned by user
+
   String _currentBbox = '';
 
   // A map for quick lookup of owned tiles in the current view
@@ -44,6 +47,11 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
       10.0; // Lowered from 14.0 to show colors earlier
   static const int LAND_PRICE = 500; // Corresponds to backend LAND_PRICE
   static const int LAND_SELL_PRICE = 400; // 80% of purchase price
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -399,7 +407,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
               ),
             ),
           ),
-          // Daily Income Info Panel
+          // Land Income Claim Panel and Daily Income Info Panel
           Positioned(
             top: 15,
             left: 15,
@@ -407,6 +415,10 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 60), // Space for back button
+                // Land Income Claim Panel
+                const LandIncomeClaimPanel(),
+                const SizedBox(height: 10),
+                // Daily Income Info Panel
                 GlassContainer(
                   borderRadius: 12,
                   padding: const EdgeInsets.symmetric(
