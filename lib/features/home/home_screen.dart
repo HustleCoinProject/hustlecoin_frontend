@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/data/models/quiz_result.dart';
-import 'package:hustlecoin/data/models/task.dart';
+
 import 'package:hustlecoin/data/models/user.dart';
 import 'package:hustlecoin/features/land/land_map_screen.dart';
 import 'package:hustlecoin/features/leaderboard/leaderboard_screen.dart';
 import 'package:hustlecoin/features/profile/edit_profile.dart';
 import 'package:hustlecoin/features/quiz/quiz_screen.dart';
-import 'package:hustlecoin/providers/game_data_provider.dart';
+
 import 'package:hustlecoin/providers/time_provider.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
+import 'package:hustlecoin/providers/tapping_provider.dart';
 import 'package:hustlecoin/services/admob_service.dart';
 import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
@@ -525,12 +526,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildMainTapButton() {
     return Consumer(
       builder: (context, ref, child) {
-        final taskState = ref.watch(taskStateProvider('quick_tap'));
-        final taskController = TaskController(ref, 'quick_tap');
-        return _MainTapButton(
-          taskState: taskState,
-          taskController: taskController,
-        );
+        return _MainTapButton();
       },
     );
   }
@@ -565,10 +561,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 class _MainTapButton extends ConsumerStatefulWidget {
-  final TaskState taskState;
-  final TaskController taskController;
-
-  const _MainTapButton({required this.taskState, required this.taskController});
+  const _MainTapButton();
 
   @override
   ConsumerState<_MainTapButton> createState() => _MainTapButtonState();
@@ -576,7 +569,9 @@ class _MainTapButton extends ConsumerStatefulWidget {
 
 class _MainTapButtonState extends ConsumerState<_MainTapButton> {
   DateTime? _lastTapTime;
-  static const Duration _rateLimitDuration = Duration(seconds: 2);
+  static const Duration _rateLimitDuration = Duration(
+    milliseconds: 1000,
+  ); // 1 tap per second max
 
   bool get _isRateLimited {
     if (_lastTapTime == null) return false;
@@ -585,42 +580,23 @@ class _MainTapButtonState extends ConsumerState<_MainTapButton> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDisabled =
-        widget.taskState == TaskState.cooldown ||
-        widget.taskState == TaskState.loading ||
-        widget.taskState == TaskState.disabled;
-
-    final tasksAsync = ref.watch(allTasksProvider);
-    final quickTapTask = tasksAsync.value?.firstWhere(
-      (task) => task.taskId == 'quick_tap',
-      orElse: () => const Task(
-        taskId: 'quick_tap',
-        description: '',
-        reward: 1,
-        type: '',
-        cooldownSeconds: 0,
-      ),
-    );
-    final rewardAmount = quickTapTask?.reward ?? 1; // Default to 1 if not found
+    final user = ref.watch(userControllerProvider).value;
+    final hasReachedDailyLimit = (user?.dailyTapEarnings ?? 0) >= 200;
 
     return PressableScaleWidget(
-      onTap: isDisabled
+      onTap: hasReachedDailyLimit
           ? null
           : () {
-              // Check rate limit before making backend calls
+              // Check rate limit before allowing tap (1 tap per second max)
               if (!_isRateLimited) {
                 // Give immediate visual and audio feedback
                 SoundService().playEarnCoins();
                 // Update last tap time
                 _lastTapTime = DateTime.now();
 
-                // Only perform backend operations if not rate limited
-                ref
-                    .read(userControllerProvider.notifier)
-                    .optimisticallyUpdateBalance(rewardAmount);
-                widget.taskController.completeTask();
+                // Add tap to the tapping system
+                ref.read(tappingControllerProvider).addTap();
               }
-              // If rate limited, only the visual/audio feedback happens
             },
       child: GlassContainer(
         child: SizedBox(
@@ -629,14 +605,13 @@ class _MainTapButtonState extends ConsumerState<_MainTapButton> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Never show loading indicator for rate limiting
               FaIcon(
                 FontAwesomeIcons.coins,
                 size: 50.s,
-                color: isDisabled
+                color: hasReachedDailyLimit
                     ? AppColors.textGrey.withValues(alpha: 0.5)
                     : AppColors.angolaYellow,
-                shadows: isDisabled
+                shadows: hasReachedDailyLimit
                     ? []
                     : [
                         Shadow(
@@ -647,12 +622,14 @@ class _MainTapButtonState extends ConsumerState<_MainTapButton> {
               ),
               SizedBox(height: 10.s),
               Text(
-                ref.t(LocalizationKeys.tap),
+                hasReachedDailyLimit
+                    ? 'Daily limit reached'
+                    : ref.t(LocalizationKeys.tap),
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  fontSize: 18.f,
+                  fontSize: hasReachedDailyLimit ? 14.f : 18.f,
                   letterSpacing: 1,
-                  color: isDisabled
+                  color: hasReachedDailyLimit
                       ? AppColors.textGrey.withValues(alpha: 0.5)
                       : AppColors.textLight,
                 ),

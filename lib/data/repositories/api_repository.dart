@@ -12,6 +12,7 @@ import '../models/leaderboard_entry.dart';
 import '../models/quiz_question.dart';
 import '../models/land_tile_info.dart';
 import '../models/my_land_tiles.dart';
+import '../models/tap_response.dart';
 
 // This class handles all communication with your backend API.
 
@@ -417,6 +418,26 @@ class ApiRepository {
     );
     if (response.statusCode != 200) {
       throw Exception('Failed to sell land tile: ${response.body}');
+    }
+  }
+
+  // --- Tapping System ---
+  Future<TapResponse> submitTaps(int tapCount) async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/api/tapping/tap'),
+        headers: _headers,
+        body: json.encode({'tap_count': tapCount}),
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      return TapResponse.fromJson(json.decode(response.body));
+    } else if (response.statusCode == 429) {
+      // Daily limit reached
+      return TapResponse.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to submit taps: ${response.body}');
     }
   }
 }

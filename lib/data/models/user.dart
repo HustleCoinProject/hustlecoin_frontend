@@ -15,6 +15,8 @@ class User {
   final Map<String, DateTime> taskCooldowns;
   final int dailyStreak;
   final DateTime createdAt;
+  final int dailyTapEarnings;
+  final DateTime? lastTapResetDate;
 
   const User({
     required this.id,
@@ -29,6 +31,8 @@ class User {
     required this.taskCooldowns,
     required this.dailyStreak,
     required this.createdAt,
+    required this.dailyTapEarnings,
+    this.lastTapResetDate,
   });
 
   // A factory constructor for creating a new User instance from a map.
@@ -48,6 +52,10 @@ class User {
       ),
       dailyStreak: json['daily_streak'],
       createdAt: DateTime.parse(json['createdAt']),
+      dailyTapEarnings: json['daily_tap_earnings'] ?? 0,
+      lastTapResetDate: json['last_tap_reset_date'] != null
+          ? DateTime.parse(json['last_tap_reset_date'])
+          : null,
     );
   }
 

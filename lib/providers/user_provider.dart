@@ -159,6 +159,8 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
         taskCooldowns: currentUser.taskCooldowns,
         dailyStreak: currentUser.dailyStreak,
         createdAt: currentUser.createdAt,
+        dailyTapEarnings: currentUser.dailyTapEarnings,
+        lastTapResetDate: currentUser.lastTapResetDate,
       );
       // Update the state with the new user object without a server call
       state = AsyncValue.data(updatedUser);
