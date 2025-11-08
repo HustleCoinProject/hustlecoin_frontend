@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import '../models/auth_tokens.dart';
 import '../models/user.dart';
 import '../models/level_status.dart';
-import '../models/inventory_item.dart';
+import '../models/inventory_item_out.dart';
 import '../models/task.dart';
 import '../models/shop_item.dart';
 import '../models/leaderboard_entry.dart';
@@ -183,7 +183,7 @@ class ApiRepository {
     }
   }
 
-  Future<List<InventoryItem>> getInventory() async {
+  Future<List<InventoryItemOut>> getInventory() async {
     final response = await _makeAuthenticatedRequest(
       () => http.get(
         Uri.parse('$_baseUrl/api/users/inventory'),
@@ -192,7 +192,7 @@ class ApiRepository {
     );
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
-      return data.map((item) => InventoryItem.fromJson(item)).toList();
+      return data.map((item) => InventoryItemOut.fromJson(item)).toList();
     } else {
       throw Exception('Failed to fetch inventory');
     }

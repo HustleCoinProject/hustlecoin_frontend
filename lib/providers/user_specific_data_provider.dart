@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/level_status.dart';
-import '../data/models/inventory_item.dart';
+import '../data/models/inventory_item_out.dart';
 import 'foundational_providers.dart';
 import 'user_provider.dart';
 
@@ -21,7 +21,7 @@ final levelStatusProvider = FutureProvider.autoDispose<LevelStatus?>((
   return ref.read(apiRepositoryProvider).getLevelStatus();
 });
 
-final inventoryProvider = FutureProvider.autoDispose<List<InventoryItem>>((
+final inventoryProvider = FutureProvider.autoDispose<List<InventoryItemOut>>((
   ref,
 ) async {
   final user = ref.watch(userControllerProvider);
