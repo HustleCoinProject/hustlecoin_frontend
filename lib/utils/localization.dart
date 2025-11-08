@@ -83,6 +83,7 @@ class LocalizationKeys {
   static const String boosts = 'boosts';
   static const String keys = 'keys';
   static const String chatBot = 'chat_bot';
+  static const String inventory = 'inventory';
   static const String failedToLoadShopItems = 'failed_to_load_shop_items';
   static const String noItemsAvailable = 'no_items_available';
   static const String successfullyPurchased = 'successfully_purchased';
@@ -214,6 +215,7 @@ class _Translations {
       LocalizationKeys.boosts: 'Boosts',
       LocalizationKeys.keys: 'Keys',
       LocalizationKeys.chatBot: 'Chat Bot',
+      LocalizationKeys.inventory: 'Inventory',
       LocalizationKeys.failedToLoadShopItems: 'Failed to load shop items',
       LocalizationKeys.noItemsAvailable: 'No items available',
       LocalizationKeys.successfullyPurchased: 'Successfully purchased',
@@ -347,6 +349,7 @@ class _Translations {
       LocalizationKeys.boosts: 'Impulsos',
       LocalizationKeys.keys: 'Chaves',
       LocalizationKeys.chatBot: 'Robô de Chat',
+      LocalizationKeys.inventory: 'Inventário',
       LocalizationKeys.failedToLoadShopItems: 'Falha ao carregar itens da loja',
       LocalizationKeys.noItemsAvailable: 'Nenhum item disponível',
       LocalizationKeys.successfullyPurchased: 'Comprado com sucesso',

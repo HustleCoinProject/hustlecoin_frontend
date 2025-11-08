@@ -9,7 +9,7 @@ class InventoryItemOut {
   final String name;
   final String description;
   final String itemType;
-  final int timeRemainingSeconds;
+  final double? timeRemainingSeconds;
 
   const InventoryItemOut({
     required this.itemId,
@@ -19,7 +19,7 @@ class InventoryItemOut {
     required this.name,
     required this.description,
     required this.itemType,
-    required this.timeRemainingSeconds,
+    this.timeRemainingSeconds,
   });
 
   factory InventoryItemOut.fromJson(Map<String, dynamic> json) {
@@ -33,7 +33,9 @@ class InventoryItemOut {
       name: json['name'],
       description: json['description'],
       itemType: json['item_type'],
-      timeRemainingSeconds: json['time_remaining_seconds'],
+      timeRemainingSeconds: json['time_remaining_seconds'] != null
+          ? (json['time_remaining_seconds'] as num).toDouble()
+          : null,
     );
   }
 }

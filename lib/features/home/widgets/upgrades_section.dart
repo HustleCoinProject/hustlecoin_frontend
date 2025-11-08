@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/features/shop/shop_screen.dart';
+import 'package:hustlecoin/features/inventory/inventory_screen.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
 import 'package:hustlecoin/utils/ad_helper.dart';
 import 'package:hustlecoin/utils/localization.dart';
@@ -24,8 +25,14 @@ class UpgradesSection extends ConsumerWidget {
             _upgradeItem(
               context: context,
               ref: ref,
-              icon: FontAwesomeIcons.robot,
-              label: ref.t(LocalizationKeys.chatBot),
+              icon: FontAwesomeIcons.boxes,
+              label: ref.t(LocalizationKeys.inventory),
+              onTap: () {
+                AdHelper.showInterstitialOnNavigation();
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const InventoryScreen()),
+                );
+              },
             ),
             SizedBox(width: 8.s),
             _upgradeItem(
