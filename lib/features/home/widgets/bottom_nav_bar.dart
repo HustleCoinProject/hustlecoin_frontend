@@ -10,11 +10,13 @@ import 'package:hustlecoin/widgets/glass_container.dart';
 class BottomNavBar extends ConsumerWidget {
   final int activeIndex;
   final ValueChanged<int> onNavItemTapped;
+  final VoidCallback? onGetPaidTapped;
 
   const BottomNavBar({
     super.key,
     required this.activeIndex,
     required this.onNavItemTapped,
+    this.onGetPaidTapped,
   });
 
   @override
@@ -40,6 +42,7 @@ class BottomNavBar extends ConsumerWidget {
                 index: 1,
                 ref: ref,
               ),
+              _buildGetPaidButton(ref),
               _buildNavItem(
                 icon: FontAwesomeIcons.userCircle,
                 label: ref.t(LocalizationKeys.profile),
@@ -95,6 +98,65 @@ class BottomNavBar extends ConsumerWidget {
                   letterSpacing: 0.5,
                   color: color,
                   shadows: shadows,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGetPaidButton(WidgetRef ref) {
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          SoundService().playClick();
+          onGetPaidTapped?.call();
+        },
+        customBorder: const CircleBorder(),
+        splashColor: AppColors.angolaYellow.withValues(alpha: 0.15),
+        highlightColor: AppColors.angolaYellow.withValues(alpha: 0.1),
+        child: Container(
+          padding: ResponsiveUtils.pSymmetric(vertical: 4.0),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.orange.withValues(alpha: 0.1),
+                blurRadius: 4,
+                spreadRadius: -2,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FaIcon(
+                FontAwesomeIcons.wallet,
+                size: 22.s,
+                color: AppColors.orange,
+                shadows: [
+                  Shadow(
+                    color: AppColors.orange.withValues(alpha: 0.6),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              SizedBox(height: 4.s),
+              Text(
+                ref.t(LocalizationKeys.getPaid).toUpperCase(),
+                style: TextStyle(
+                  fontSize: 9.f,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                  color: AppColors.orange,
+                  shadows: [
+                    Shadow(
+                      color: AppColors.orange.withValues(alpha: 0.6),
+                      blurRadius: 6,
+                    ),
+                  ],
                 ),
               ),
             ],

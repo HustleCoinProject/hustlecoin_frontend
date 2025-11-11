@@ -132,6 +132,27 @@ class LocalizationKeys {
 
   // Leaderboard
   static const String you = 'you';
+
+  // Payout
+  static const String getPaid = 'get_paid';
+  static const String selectPayoutMethod = 'select_payout_method';
+  static const String multicaixaExpressDetails = 'multicaixa_express_details';
+  static const String bankDetails = 'bank_details';
+  static const String phoneNumber = 'phone_number';
+  static const String accountHolderName = 'account_holder_name';
+  static const String bankName = 'bank_name';
+  static const String selectBank = 'select_bank';
+  static const String enterFullName = 'enter_full_name';
+  static const String enterBankName = 'enter_bank_name';
+  static const String payoutAmount = 'payout_amount';
+  static const String requestPayout = 'request_payout';
+  static const String phoneNumberRequired = 'phone_number_required';
+  static const String accountHolderNameRequired =
+      'account_holder_name_required';
+  static const String bankNameRequired = 'bank_name_required';
+  static const String ibanRequired = 'iban_required';
+  static const String amountRequired = 'amount_required';
+  static const String enterValidAmount = 'enter_valid_amount';
 }
 
 // Translation maps
@@ -267,6 +288,27 @@ class _Translations {
 
       // Leaderboard
       LocalizationKeys.you: 'You',
+
+      // Payout
+      LocalizationKeys.getPaid: 'Get Paid',
+      LocalizationKeys.selectPayoutMethod: 'Select Payout Method',
+      LocalizationKeys.multicaixaExpressDetails: 'Multicaixa Express Details',
+      LocalizationKeys.bankDetails: 'Bank Details',
+      LocalizationKeys.phoneNumber: 'Phone Number',
+      LocalizationKeys.accountHolderName: 'Account Holder Name',
+      LocalizationKeys.bankName: 'Bank Name',
+      LocalizationKeys.selectBank: 'Select bank',
+      LocalizationKeys.enterFullName: 'Enter your full name',
+      LocalizationKeys.enterBankName: 'Enter bank name',
+      LocalizationKeys.payoutAmount: 'Payout Amount (HC)',
+      LocalizationKeys.requestPayout: 'Request Payout',
+      LocalizationKeys.phoneNumberRequired: 'Phone number is required',
+      LocalizationKeys.accountHolderNameRequired:
+          'Account holder name is required',
+      LocalizationKeys.bankNameRequired: 'Bank name is required',
+      LocalizationKeys.ibanRequired: 'IBAN is required',
+      LocalizationKeys.amountRequired: 'Amount is required',
+      LocalizationKeys.enterValidAmount: 'Enter a valid amount',
     },
 
     'pt': {
@@ -403,6 +445,28 @@ class _Translations {
 
       // Leaderboard
       LocalizationKeys.you: 'Você',
+
+      // Payout
+      LocalizationKeys.getPaid: 'Receber Pagamento',
+      LocalizationKeys.selectPayoutMethod: 'Selecionar Método de Pagamento',
+      LocalizationKeys.multicaixaExpressDetails:
+          'Detalhes do Multicaixa Express',
+      LocalizationKeys.bankDetails: 'Detalhes Bancários',
+      LocalizationKeys.phoneNumber: 'Número de Telefone',
+      LocalizationKeys.accountHolderName: 'Nome do Titular da Conta',
+      LocalizationKeys.bankName: 'Nome do Banco',
+      LocalizationKeys.selectBank: 'Selecionar banco',
+      LocalizationKeys.enterFullName: 'Digite seu nome completo',
+      LocalizationKeys.enterBankName: 'Digite o nome do banco',
+      LocalizationKeys.payoutAmount: 'Valor do Pagamento (HC)',
+      LocalizationKeys.requestPayout: 'Solicitar Pagamento',
+      LocalizationKeys.phoneNumberRequired: 'Número de telefone é obrigatório',
+      LocalizationKeys.accountHolderNameRequired:
+          'Nome do titular da conta é obrigatório',
+      LocalizationKeys.bankNameRequired: 'Nome do banco é obrigatório',
+      LocalizationKeys.ibanRequired: 'IBAN é obrigatório',
+      LocalizationKeys.amountRequired: 'Valor é obrigatório',
+      LocalizationKeys.enterValidAmount: 'Digite um valor válido',
     },
   };
 }

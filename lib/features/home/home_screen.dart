@@ -6,6 +6,7 @@ import 'package:hustlecoin/data/models/quiz_result.dart';
 import 'package:hustlecoin/data/models/user.dart';
 import 'package:hustlecoin/features/land/land_map_screen.dart';
 import 'package:hustlecoin/features/leaderboard/leaderboard_screen.dart';
+import 'package:hustlecoin/features/payout/payout_screen.dart';
 import 'package:hustlecoin/features/profile/edit_profile.dart';
 import 'package:hustlecoin/features/quiz/quiz_screen.dart';
 
@@ -226,6 +227,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  void _onGetPaidTapped() {
+    // Navigate to Payout screen
+    AdHelper.showInterstitialOnNavigation();
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const PayoutScreen())).then((_) {
+      // Reset to home when returning
+      setState(() {
+        _activeNavIndex = 0;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final userState = ref.watch(userControllerProvider);
@@ -269,6 +283,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       bottomNavigationBar: BottomNavBar(
         activeIndex: _activeNavIndex,
         onNavItemTapped: _onNavItemTapped,
+        onGetPaidTapped: _onGetPaidTapped,
       ),
     );
   }
