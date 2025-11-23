@@ -17,6 +17,13 @@ class User {
   final DateTime createdAt;
   final int dailyTapEarnings;
   final DateTime? lastTapResetDate;
+  
+  // Payout-related fields
+  final String? phoneNumber;
+  final String? fullName;
+  final String? nationalId;
+  final String? bankIban;
+  final String? bankName;
 
   const User({
     required this.id,
@@ -33,6 +40,11 @@ class User {
     required this.createdAt,
     required this.dailyTapEarnings,
     this.lastTapResetDate,
+    this.phoneNumber,
+    this.fullName,
+    this.nationalId,
+    this.bankIban,
+    this.bankName,
   });
 
   // A factory constructor for creating a new User instance from a map.
@@ -56,6 +68,11 @@ class User {
       lastTapResetDate: json['last_tap_reset_date'] != null
           ? DateTime.parse(json['last_tap_reset_date'])
           : null,
+      phoneNumber: json['phone_number'],
+      fullName: json['full_name'],
+      nationalId: json['national_id'],
+      bankIban: json['bank_iban'],
+      bankName: json['bank_name'],
     );
   }
 

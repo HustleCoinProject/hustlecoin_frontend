@@ -15,12 +15,15 @@ import '../models/my_land_tiles.dart';
 import '../models/land_claim_status.dart';
 import '../models/land_claim_response.dart';
 import '../models/tap_response.dart';
+import '../models/payout.dart';
+import '../models/payout_info.dart';
+import '../models/payout_request.dart';
 
 // This class handles all communication with your backend API.
 
 class ApiRepository {
   final String _baseUrl =
-      "http://10.147.59.235:8000"; // "https://hustlecoin-backend.fly.dev";
+      "http://10.238.227.167:8000"; // "https://hustlecoin-backend.fly.dev";
   String? _accessToken;
   String? _refreshToken;
 
@@ -485,6 +488,118 @@ class ApiRepository {
       return TapResponse.fromJson(json.decode(response.body));
     } else {
       throw Exception('Failed to submit taps: ${response.body}');
+    }
+  }
+
+  // --- Payout System ---
+  Future<Map<String, dynamic>> getPayoutMethods() async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/payouts/methods'),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to fetch payout methods: ${response.body}');
+    }
+  }
+
+  Future<PayoutInfo> getPayoutInfo() async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(
+        Uri.parse('$_baseUrl/api/payouts/info'),
+        headers: _headers,
+      ),
+    );
+    if (response.statusCode == 200) {
+      return PayoutInfo.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to fetch payout info: ${response.body}');
+    }
+  }
+
+  Future<void> updatePayoutInfo({
+    String? phoneNumber,
+    String? fullName,
+    String? nationalId,
+    String? bankIban,
+    String? bankName,
+  }) async {
+    final Map<String, dynamic> body = {};
+    
+    if (phoneNumber != null) body['phone_number'] = phoneNumber;
+    if (fullName != null) body['full_name'] = fullName;
+    if (nationalId != null) body['national_id'] = nationalId;
+    if (bankIban != null) body['bank_iban'] = bankIban;
+    if (bankName != null) body['bank_name'] = bankName;
+
+    final response = await _makeAuthenticatedRequest(
+      () => http.put(
+        Uri.parse('$_baseUrl/api/payouts/info'),
+        headers: _headers,
+        body: json.encode(body),
+      ),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update payout info: ${response.body}');
+    }
+  }
+
+  Future<Payout> requestPayout(PayoutRequest payoutRequest) async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/api/payouts/request'),
+        headers: _headers,
+        body: json.encode(payoutRequest.toJson()),
+      ),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return Payout.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to request payout: ${response.body}');
+    }
+  }
+
+  Future<List<Payout>> getPayoutHistory({int limit = 50, int offset = 0}) async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(
+        Uri.parse('$_baseUrl/api/payouts/history?limit=$limit&offset=$offset'),
+        headers: _headers,
+      ),
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((item) => Payout.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to fetch payout history: ${response.body}');
+    }
+  }
+
+  Future<Payout> getPayoutDetails(String payoutId) async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(
+        Uri.parse('$_baseUrl/api/payouts/$payoutId'),
+        headers: _headers,
+      ),
+    );
+    if (response.statusCode == 200) {
+      return Payout.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to fetch payout details: ${response.body}');
+    }
+  }
+
+  Future<Map<String, dynamic>> getPayoutSystemStatus() async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/payouts/system/status'),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to fetch payout system status: ${response.body}');
     }
   }
 }
