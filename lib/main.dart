@@ -15,6 +15,7 @@ import 'package:hustlecoin/services/admob_service.dart';
 import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/theme/responsive_theme.dart';
+import 'package:hustlecoin/utils/admob_debug_helper.dart';
 
 import 'package:flutter/services.dart';
 
@@ -107,6 +108,12 @@ Future<void> main() async {
   } catch (e) {
     print('DEBUG: main() - ❌ Failed to initialize Google Mobile Ads SDK: $e');
   }
+
+  // Validate AdMob configuration
+  AdMobService.validateAdConfiguration();
+  
+  // Print AdMob diagnostics
+  AdMobDebugHelper.printAdMobDiagnostics();
 
   // Initialize AdMob service and preload ads
   print('DEBUG: main() - Creating AdMob service instance...');

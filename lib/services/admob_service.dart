@@ -7,32 +7,36 @@ class AdMobService {
   static const String _testRewardedAdUnitId =
       'ca-app-pub-3940256099942544/5224354917'; // Test ad unit
   static const String _rewardedAdUnitId =
-      'ca-app-pub-3737974268376998/7706125192'; // Your actual ad unit
+      'ca-app-pub-3737974260376908/7706125192'; // Your actual ad unit
 
   // Banner Ad IDs
   static const String _testBannerAdUnitId =
       'ca-app-pub-3940256099942544/6300978111'; // Test banner ad unit
   static const String _bannerAdUnitId =
-      'ca-app-pub-3737974268376998/1994649425'; // Your actual banner ad unit
+      'ca-app-pub-3737974260376908/1994649425'; // Your actual banner ad unit
 
   // Interstitial Ad IDs
   static const String _testInterstitialAdUnitId =
       'ca-app-pub-3940256099942544/1033173712'; // Test interstitial ad unit
   static const String _interstitialAdUnitId =
-      'ca-app-pub-3737974268376998/6080990147'; // Your actual interstitial ad unit
+      'ca-app-pub-3737974260376908/6009900147'; // Your actual interstitial ad unit
 
   // App Open Ad IDs
   static const String _testAppOpenAdUnitId =
       'ca-app-pub-3940256099942544/3419835294'; // Test app open ad unit
   static const String _appOpenAdUnitId =
-      'ca-app-pub-3737974268376998/4122103486'; // Your actual app open ad unit
+      'ca-app-pub-3737974260376908/4122103406'; // Your actual app open ad unit
 
   // Use test ad in debug mode, real ad in release mode
   static String get rewardedAdUnitId {
     final id = kDebugMode ? _testRewardedAdUnitId : _rewardedAdUnitId;
     print(
-      'DEBUG: AdMobService - Using rewarded ad unit ID: $id (Debug mode: $kDebugMode)',
+      'DEBUG: AdMobService - Using rewarded ad unit ID: $id (Debug mode: $kDebugMode, Release mode: ${!kDebugMode})',
     );
+    // Additional validation for release mode
+    if (!kDebugMode && id == _rewardedAdUnitId) {
+      print('DEBUG: AdMobService - ✅ Using PRODUCTION rewarded ad unit ID');
+    }
     return id;
   }
 
@@ -127,6 +131,22 @@ class AdMobService {
             print('DEBUG: AdMobService - Error domain: ${error.domain}');
             print('DEBUG: AdMobService - Error message: ${error.message}');
             print('DEBUG: AdMobService - Full error: $error');
+            print('DEBUG: AdMobService - Ad Unit ID used: ${rewardedAdUnitId}');
+            print('DEBUG: AdMobService - kDebugMode: $kDebugMode');
+            
+            // Common error codes and their meanings:
+            // 0 = ERROR_CODE_INTERNAL_ERROR
+            // 1 = ERROR_CODE_INVALID_REQUEST  
+            // 2 = ERROR_CODE_NETWORK_ERROR
+            // 3 = ERROR_CODE_NO_FILL
+            if (error.code == 1) {
+              print('DEBUG: AdMobService - ⚠️ INVALID_REQUEST - Check ad unit ID and app configuration');
+            } else if (error.code == 2) {
+              print('DEBUG: AdMobService - ⚠️ NETWORK_ERROR - Check internet connection and permissions');
+            } else if (error.code == 3) {
+              print('DEBUG: AdMobService - ⚠️ NO_FILL - No ad inventory available (common in production)');
+            }
+            
             _isRewardedAdLoaded = false;
             _rewardedAd = null;
           },
@@ -451,6 +471,31 @@ class AdMobService {
 
     final timeSinceLastShown = DateTime.now().difference(_appOpenAdLastShown!);
     return timeSinceLastShown >= _appOpenAdCooldown;
+  }
+
+  /// Test method to validate ad unit IDs and configuration
+  static void validateAdConfiguration() {
+    print('=== VALIDATING ADMOB CONFIGURATION ===');
+    print('App ID: ca-app-pub-3737974260376908~8839259376');
+    print('Package Name Expected: com.example.hustlecoin (verify this matches AdMob console)');
+    print('');
+    
+    print('Production Ad Unit IDs:');
+    print('- Rewarded: $_rewardedAdUnitId');
+    print('- Banner: $_bannerAdUnitId');
+    print('- Interstitial: $_interstitialAdUnitId');
+    print('- App Open: $_appOpenAdUnitId');
+    print('');
+    
+    print('Test Ad Unit IDs:');
+    print('- Rewarded: $_testRewardedAdUnitId');
+    print('- Banner: $_testBannerAdUnitId');
+    print('- Interstitial: $_testInterstitialAdUnitId');
+    print('- App Open: $_testAppOpenAdUnitId');
+    print('');
+    
+    print('Current Mode: ${kDebugMode ? "DEBUG (using test ads)" : "RELEASE (using production ads)"}');
+    print('=== END VALIDATION ===');
   }
 
   void dispose() {
