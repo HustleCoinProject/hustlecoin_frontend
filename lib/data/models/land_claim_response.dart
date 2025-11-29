@@ -31,7 +31,7 @@ class LandClaimResponse {
       'total_income': totalIncome,
       'tiles_processed': tilesProcessed,
       'new_balance': newBalance,
-      'next_claim_available_at': nextClaimAvailableAt.toUtc().toIso8601String(),
+      'next_claim_available_at': nextClaimAvailableAt.toIso8601String(),
     };
   }
 }

@@ -35,10 +35,8 @@ class LandClaimStatus {
       'can_claim': canClaim,
       'available_income': availableIncome,
       'tiles_count': tilesCount,
-      'last_claim_at': lastClaimAt?.toUtc().toIso8601String(),
-      'next_claim_available_at': nextClaimAvailableAt
-          ?.toUtc()
-          .toIso8601String(),
+      'last_claim_at': lastClaimAt?.toIso8601String(),
+      'next_claim_available_at': nextClaimAvailableAt?.toIso8601String(),
       'time_until_next_claim_seconds': timeUntilNextClaimSeconds,
     };
   }

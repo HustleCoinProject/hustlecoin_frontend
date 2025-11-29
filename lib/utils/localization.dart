@@ -133,6 +133,14 @@ class LocalizationKeys {
   // Leaderboard
   static const String you = 'you';
 
+  // Access Control
+  static const String unlockFeature = 'unlock_feature';
+  static const String bronzeKey = 'bronze_key';
+  static const String getBronzeKeyMessage = 'get_bronze_key_message';
+  static const String keysExpireMessage = 'keys_expire_message';
+  static const String getFromShop = 'get_from_shop';
+  static const String unlockExcitingFeature = 'unlock_exciting_feature';
+
   // Payout
   static const String getPaid = 'get_paid';
   static const String selectPayoutMethod = 'select_payout_method';
@@ -288,6 +296,14 @@ class _Translations {
 
       // Leaderboard
       LocalizationKeys.you: 'You',
+
+      // Access Control
+      LocalizationKeys.unlockFeature: 'Unlock Feature',
+      LocalizationKeys.bronzeKey: 'Bronze Key',
+      LocalizationKeys.getBronzeKeyMessage: 'Get your Bronze Key from the shop to unlock this exciting feature!',
+      LocalizationKeys.keysExpireMessage: 'Keys give you 3 hours of access.',
+      LocalizationKeys.getFromShop: 'get from shop',
+      LocalizationKeys.unlockExcitingFeature: 'unlock this exciting feature',
 
       // Payout
       LocalizationKeys.getPaid: 'Get Paid',
@@ -445,6 +461,14 @@ class _Translations {
 
       // Leaderboard
       LocalizationKeys.you: 'Você',
+
+      // Access Control
+      LocalizationKeys.unlockFeature: 'Desbloquear Recurso',
+      LocalizationKeys.bronzeKey: 'Chave de Bronze',
+      LocalizationKeys.getBronzeKeyMessage: 'Obtenha sua Chave de Bronze na loja para desbloquear este recurso incrível!',
+      LocalizationKeys.keysExpireMessage: 'As chaves dão 3 horas de acesso.',
+      LocalizationKeys.getFromShop: 'obter na loja',
+      LocalizationKeys.unlockExcitingFeature: 'desbloquear este recurso incrível',
 
       // Payout
       LocalizationKeys.getPaid: 'Receber Pagamento',

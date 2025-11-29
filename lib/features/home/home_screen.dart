@@ -16,6 +16,7 @@ import 'package:hustlecoin/providers/tapping_provider.dart';
 import 'package:hustlecoin/services/admob_service.dart';
 import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
+import 'package:hustlecoin/widgets/access_controlled_widget.dart';
 import 'package:hustlecoin/utils/ad_helper.dart';
 import 'package:hustlecoin/utils/localization.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
@@ -491,11 +492,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                       // The quiz screen should update the globalQuizResult
                       // which we can then use as the payload.
-                      Map<String, dynamic> payload =
-                          globalQuizResult?.toJson() ?? {};
+                      // Only complete task if user submitted an answer (globalQuizResult is non-null)
+                      if (globalQuizResult != null) {
+                        Map<String, dynamic> payload = globalQuizResult!.toJson();
 
-                      // Complete the task with the quiz result payload
-                      await controller.completeTask(payload: payload);
+                        // Complete the task with the quiz result payload
+                        await controller.completeTask(payload: payload);
+                        
+                        // Clear the global result after sending to server
+                        globalQuizResult = null;
+                      }
                     },
                   ),
                 ],
@@ -510,9 +516,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _actionButton(
-                    FontAwesomeIcons.mapMarkedAlt,
-                    ref.t(LocalizationKeys.land),
+                  AccessControlledWidget(
+                    featureId: 'land_page',
                     onTap: () {
                       AdHelper.showInterstitialOnNavigation();
                       Navigator.of(context).push(
@@ -521,6 +526,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       );
                     },
+                    child: _actionButton(
+                      FontAwesomeIcons.mapMarkedAlt,
+                      ref.t(LocalizationKeys.land),
+                    ),
                   ),
                   SizedBox(height: 15.s),
                   _actionButton(
@@ -547,31 +556,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _actionButton(IconData icon, String label, {VoidCallback? onTap}) {
-    return PressableScaleWidget(
-      onTap: onTap ?? () {},
-      child: GlassContainer(
-        borderRadius: 16,
-        child: SizedBox(
-          width: 64.s,
-          height: 64.s,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FaIcon(icon, size: 24.s, color: AppColors.textGrey),
-              SizedBox(height: 4.s),
-              Text(
-                label.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 9.f,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textGrey,
-                ),
+    // If onTap is provided, wrap with PressableScaleWidget, otherwise return raw widget
+    final buttonContent = GlassContainer(
+      borderRadius: 16,
+      child: SizedBox(
+        width: 64.s,
+        height: 64.s,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FaIcon(icon, size: 24.s, color: AppColors.textGrey),
+            SizedBox(height: 4.s),
+            Text(
+              label.toUpperCase(),
+              style: TextStyle(
+                fontSize: 9.f,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textGrey,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
+
+    if (onTap != null) {
+      return PressableScaleWidget(
+        onTap: onTap,
+        child: buttonContent,
+      );
+    }
+    
+    return buttonContent;
   }
 }
 

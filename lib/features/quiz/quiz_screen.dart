@@ -104,6 +104,13 @@ class _QuizContent extends ConsumerStatefulWidget {
 class _QuizContentState extends ConsumerState<_QuizContent> {
   int? _selectedOptionIndex;
 
+  @override
+  void initState() {
+    super.initState();
+    // Clear any previous quiz result to ensure clean state
+    globalQuizResult = null;
+  }
+
   void _selectOption(int index) {
     setState(() {
       _selectedOptionIndex = index;

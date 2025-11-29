@@ -5,6 +5,7 @@ import '../data/models/auth_tokens.dart';
 import '../data/repositories/api_repository.dart';
 import 'auth_provider.dart';
 import 'foundational_providers.dart';
+import 'user_specific_data_provider.dart';
 
 // --- User State (The most important one) ---
 
@@ -88,6 +89,8 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
     try {
       await _api.purchaseItem(itemId, quantity);
       await _fetchUser();
+      // Invalidate inventory provider to refresh it after purchase
+      _ref.invalidate(inventoryProvider);
     } catch (e) {
       debugPrint("Purchase failed: $e");
       await _fetchUser();

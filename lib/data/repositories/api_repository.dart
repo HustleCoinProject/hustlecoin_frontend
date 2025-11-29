@@ -23,7 +23,7 @@ import '../models/payout_request.dart';
 
 class ApiRepository {
   final String _baseUrl =
-      "http://10.238.227.167:8000"; // "https://hustlecoin-backend.fly.dev";
+      "http://10.247.33.41:8000"; // "https://hustlecoin-backend.fly.dev";
   String? _accessToken;
   String? _refreshToken;
 
@@ -506,10 +506,8 @@ class ApiRepository {
 
   Future<PayoutInfo> getPayoutInfo() async {
     final response = await _makeAuthenticatedRequest(
-      () => http.get(
-        Uri.parse('$_baseUrl/api/payouts/info'),
-        headers: _headers,
-      ),
+      () =>
+          http.get(Uri.parse('$_baseUrl/api/payouts/info'), headers: _headers),
     );
     if (response.statusCode == 200) {
       return PayoutInfo.fromJson(json.decode(response.body));
@@ -526,7 +524,7 @@ class ApiRepository {
     String? bankName,
   }) async {
     final Map<String, dynamic> body = {};
-    
+
     if (phoneNumber != null) body['phone_number'] = phoneNumber;
     if (fullName != null) body['full_name'] = fullName;
     if (nationalId != null) body['national_id'] = nationalId;
@@ -562,7 +560,10 @@ class ApiRepository {
     }
   }
 
-  Future<List<Payout>> getPayoutHistory({int limit = 50, int offset = 0}) async {
+  Future<List<Payout>> getPayoutHistory({
+    int limit = 50,
+    int offset = 0,
+  }) async {
     final response = await _makeAuthenticatedRequest(
       () => http.get(
         Uri.parse('$_baseUrl/api/payouts/history?limit=$limit&offset=$offset'),
