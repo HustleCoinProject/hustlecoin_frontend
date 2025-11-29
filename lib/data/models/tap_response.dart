@@ -5,7 +5,9 @@ class TapResponse {
   final bool success;
   final String message;
   final int hcEarned;
+  final int rankPointsEarned;
   final int newBalance;
+  final int newRankPoints;
   final int dailyEarnings;
   final int dailyLimit;
   final int remainingTaps;
@@ -15,7 +17,9 @@ class TapResponse {
     required this.success,
     required this.message,
     required this.hcEarned,
+    required this.rankPointsEarned,
     required this.newBalance,
+    required this.newRankPoints,
     required this.dailyEarnings,
     required this.dailyLimit,
     required this.remainingTaps,
@@ -27,7 +31,9 @@ class TapResponse {
       success: json['success'] ?? false,
       message: json['message'] ?? '',
       hcEarned: json['hc_earned'] ?? 0,
+      rankPointsEarned: json['rank_points_earned'] ?? 0,
       newBalance: json['new_balance'] ?? 0,
+      newRankPoints: json['new_rank_points'] ?? 0,
       dailyEarnings: json['daily_earnings'] ?? 0,
       dailyLimit: json['daily_limit'] ?? 200,
       remainingTaps: json['remaining_taps'] ?? 0,

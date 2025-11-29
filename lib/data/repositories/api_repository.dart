@@ -18,6 +18,8 @@ import '../models/tap_response.dart';
 import '../models/payout.dart';
 import '../models/payout_info.dart';
 import '../models/payout_request.dart';
+import '../models/task_completion_response.dart';
+import '../models/land_purchase_response.dart';
 
 // This class handles all communication with your backend API.
 
@@ -290,7 +292,7 @@ class ApiRepository {
     }
   }
 
-  Future<void> completeTask(
+  Future<TaskCompletionResponse> completeTask(
     String taskId, {
     Map<String, dynamic>? payload,
   }) async {
@@ -305,7 +307,9 @@ class ApiRepository {
         body: json.encode(body),
       ),
     );
-    if (response.statusCode != 200) {
+    if (response.statusCode == 200) {
+      return TaskCompletionResponse.fromJson(json.decode(response.body));
+    } else {
       throw Exception('Failed to complete task: ${response.body}');
     }
   }
@@ -402,15 +406,17 @@ class ApiRepository {
     }
   }
 
-  Future<void> buyLandTile(String h3Index) async {
+  Future<LandPurchaseResponse> buyLandTile(String h3Index) async {
     final response = await _makeAuthenticatedRequest(
       () => http.post(
         Uri.parse('$_baseUrl/api/land/buy/$h3Index'),
         headers: _headers,
       ),
     );
-    // Backend returns 201 CREATED on successful purchase
-    if (response.statusCode != 201) {
+    // Backend returns 200 OK with response data on successful purchase
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return LandPurchaseResponse.fromJson(json.decode(response.body));
+    } else {
       throw Exception('Failed to buy land tile: ${response.body}');
     }
   }

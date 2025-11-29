@@ -59,7 +59,7 @@ class LeaderboardScreen extends ConsumerWidget {
       playerEntryUI = LeaderboardEntryUI(
         rank: rank,
         username: 'You',
-        score: user.hcBalance,
+        score: user.rankPoints,
         level: user.level,
       );
     } else {
@@ -110,7 +110,7 @@ class LeaderboardScreen extends ConsumerWidget {
             return LeaderboardEntryUI(
               rank: entry.key + 1, // Index + 1 for rank
               username: entry.value.username,
-              score: entry.value.hcBalance,
+              score: entry.value.rankPoints,
               level: entry.value.level,
             );
           }).toList();
@@ -226,9 +226,9 @@ class LeaderboardScreen extends ConsumerWidget {
             ),
           ),
           const Spacer(),
-          // Coin Balance
+          // Rank Points
           FaIcon(
-            FontAwesomeIcons.coins,
+            FontAwesomeIcons.trophy,
             color: AppColors.angolaYellow,
             size: 16,
           ),

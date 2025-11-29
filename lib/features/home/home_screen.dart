@@ -630,6 +630,7 @@ class _MainTapButtonState extends ConsumerState<_MainTapButton> {
               }
             },
       child: GlassContainer(
+        borderRadius: 64.r,
         child: SizedBox(
           width: 160.s,
           height: 160.s,

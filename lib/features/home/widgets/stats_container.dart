@@ -94,6 +94,16 @@ class StatsContainer extends ConsumerWidget {
                   shadows: textShadow,
                 ),
               ),
+              SizedBox(height: 4.s),
+              Text(
+                '🏆 Rank Points: ${user.rankPoints}',
+                style: TextStyle(
+                  fontSize: 12.f,
+                  color: AppColors.angolaYellow,
+                  fontWeight: FontWeight.w600,
+                  shadows: textShadow,
+                ),
+              ),
             ],
           ),
         ),

@@ -16,8 +16,9 @@ class TappingService {
 
     _pendingTaps++;
 
-    // Update balance locally immediately
-    _ref.read(userControllerProvider.notifier).optimisticallyUpdateBalance(1);
+    // Update balance locally immediately (HC only, let server provide actual rank points)
+    // The server will provide the accurate rank points earned when we submit the batch
+    _ref.read(userControllerProvider.notifier).optimisticallyUpdateBalance(1, rankPointsGained: 0);
 
     // Cancel existing timer and start a new one (4 seconds)
     _batchTimer?.cancel();

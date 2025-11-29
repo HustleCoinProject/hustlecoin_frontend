@@ -6,6 +6,7 @@ class User {
   final String username;
   final String email;
   final int hcBalance;
+  final int rankPoints;
   final int level;
   final dynamic
   currentHustle; // Can be String (old format) or Map<String, String> (new format)
@@ -30,6 +31,7 @@ class User {
     required this.username,
     required this.email,
     required this.hcBalance,
+    required this.rankPoints,
     required this.level,
     required this.currentHustle,
     required this.levelEntryDate,
@@ -54,6 +56,7 @@ class User {
       username: json['username'],
       email: json['email'],
       hcBalance: json['hc_balance'],
+      rankPoints: json['rank_points'] ?? 0,
       level: json['level'],
       currentHustle: json['current_hustle'],
       levelEntryDate: DateTime.parse(json['level_entry_date']),

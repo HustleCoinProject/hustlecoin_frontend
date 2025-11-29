@@ -154,7 +154,7 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
-  void optimisticallyUpdateBalance(int amountGained) {
+  void optimisticallyUpdateBalance(int amountGained, {int rankPointsGained = 0}) {
     // Only update if we have a user object
     if (state.value != null) {
       final currentUser = state.value!;
@@ -164,6 +164,8 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
         email: currentUser.email,
         hcBalance:
             currentUser.hcBalance + amountGained, // The optimistic update
+        rankPoints:
+            currentUser.rankPoints + rankPointsGained, // Add rank points update
         level: currentUser.level,
         currentHustle: currentUser.currentHustle,
         levelEntryDate: currentUser.levelEntryDate,
@@ -175,6 +177,11 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
         createdAt: currentUser.createdAt,
         dailyTapEarnings: currentUser.dailyTapEarnings,
         lastTapResetDate: currentUser.lastTapResetDate,
+        phoneNumber: currentUser.phoneNumber,
+        fullName: currentUser.fullName,
+        nationalId: currentUser.nationalId,
+        bankIban: currentUser.bankIban,
+        bankName: currentUser.bankName,
       );
       // Update the state with the new user object without a server call
       state = AsyncValue.data(updatedUser);
