@@ -1,4 +1,4 @@
-package com.example.hustlecoin
+package com.hustlecoin.hustlecoin
 
 import io.flutter.embedding.android.FlutterActivity
 
