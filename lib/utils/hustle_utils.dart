@@ -36,12 +36,12 @@ class HustleUtils {
   /// Gets the image path for a hustle using the key (English name)
   static String getHustleImagePath(Map<String, String> hustleObj) {
     final key = getHustleKey(hustleObj);
-    return 'assets/images/$key.png';
+    return 'assets/images/$key.jpg';
   }
 
   /// Gets the image path for a hustle using string hustle name
   static String getHustleImagePathFromString(String hustleName) {
-    return 'assets/images/$hustleName.png';
+    return 'assets/images/$hustleName.jpg';
   }
 
   /// Safely handles both old string format and new object format for current_hustle

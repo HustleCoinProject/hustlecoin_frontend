@@ -27,8 +27,8 @@ class InventoryScreen extends ConsumerWidget {
     return Scaffold(
       body: ScreenBackground(
         imagePath: user != null
-            ? 'assets/images/${HustleUtils.getCurrentHustleKey(user.currentHustle)}.png'
-            : 'assets/images/Taxi Driver.png',
+            ? 'assets/images/${HustleUtils.getCurrentHustleKey(user.currentHustle)}.jpg'
+            : 'assets/images/Taxi Driver.jpg',
         child: SafeArea(
           child: Column(
             children: [

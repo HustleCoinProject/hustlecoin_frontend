@@ -77,7 +77,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 'key': entry.key, // English name (for API calls)
                 'name': entry.value, // Localized name (for display)
                 'image':
-                    'assets/images/${entry.key}.png', // Use key for image path
+                    'assets/images/${entry.key}.jpg', // Use key for image path
               },
             )
             .toList();
@@ -228,20 +228,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   Widget build(BuildContext context) {
     // Use a random image for the signup screen background
     final List<String> backgroundImages = [
-      'Business Director.png',
-      'Cart Pusher.png',
-      'CEO.png',
-      'Hustle Legend.png',
-      'Lawyer.png',
-      'Manager.png',
-      'Minister.png',
-      'Motorcycle Owner.png',
-      'President.png',
-      'Secretary.png',
-      'Shopkeeper.png',
-      'Small Farmer.png',
-      'Store Owner.png',
-      'Street Vendor.png',
+      'Business Director.jpg',
+      'Cart Pusher.jpg',
+      'CEO.jpg',
+      'Hustle Legend.jpg',
+      'Lawyer.jpg',
+      'Manager.jpg',
+      'Minister.jpg',
+      'Motorcycle Owner.jpg',
+      'President.jpg',
+      'Secretary.jpg',
+      'Shopkeeper.jpg',
+      'Small Farmer.jpg',
+      'Store Owner.jpg',
+      'Street Vendor.jpg',
     ];
     final String randomImage =
         backgroundImages[DateTime.now().millisecond % backgroundImages.length];

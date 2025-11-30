@@ -134,7 +134,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     return Scaffold(
       body: ScreenBackground(
-        imagePath: 'assets/images/$hustleKey.png',
+        imagePath: 'assets/images/$hustleKey.jpg',
         child: SafeArea(
           child: Column(
             children: [

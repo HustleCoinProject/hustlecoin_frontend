@@ -20,9 +20,9 @@ class TappingService {
     // The server will provide the accurate rank points earned when we submit the batch
     _ref.read(userControllerProvider.notifier).optimisticallyUpdateBalance(1, rankPointsGained: 0);
 
-    // Cancel existing timer and start a new one (4 seconds)
+    // Cancel existing timer and start a new one (2 seconds)
     _batchTimer?.cancel();
-    _batchTimer = Timer(const Duration(seconds: 4), _submitBatch);
+    _batchTimer = Timer(const Duration(seconds: 2), _submitBatch);
   }
 
   Future<void> _submitBatch() async {

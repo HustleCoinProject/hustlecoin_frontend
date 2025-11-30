@@ -67,7 +67,7 @@ class _SelectHustleScreenState extends ConsumerState<SelectHustleScreen> {
                 'key': entry.key, // English name (for images and API calls)
                 'name': entry.value, // Localized name (for display)
                 'image':
-                    'assets/images/${entry.key}.png', // Use key for image path
+                    'assets/images/${entry.key}.jpg', // Use key for image path
               },
             )
             .toList();
@@ -145,7 +145,7 @@ class _SelectHustleScreenState extends ConsumerState<SelectHustleScreen> {
     return ResponsiveBuilder(
       builder: (context) => Scaffold(
         body: ScreenBackground(
-          imagePath: 'assets/images/${widget.newHustle}.png',
+          imagePath: 'assets/images/${widget.newHustle}.jpg',
           child: SafeArea(
             child: Center(
               child: SingleChildScrollView(

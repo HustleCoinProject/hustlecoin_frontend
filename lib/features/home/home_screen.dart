@@ -256,7 +256,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       body: ScreenBackground(
         imagePath:
-            'assets/images/${HustleUtils.getCurrentHustleKey(user.currentHustle)}.png',
+            'assets/images/${HustleUtils.getCurrentHustleKey(user.currentHustle)}.jpg',
         child: SafeArea(
           child: Column(
             children: [
@@ -601,8 +601,8 @@ class _MainTapButton extends ConsumerStatefulWidget {
 class _MainTapButtonState extends ConsumerState<_MainTapButton> {
   DateTime? _lastTapTime;
   static const Duration _rateLimitDuration = Duration(
-    milliseconds: 1000,
-  ); // 1 tap per second max
+    milliseconds: 250,
+  ); // 1 tap per 250ms max
 
   bool get _isRateLimited {
     if (_lastTapTime == null) return false;
@@ -618,7 +618,7 @@ class _MainTapButtonState extends ConsumerState<_MainTapButton> {
       onTap: hasReachedDailyLimit
           ? null
           : () {
-              // Check rate limit before allowing tap (1 tap per second max)
+              // Check rate limit before allowing tap (1 tap per 250ms max)
               if (!_isRateLimited) {
                 // Give immediate visual and audio feedback
                 SoundService().playEarnCoins();

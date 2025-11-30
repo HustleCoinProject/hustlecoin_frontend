@@ -29,7 +29,7 @@ class QuizScreen extends ConsumerWidget {
     return Scaffold(
       body: ScreenBackground(
         imagePath:
-            'assets/images/${user != null ? HustleUtils.getCurrentHustleKey(user.currentHustle) : "Taxi Driver"}.png',
+            'assets/images/${user != null ? HustleUtils.getCurrentHustleKey(user.currentHustle) : "Taxi Driver"}.jpg',
         child: SafeArea(
           child: Column(
             children: [

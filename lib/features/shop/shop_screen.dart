@@ -44,7 +44,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       builder: (context) => Scaffold(
         body: ScreenBackground(
           imagePath:
-              'assets/images/${user != null ? HustleUtils.getCurrentHustleKey(user.currentHustle) : "Taxi Driver"}.png',
+              'assets/images/${user != null ? HustleUtils.getCurrentHustleKey(user.currentHustle) : "Taxi Driver"}.jpg',
           child: SafeArea(
             child: Column(
               children: [

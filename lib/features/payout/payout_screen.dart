@@ -347,7 +347,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: ScreenBackground(
-        imagePath: 'assets/images/CEO.png', // Default background
+        imagePath: 'assets/images/CEO.jpg', // Default background
         child: SafeArea(
           child: Column(
             children: [

@@ -17,7 +17,7 @@ class PayoutHistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: ScreenBackground(
-        imagePath: 'assets/images/CEO.png',
+        imagePath: 'assets/images/CEO.jpg',
         child: SafeArea(
           child: Column(
             children: [

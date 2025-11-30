@@ -27,10 +27,10 @@ class _StartScreenState extends ConsumerState<StartScreen>
   Timer? _backgroundTimer;
   int _currentSlideIndex = 0;
   final List<String> _slides = [
-    'assets/images/Cart Pusher.png',
-    'assets/images/Taxi Driver.png',
-    'assets/images/Manager.png',
-    'assets/images/Hustle Legend.png',
+    'assets/images/Cart Pusher.jpg',
+    'assets/images/Taxi Driver.jpg',
+    'assets/images/Manager.jpg',
+    'assets/images/Hustle Legend.jpg',
   ];
 
   @override
