@@ -128,7 +128,7 @@ class UpgradesSection extends ConsumerWidget {
       );
     }
     return Expanded(
-      child: PressableScaleWidget(onTap: onTap ?? () {}, child: content),
+      child: PressableScaleWidget(onTap: onTap, child: content),
     );
   }
 

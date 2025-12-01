@@ -199,7 +199,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         // Leaderboard
         AdHelper.showInterstitialOnNavigation();
         Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => LeaderboardScreen()))
+            .push(MaterialPageRoute(builder: (_) => const LeaderboardScreen()))
             .then((_) {
               // Reset to home when returning
               setState(() {
@@ -272,11 +272,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   fontSize: 14.f,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 3,
-                  shadows: [Shadow(blurRadius: 4, color: Colors.black87)],
+                  shadows: [const Shadow(blurRadius: 4, color: Colors.black87)],
                 ),
               ),
               Expanded(child: _buildGameArea(user)),
-              UpgradesSection(),
+              const UpgradesSection(),
             ],
           ),
         ),
@@ -550,7 +550,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildMainTapButton() {
     return Consumer(
       builder: (context, ref, child) {
-        return _MainTapButton();
+        return const _MainTapButton();
       },
     );
   }
@@ -644,10 +644,10 @@ class _MainTapButtonState extends ConsumerState<_MainTapButton> {
                     ? AppColors.textGrey.withValues(alpha: 0.5)
                     : AppColors.angolaYellow,
                 shadows: hasReachedDailyLimit
-                    ? []
+                    ? const []
                     : [
-                        Shadow(
-                          color: AppColors.glowYellow.withValues(alpha: 0.8),
+                        const Shadow(
+                          color: AppColors.glowYellow,
                           blurRadius: 15,
                         ),
                       ],

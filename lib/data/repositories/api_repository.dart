@@ -24,7 +24,7 @@ import '../models/land_purchase_response.dart';
 // This class handles all communication with your backend API.
 
 class ApiRepository {
-  final String _baseUrl = "https://hustlecoin-backend.fly.dev"; // "http://local-ip:8000";
+  final String _baseUrl ="http://10.247.33.41:8000"; // "https://hustlecoin-backend.fly.dev";
   String? _accessToken;
   String? _refreshToken;
 
