@@ -55,7 +55,12 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
   ApiRepository get _api => _ref.read(apiRepositoryProvider);
 
   Future<void> _fetchUser() async {
-    if (state.value == null) {
+    final hasUserData = state.when(
+      data: (user) => user != null,
+      loading: () => false,
+      error: (_, __) => false,
+    );
+    if (!hasUserData) {
       state = const AsyncValue.loading();
     }
     try {
@@ -156,8 +161,12 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
 
   void optimisticallyUpdateBalance(int amountGained, {int rankPointsGained = 0}) {
     // Only update if we have a user object
-    if (state.value != null) {
-      final currentUser = state.value!;
+    final currentUser = state.when(
+      data: (user) => user,
+      loading: () => null,
+      error: (_, __) => null,
+    );
+    if (currentUser != null) {
       final updatedUser = User(
         id: currentUser.id,
         username: currentUser.username,

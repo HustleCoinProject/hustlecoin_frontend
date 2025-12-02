@@ -146,6 +146,7 @@ class BottomNavBar extends ConsumerWidget {
               SizedBox(height: 4.s),
               Text(
                 ref.t(LocalizationKeys.getPaid).toUpperCase(),
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 9.f,
                   fontWeight: FontWeight.w700,

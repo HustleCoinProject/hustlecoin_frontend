@@ -9,8 +9,13 @@ import 'user_provider.dart';
 
 final landTilesProvider = FutureProvider.family
     .autoDispose<List<LandTileInfo>, String>((ref, bbox) async {
-      final user = ref.watch(userControllerProvider);
-      if (user.value == null) return [];
+      final userState = ref.watch(userControllerProvider);
+      final user = userState.when(
+        data: (user) => user,
+        loading: () => null,
+        error: (_, __) => null,
+      );
+      if (user == null) return [];
 
       final api = ref.read(apiRepositoryProvider);
       return api.getTilesInBbox(bbox);
@@ -19,8 +24,13 @@ final landTilesProvider = FutureProvider.family
 final myLandsProvider = FutureProvider.autoDispose<List<MyLandTile>>((
   ref,
 ) async {
-  final user = ref.watch(userControllerProvider);
-  if (user.value == null) return [];
+  final userState = ref.watch(userControllerProvider);
+  final user = userState.when(
+    data: (user) => user,
+    loading: () => null,
+    error: (_, __) => null,
+  );
+  if (user == null) return [];
 
   final api = ref.read(apiRepositoryProvider);
   return api.getMyLands();
@@ -31,8 +41,13 @@ final myLandsProvider = FutureProvider.autoDispose<List<MyLandTile>>((
 final landClaimStatusProvider = FutureProvider.autoDispose<LandClaimStatus?>((
   ref,
 ) async {
-  final user = ref.watch(userControllerProvider);
-  if (user.value == null) return null;
+  final userState = ref.watch(userControllerProvider);
+  final user = userState.when(
+    data: (user) => user,
+    loading: () => null,
+    error: (_, __) => null,
+  );
+  if (user == null) return null;
 
   final api = ref.read(apiRepositoryProvider);
   try {

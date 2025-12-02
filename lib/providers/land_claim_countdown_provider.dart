@@ -8,8 +8,13 @@ import 'user_provider.dart';
 /// This provider updates every second to provide smooth countdown experience
 final landClaimCountdownProvider = StreamProvider.autoDispose<LandClaimStatus?>(
   (ref) async* {
-    final user = ref.watch(userControllerProvider);
-    if (user.value == null) {
+    final userState = ref.watch(userControllerProvider);
+    final user = userState.when(
+      data: (user) => user,
+      loading: () => null,
+      error: (_, __) => null,
+    );
+    if (user == null) {
       yield null;
       return;
     }

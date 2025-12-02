@@ -9,6 +9,7 @@ import 'package:hustlecoin/providers/auth_provider.dart';
 import 'package:hustlecoin/providers/foundational_providers.dart';
 import 'package:hustlecoin/providers/time_provider.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
+import 'package:hustlecoin/providers/tapping_status_provider.dart';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hustlecoin/services/admob_service.dart';
@@ -45,6 +46,9 @@ class _ServerTimeInitializerState extends ConsumerState<ServerTimeInitializer>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Initialize server time sync
       ref.read(serverTimeProvider.notifier).syncWithServer();
+
+      // Initialize tapping status - this will fetch from /tapping/status endpoint
+      ref.read(tappingStatusProvider);
 
       // Show app open ad on first launch
       _showAppOpenAdIfAvailable();
@@ -193,8 +197,13 @@ class AuthWrapper extends ConsumerWidget {
     // Watch the user state
     final userState = ref.watch(userControllerProvider);
 
+    final hasTokens = authState.when(
+      data: (tokens) => tokens != null,
+      loading: () => false,
+      error: (_, __) => false,
+    );
     print(
-      "DEBUG: AuthWrapper - authState: ${authState.value != null ? 'HAS_TOKENS' : 'NO_TOKENS'}",
+      "DEBUG: AuthWrapper - authState: ${hasTokens ? 'HAS_TOKENS' : 'NO_TOKENS'}",
     );
     print(
       "DEBUG: AuthWrapper - userState: ${userState.when(data: (user) => user != null ? 'HAS_USER(${user.username})' : 'NO_USER', loading: () => 'LOADING', error: (e, _) => 'ERROR: $e')}",

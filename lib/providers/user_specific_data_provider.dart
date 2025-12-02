@@ -8,16 +8,24 @@ import 'user_provider.dart';
 
 final availableHustlesProvider =
     FutureProvider.autoDispose<Map<String, String>>((ref) async {
-      final user = ref.watch(userControllerProvider);
-      if (user.value == null) return <String, String>{};
+      final userState = ref.watch(userControllerProvider);
+      final user = userState.when(
+        data: (user) => user,
+        loading: () => null,
+        error: (_, __) => null,
+      );
+      if (user == null) return <String, String>{};
       return ref.read(apiRepositoryProvider).getAvailableHustles();
     });
 
-final levelStatusProvider = FutureProvider.autoDispose<LevelStatus?>((
-  ref,
-) async {
-  final user = ref.watch(userControllerProvider);
-  if (user.value == null) return null;
+final levelStatusProvider = FutureProvider.autoDispose<LevelStatus?>((ref) async {
+  final userState = ref.watch(userControllerProvider);
+  final user = userState.when(
+    data: (user) => user,
+    loading: () => null,
+    error: (_, __) => null,
+  );
+  if (user == null) return null;
   return ref.read(apiRepositoryProvider).getLevelStatus();
 });
 
@@ -25,14 +33,19 @@ final inventoryProvider = FutureProvider.autoDispose<List<InventoryItemOut>>((
   ref,
 ) async {
   print('DEBUG: inventoryProvider called');
-  final user = ref.watch(userControllerProvider);
-  print('DEBUG: inventoryProvider - user state: ${user.when(
+  final userState = ref.watch(userControllerProvider);
+  final user = userState.when(
+    data: (user) => user,
+    loading: () => null,
+    error: (_, __) => null,
+  );
+  print('DEBUG: inventoryProvider - user state: ${userState.when(
     data: (u) => u != null ? 'loaded (${u.username})' : 'null', 
     loading: () => 'loading', 
     error: (e, _) => 'error: $e'
   )}');
   
-  if (user.value == null) {
+  if (user == null) {
     print('DEBUG: inventoryProvider - user is null, returning empty list');
     return [];
   }

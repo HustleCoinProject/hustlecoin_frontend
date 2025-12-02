@@ -38,7 +38,11 @@ class LeaderboardScreen extends ConsumerWidget {
     // Get leaderboard and user data from providers
     final leaderboardAsync = ref.watch(leaderboardProvider);
     final userState = ref.watch(userControllerProvider);
-    final user = userState.value;
+    final user = userState.when(
+      data: (user) => user,
+      loading: () => null,
+      error: (_, __) => null,
+    );
 
     // Determine the player's entry for the highlight bar at the bottom
     final LeaderboardEntryUI playerEntryUI;

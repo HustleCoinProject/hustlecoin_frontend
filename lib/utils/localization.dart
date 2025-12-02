@@ -497,7 +497,12 @@ class _Translations {
 
 // Localization provider that gets the user's language
 final localizationProvider = Provider<String>((ref) {
-  final user = ref.watch(userControllerProvider).value;
+  final userState = ref.watch(userControllerProvider);
+  final user = userState.when(
+    data: (user) => user,
+    loading: () => null,
+    error: (_, __) => null,
+  );
   return user?.language.toLowerCase() ?? 'en';
 });
 

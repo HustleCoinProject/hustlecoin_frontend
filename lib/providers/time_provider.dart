@@ -26,10 +26,18 @@ class ServerTimeController extends StateNotifier<AsyncValue<Duration>> {
     super.dispose();
   }
 
-  Duration get timeOffset => state.value ?? Duration.zero;
+  Duration get timeOffset => state.when(
+    data: (offset) => offset,
+    loading: () => Duration.zero,
+    error: (_, __) => Duration.zero,
+  );
 
   DateTime get currentServerTime {
-    final offset = state.value ?? Duration.zero;
+    final offset = state.when(
+      data: (offset) => offset,
+      loading: () => Duration.zero,
+      error: (_, __) => Duration.zero,
+    );
     return DateTime.now().add(offset);
   }
 
@@ -49,10 +57,16 @@ class ServerTimeController extends StateNotifier<AsyncValue<Duration>> {
       );
     } catch (e, st) {
       debugPrint("Failed to sync with server time: $e");
-      if (state.value == null) {
+      final hasExistingValue = state.when(
+        data: (_) => true,
+        loading: () => false,
+        error: (_, __) => false,
+      );
+      if (!hasExistingValue) {
         state = AsyncValue.data(Duration.zero);
+      } else {
+        state = AsyncValue.error(e, st);
       }
-      state = AsyncValue.error(e, st);
     }
   }
 

@@ -21,7 +21,11 @@ class InventoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userState = ref.watch(userControllerProvider);
-    final user = userState.value;
+    final user = userState.when(
+      data: (user) => user,
+      loading: () => null,
+      error: (_, __) => null,
+    );
     final inventoryAsync = ref.watch(inventoryProvider);
 
     return Scaffold(

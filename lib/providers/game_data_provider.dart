@@ -12,13 +12,23 @@ final allHustlesProvider = FutureProvider<Map<String, Map<String, String>>>((
 });
 
 final allTasksProvider = FutureProvider<List<Task>>((ref) async {
-  final user = ref.watch(userControllerProvider);
-  if (user.value == null) return [];
+  final userState = ref.watch(userControllerProvider);
+  final user = userState.when(
+    data: (user) => user,
+    loading: () => null,
+    error: (_, __) => null,
+  );
+  if (user == null) return [];
   return ref.read(apiRepositoryProvider).getAllTasks();
 });
 
 final shopItemsProvider = FutureProvider<List<ShopItem>>((ref) async {
-  final user = ref.watch(userControllerProvider);
-  if (user.value == null) return [];
+  final userState = ref.watch(userControllerProvider);
+  final user = userState.when(
+    data: (user) => user,
+    loading: () => null,
+    error: (_, __) => null,
+  );
+  if (user == null) return [];
   return ref.read(apiRepositoryProvider).getShopItems();
 });

@@ -20,11 +20,12 @@ import '../models/payout_info.dart';
 import '../models/payout_request.dart';
 import '../models/task_completion_response.dart';
 import '../models/land_purchase_response.dart';
+import '../models/tapping_status.dart';
 
 // This class handles all communication with your backend API.
 
 class ApiRepository {
-  final String _baseUrl = "https://hustlecoin-backend.fly.dev"; // "http://local-ip:8000";
+  final String _baseUrl = "https://hustlecoin-backend.fly.dev"; // "http://10.247.33.41:8000";
   String? _accessToken;
   String? _refreshToken;
 
@@ -477,6 +478,21 @@ class ApiRepository {
   }
 
   // --- Tapping System ---
+  Future<TappingStatus> getTappingStatus() async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(
+        Uri.parse('$_baseUrl/api/tapping/status'),
+        headers: _headers,
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      return TappingStatus.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to fetch tapping status: ${response.body}');
+    }
+  }
+
   Future<TapResponse> submitTaps(int tapCount) async {
     final response = await _makeAuthenticatedRequest(
       () => http.post(

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/foundational_providers.dart';
 import '../providers/user_provider.dart';
+import '../providers/tapping_status_provider.dart';
 
 class TappingService {
   final Ref _ref;
@@ -13,6 +14,13 @@ class TappingService {
 
   void addTap() {
     if (_isSubmitting) return;
+
+    // Check if we can tap based on current tapping status
+    final tappingStatusNotifier = _ref.read(tappingStatusProvider.notifier);
+    if (tappingStatusNotifier.hasReachedDailyLimit) {
+      print('Cannot tap: Daily limit reached');
+      return;
+    }
 
     _pendingTaps++;
 
@@ -34,7 +42,10 @@ class TappingService {
 
     try {
       final apiRepository = _ref.read(apiRepositoryProvider);
-      await apiRepository.submitTaps(tapsToSubmit);
+      final tapResponse = await apiRepository.submitTaps(tapsToSubmit);
+
+      // Update tapping status based on server response
+      _ref.read(tappingStatusProvider.notifier).updateFromTapResponse(tapResponse);
 
       // Refresh user data to get the corrected balance from server
       _ref.invalidate(userControllerProvider);
@@ -42,6 +53,9 @@ class TappingService {
       // Add the taps back to pending if submission failed
       _pendingTaps += tapsToSubmit;
       print('Failed to submit taps: $e');
+      
+      // Refresh tapping status on error to get current state from server
+      _ref.read(tappingStatusProvider.notifier).refreshStatus();
     } finally {
       _isSubmitting = false;
     }

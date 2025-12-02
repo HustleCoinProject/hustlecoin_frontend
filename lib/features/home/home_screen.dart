@@ -13,6 +13,7 @@ import 'package:hustlecoin/features/quiz/quiz_screen.dart';
 import 'package:hustlecoin/providers/time_provider.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
 import 'package:hustlecoin/providers/tapping_provider.dart';
+import 'package:hustlecoin/providers/tapping_status_provider.dart';
 import 'package:hustlecoin/services/admob_service.dart';
 import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
@@ -54,7 +55,12 @@ final taskStateProvider = Provider.family<TaskState, String>((ref, taskId) {
   ref.watch(serverTimeWatcherProvider);
 
   // Check if the task is on cooldown
-  final user = ref.watch(userControllerProvider).value;
+  final userState = ref.watch(userControllerProvider);
+  final user = userState.when(
+    data: (user) => user,
+    loading: () => null,
+    error: (_, __) => null,
+  );
   if (user == null) return TaskState.disabled;
 
   // Get the server time controller
@@ -99,7 +105,12 @@ class TaskController {
   }
 
   Duration? get remainingCooldown {
-    final user = ref.read(userControllerProvider).value;
+    final userState = ref.read(userControllerProvider);
+    final user = userState.when(
+      data: (user) => user,
+      loading: () => null,
+      error: (_, __) => null,
+    );
     if (user == null || !user.taskCooldowns.containsKey(taskId)) return null;
 
     final cooldownExpiry = user.taskCooldowns[taskId]!;
@@ -244,15 +255,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final userState = ref.watch(userControllerProvider);
-    final user = userState.value;
-
-    if (userState.isLoading || user == null) {
-      return const Scaffold(
+    
+    return userState.when(
+      data: (user) {
+        if (user == null) {
+          return const Scaffold(
+            backgroundColor: AppColors.angolaBlack,
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return _buildHomeScreen(context, user);
+      },
+      loading: () => const Scaffold(
         backgroundColor: AppColors.angolaBlack,
         body: Center(child: CircularProgressIndicator()),
-      );
-    }
+      ),
+      error: (error, stack) => Scaffold(
+        backgroundColor: AppColors.angolaBlack,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              Text('Error: $error', style: const TextStyle(color: Colors.white)),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.refresh(userControllerProvider),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
+  Widget _buildHomeScreen(BuildContext context, User user) {
+    if (true) {
     return Scaffold(
       body: ScreenBackground(
         imagePath:
@@ -287,6 +327,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onGetPaidTapped: _onGetPaidTapped,
       ),
     );
+  }
   }
 
   Widget _buildDailyRewardButton() {
@@ -611,65 +652,153 @@ class _MainTapButtonState extends ConsumerState<_MainTapButton> {
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(userControllerProvider).value;
-    final hasReachedDailyLimit = (user?.dailyTapEarnings ?? 0) >= 200;
-
-    return PressableScaleWidget(
-      onTap: hasReachedDailyLimit
-          ? null
-          : () {
-              // Check rate limit before allowing tap (1 tap per 250ms max)
-              if (!_isRateLimited) {
-                // Give immediate visual and audio feedback
-                SoundService().playEarnCoins();
-                // Update last tap time
-                _lastTapTime = DateTime.now();
-
-                // Add tap to the tapping system
-                ref.read(tappingControllerProvider).addTap();
+    final tappingStatusAsync = ref.watch(tappingStatusProvider);
+    final tappingStatusNotifier = ref.read(tappingStatusProvider.notifier);
+    
+    return tappingStatusAsync.when(
+      data: (tappingStatus) {
+        final hasReachedDailyLimit = tappingStatusNotifier.hasReachedDailyLimit;
+        
+        String displayText = ref.t(LocalizationKeys.tap);
+        if (hasReachedDailyLimit) {
+          if (tappingStatus.nextResetAt != null) {
+            // Use server time for accurate countdown
+            final serverTime = ref.read(serverTimeProvider.notifier).currentServerTime;
+            final timeUntilReset = tappingStatus.nextResetAt!.difference(serverTime);
+            
+            if (timeUntilReset.isNegative) {
+              // Reset time has passed, refresh status
+              Future.microtask(() => tappingStatusNotifier.refreshStatus());
+              displayText = ref.t(LocalizationKeys.tap);
+            } else {
+              // Show time until reset
+              final hours = timeUntilReset.inHours;
+              final minutes = timeUntilReset.inMinutes % 60;
+              if (hours > 0) {
+                displayText = 'Resets in ${hours}h ${minutes}m';
+              } else {
+                displayText = 'Resets in ${minutes}m';
               }
-            },
-      child: GlassContainer(
+            }
+          } else {
+            displayText = 'Daily limit reached';
+          }
+        }
+
+        return PressableScaleWidget(
+          onTap: hasReachedDailyLimit
+              ? null
+              : () {
+                  // Check rate limit before allowing tap (1 tap per 250ms max)
+                  if (!_isRateLimited) {
+                    // Give immediate visual and audio feedback
+                    SoundService().playEarnCoins();
+                    // Update last tap time
+                    _lastTapTime = DateTime.now();
+
+                    // Add tap to the tapping system
+                    ref.read(tappingControllerProvider).addTap();
+                  }
+                },
+          child: GlassContainer(
+            borderRadius: 64.r,
+            child: SizedBox(
+              width: 160.s,
+              height: 160.s,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FaIcon(
+                    FontAwesomeIcons.coins,
+                    size: 50.s,
+                    color: hasReachedDailyLimit
+                        ? AppColors.textGrey.withValues(alpha: 0.5)
+                        : AppColors.angolaYellow,
+                    shadows: hasReachedDailyLimit
+                        ? const []
+                        : [
+                            const Shadow(
+                              color: AppColors.glowYellow,
+                              blurRadius: 15,
+                            ),
+                          ],
+                  ),
+                  SizedBox(height: 10.s),
+                  Text(
+                    displayText,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: hasReachedDailyLimit ? 12.f : 18.f,
+                      letterSpacing: 1,
+                      color: hasReachedDailyLimit
+                          ? AppColors.textGrey.withValues(alpha: 0.5)
+                          : AppColors.textLight,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      loading: () => GlassContainer(
         borderRadius: 64.r,
         child: SizedBox(
           width: 160.s,
           height: 160.s,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FaIcon(
-                FontAwesomeIcons.coins,
-                size: 50.s,
-                color: hasReachedDailyLimit
-                    ? AppColors.textGrey.withValues(alpha: 0.5)
-                    : AppColors.angolaYellow,
-                shadows: hasReachedDailyLimit
-                    ? const []
-                    : [
-                        const Shadow(
-                          color: AppColors.glowYellow,
-                          blurRadius: 15,
-                        ),
-                      ],
-              ),
-              SizedBox(height: 10.s),
-              Text(
-                hasReachedDailyLimit
-                    ? 'Daily limit reached'
-                    : ref.t(LocalizationKeys.tap),
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: hasReachedDailyLimit ? 14.f : 18.f,
-                  letterSpacing: 1,
-                  color: hasReachedDailyLimit
-                      ? AppColors.textGrey.withValues(alpha: 0.5)
-                      : AppColors.textLight,
-                ),
-              ),
-            ],
+          child: const Center(
+            child: CircularProgressIndicator(color: AppColors.angolaYellow),
           ),
         ),
       ),
+      error: (error, stack) {
+        // On error, allow tapping but refresh status
+        Future.microtask(() => tappingStatusNotifier.refreshStatus());
+        
+        return PressableScaleWidget(
+          onTap: () {
+            if (!_isRateLimited) {
+              SoundService().playEarnCoins();
+              _lastTapTime = DateTime.now();
+              ref.read(tappingControllerProvider).addTap();
+            }
+          },
+          child: GlassContainer(
+            borderRadius: 64.r,
+            child: SizedBox(
+              width: 160.s,
+              height: 160.s,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FaIcon(
+                    FontAwesomeIcons.coins,
+                    size: 50.s,
+                    color: AppColors.angolaYellow,
+                    shadows: const [
+                      Shadow(
+                        color: AppColors.glowYellow,
+                        blurRadius: 15,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10.s),
+                  Text(
+                    ref.t(LocalizationKeys.tap),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18.f,
+                      letterSpacing: 1,
+                      color: AppColors.textLight,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

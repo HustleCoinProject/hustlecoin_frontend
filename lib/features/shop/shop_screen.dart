@@ -35,7 +35,11 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   Widget build(BuildContext context) {
     // Get the user data to display the HC balance
     final userState = ref.watch(userControllerProvider);
-    final user = userState.value;
+    final user = userState.when(
+      data: (user) => user,
+      loading: () => null,
+      error: (_, __) => null,
+    );
 
     // Get the shop items from the provider
     final shopItemsAsync = ref.watch(shopItemsProvider);
