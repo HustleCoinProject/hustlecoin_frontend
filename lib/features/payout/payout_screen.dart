@@ -498,14 +498,14 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16.r),
             border: isSelected
-                ? Border.all(color: AppColors.angolaYellow, width: 2)
+                ? Border.all(color: AppColors.angolaYellow, width: 2.s)
                 : null,
             boxShadow: isSelected
                 ? [
                     BoxShadow(
                       color: AppColors.glowYellow.withValues(alpha: 0.3),
-                      blurRadius: 15,
-                      spreadRadius: -5,
+                      blurRadius: 15.s,
+                      spreadRadius: -5.s,
                     ),
                   ]
                 : null,
@@ -1077,8 +1077,8 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
                       ? [
                           BoxShadow(
                             color: AppColors.glowYellow.withValues(alpha: 0.5),
-                            blurRadius: 15,
-                            spreadRadius: -2,
+                            blurRadius: 15.s,
+                            spreadRadius: -2.s,
                           ),
                         ]
                       : null,
@@ -1089,7 +1089,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
                           height: 20.s,
                           width: 20.s,
                           child: CircularProgressIndicator(
-                            strokeWidth: 2,
+                            strokeWidth: 2.s,
                             valueColor: AlwaysStoppedAnimation<Color>(AppColors.textLight),
                           ),
                         ),

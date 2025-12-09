@@ -161,6 +161,38 @@ class LocalizationKeys {
   static const String ibanRequired = 'iban_required';
   static const String amountRequired = 'amount_required';
   static const String enterValidAmount = 'enter_valid_amount';
+
+  // Safe Lock
+  static const String safeLock = 'safe_lock';
+  static const String safeLockSavings = 'safe_lock_savings';
+  static const String lockYourHcForRewards = 'lock_your_hc_for_rewards';
+  static const String minimumRewardGuaranteed = 'minimum_reward_guaranteed';
+  static const String yourBalance = 'your_balance';
+  static const String lockedAmount = 'locked_amount';
+  static const String locked = 'locked';
+  static const String timeRemaining = 'time_remaining';
+  static const String claimRewards = 'claim_rewards';
+  static const String depositAmount = 'deposit_amount';
+  static const String enterHcAmount = 'enter_hc_amount';
+  static const String depositToSafeLock = 'deposit_to_safe_lock';
+  static const String addMoreTimerResets = 'add_more_timer_resets';
+  static const String depositingAgainResetsTimer =
+      'depositing_again_resets_timer';
+  static const String howItWorks = 'how_it_works';
+  static const String safeLockInfo1 = 'safe_lock_info_1';
+  static const String safeLockInfo2 = 'safe_lock_info_2';
+  static const String safeLockInfo3 = 'safe_lock_info_3';
+  static const String safeLockInfo4 = 'safe_lock_info_4';
+  static const String safeLockInfo5 = 'safe_lock_info_5';
+  static const String success = 'success';
+  static const String congratulationsExclaim = 'congratulations_exclaim';
+  static const String returned = 'returned';
+  static const String reward = 'reward';
+  static const String youReceivedAnItem = 'you_received_an_item';
+  static const String newBalance = 'new_balance';
+  static const String awesome = 'awesome';
+  static const String pleaseEnterValidAmount = 'please_enter_valid_amount';
+  static const String insufficientBalance = 'insufficient_balance';
 }
 
 // Translation maps
@@ -300,7 +332,8 @@ class _Translations {
       // Access Control
       LocalizationKeys.unlockFeature: 'Unlock Feature',
       LocalizationKeys.bronzeKey: 'Bronze Key',
-      LocalizationKeys.getBronzeKeyMessage: 'Get your Bronze Key from the shop to unlock this exciting feature!',
+      LocalizationKeys.getBronzeKeyMessage:
+          'Get your Bronze Key from the shop to unlock this exciting feature!',
       LocalizationKeys.keysExpireMessage: 'Keys give you 3 hours of access.',
       LocalizationKeys.getFromShop: 'get from shop',
       LocalizationKeys.unlockExcitingFeature: 'unlock this exciting feature',
@@ -325,6 +358,40 @@ class _Translations {
       LocalizationKeys.ibanRequired: 'IBAN is required',
       LocalizationKeys.amountRequired: 'Amount is required',
       LocalizationKeys.enterValidAmount: 'Enter a valid amount',
+
+      // Safe Lock
+      LocalizationKeys.safeLock: 'Safe Lock',
+      LocalizationKeys.safeLockSavings: 'Safe Lock Savings',
+      LocalizationKeys.lockYourHcForRewards:
+          'Lock your HC for 7 days and earn rewards!',
+      LocalizationKeys.minimumRewardGuaranteed:
+          'Minimum reward: 30 HC + possible item bonus',
+      LocalizationKeys.yourBalance: 'Your Balance:',
+      LocalizationKeys.lockedAmount: 'Locked Amount:',
+      LocalizationKeys.locked: 'Locked',
+      LocalizationKeys.timeRemaining: 'Time Remaining:',
+      LocalizationKeys.claimRewards: 'Claim Rewards',
+      LocalizationKeys.depositAmount: 'Deposit Amount',
+      LocalizationKeys.enterHcAmount: 'Enter HC amount',
+      LocalizationKeys.depositToSafeLock: 'Deposit to Safe Lock',
+      LocalizationKeys.addMoreTimerResets: 'Add More (Timer Resets)',
+      LocalizationKeys.depositingAgainResetsTimer:
+          '⚠️ Depositing again will reset the 7-day timer',
+      LocalizationKeys.howItWorks: 'How It Works',
+      LocalizationKeys.safeLockInfo1: 'Deposit HC and lock it for 7 days',
+      LocalizationKeys.safeLockInfo2: 'Timer resets if you deposit again',
+      LocalizationKeys.safeLockInfo3: 'Earn rewards based on your activity',
+      LocalizationKeys.safeLockInfo4: 'Active users may receive bonus items',
+      LocalizationKeys.safeLockInfo5: 'Minimum 30 HC reward guaranteed',
+      LocalizationKeys.success: 'Success!',
+      LocalizationKeys.congratulationsExclaim: '🎉 Congratulations! 🎉',
+      LocalizationKeys.returned: 'Returned:',
+      LocalizationKeys.reward: 'Reward:',
+      LocalizationKeys.youReceivedAnItem: 'You received an item!',
+      LocalizationKeys.newBalance: 'New Balance:',
+      LocalizationKeys.awesome: 'Awesome!',
+      LocalizationKeys.pleaseEnterValidAmount: 'Please enter a valid amount',
+      LocalizationKeys.insufficientBalance: 'Insufficient balance',
     },
 
     'pt': {
@@ -465,10 +532,12 @@ class _Translations {
       // Access Control
       LocalizationKeys.unlockFeature: 'Desbloquear Recurso',
       LocalizationKeys.bronzeKey: 'Chave de Bronze',
-      LocalizationKeys.getBronzeKeyMessage: 'Obtenha sua Chave de Bronze na loja para desbloquear este recurso incrível!',
+      LocalizationKeys.getBronzeKeyMessage:
+          'Obtenha sua Chave de Bronze na loja para desbloquear este recurso incrível!',
       LocalizationKeys.keysExpireMessage: 'As chaves dão 3 horas de acesso.',
       LocalizationKeys.getFromShop: 'obter na loja',
-      LocalizationKeys.unlockExcitingFeature: 'desbloquear este recurso incrível',
+      LocalizationKeys.unlockExcitingFeature:
+          'desbloquear este recurso incrível',
 
       // Payout
       LocalizationKeys.getPaid: 'Receber Pagamento',
@@ -491,6 +560,45 @@ class _Translations {
       LocalizationKeys.ibanRequired: 'IBAN é obrigatório',
       LocalizationKeys.amountRequired: 'Valor é obrigatório',
       LocalizationKeys.enterValidAmount: 'Digite um valor válido',
+
+      // Safe Lock
+      LocalizationKeys.safeLock: 'Cofre Seguro',
+      LocalizationKeys.safeLockSavings: 'Poupança de Cofre Seguro',
+      LocalizationKeys.lockYourHcForRewards:
+          'Bloqueie seu HC por 7 dias e ganhe recompensas!',
+      LocalizationKeys.minimumRewardGuaranteed:
+          'Recompensa mínima: 30 HC + possível bônus de item',
+      LocalizationKeys.yourBalance: 'Seu Saldo:',
+      LocalizationKeys.lockedAmount: 'Valor Bloqueado:',
+      LocalizationKeys.locked: 'Bloqueado',
+      LocalizationKeys.timeRemaining: 'Tempo Restante:',
+      LocalizationKeys.claimRewards: 'Reivindicar Recompensas',
+      LocalizationKeys.depositAmount: 'Valor do Depósito',
+      LocalizationKeys.enterHcAmount: 'Digite a quantidade de HC',
+      LocalizationKeys.depositToSafeLock: 'Depositar no Cofre Seguro',
+      LocalizationKeys.addMoreTimerResets:
+          'Adicionar Mais (Temporizador Reinicia)',
+      LocalizationKeys.depositingAgainResetsTimer:
+          '⚠️ Depositar novamente reiniciará o temporizador de 7 dias',
+      LocalizationKeys.howItWorks: 'Como Funciona',
+      LocalizationKeys.safeLockInfo1: 'Deposite HC e bloqueie por 7 dias',
+      LocalizationKeys.safeLockInfo2:
+          'O temporizador reinicia se você depositar novamente',
+      LocalizationKeys.safeLockInfo3:
+          'Ganhe recompensas com base na sua atividade',
+      LocalizationKeys.safeLockInfo4:
+          'Usuários ativos podem receber itens bônus',
+      LocalizationKeys.safeLockInfo5: 'Recompensa mínima de 30 HC garantida',
+      LocalizationKeys.success: 'Sucesso!',
+      LocalizationKeys.congratulationsExclaim: '🎉 Parabéns! 🎉',
+      LocalizationKeys.returned: 'Devolvido:',
+      LocalizationKeys.reward: 'Recompensa:',
+      LocalizationKeys.youReceivedAnItem: 'Você recebeu um item!',
+      LocalizationKeys.newBalance: 'Novo Saldo:',
+      LocalizationKeys.awesome: 'Incrível!',
+      LocalizationKeys.pleaseEnterValidAmount:
+          'Por favor, insira um valor válido',
+      LocalizationKeys.insufficientBalance: 'Saldo insuficiente',
     },
   };
 }

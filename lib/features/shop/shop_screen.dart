@@ -55,21 +55,21 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 ScreenHeader(
                   title: _getShopTitle(ref),
                   trailingWidget: GlassContainer(
-                    borderRadius: 12,
-                    padding: const EdgeInsets.all(8),
+                    borderRadius: 12.r,
+                    padding: ResponsiveUtils.p(8),
                     child: Row(
                       children: [
                         Container(
-                          width: 38,
-                          height: 38,
-                          margin: const EdgeInsets.only(right: 8),
+                          width: 38.s,
+                          height: 38.s,
+                          margin: EdgeInsets.only(right: 8.s),
                           decoration: BoxDecoration(
                             color: AppColors.angolaRed,
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(10.r),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             FontAwesomeIcons.star,
-                            size: 18,
+                            size: 18.s,
                             color: AppColors.textLight,
                           ),
                         ),
@@ -78,15 +78,15 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                           children: [
                             Text(
                               '${user?.hcBalance ?? 0} HC',
-                              style: const TextStyle(
-                                fontSize: 14,
+                              style: TextStyle(
+                                fontSize: 14.f,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                             Text(
                               '≈ Kz ${user?.kzBalance ?? 0}',
-                              style: const TextStyle(
-                                fontSize: 11,
+                              style: TextStyle(
+                                fontSize: 11.f,
                                 color: AppColors.textGrey,
                               ),
                             ),
@@ -97,8 +97,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                   ),
                 ),
                 // Banner ad
-                const BannerAdWidget(
-                  margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                BannerAdWidget(
+                  margin: ResponsiveUtils.pSymmetric(horizontal: 15, vertical: 5),
                 ),
                 // Show loading indicator or shop items
                 shopItemsAsync.when(
@@ -163,18 +163,18 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   ) {
     return Expanded(
       child: items.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
                 'No items available',
-                style: TextStyle(color: AppColors.textGrey, fontSize: 16),
+                style: TextStyle(color: AppColors.textGrey, fontSize: 16.f),
               ),
             )
           : GridView.builder(
-              padding: const EdgeInsets.all(15.0),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              padding: ResponsiveUtils.p(15.0),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                crossAxisSpacing: 15,
-                mainAxisSpacing: 15,
+                crossAxisSpacing: 15.s,
+                mainAxisSpacing: 15.s,
                 childAspectRatio: 0.75, // Adjust this ratio to fit content
               ),
               itemCount: items.length,
@@ -220,49 +220,49 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final bool canAfford = userBalance >= item.price;
 
     return GlassContainer(
-      borderRadius: 16,
-      padding: const EdgeInsets.all(15),
+      borderRadius: 16.r,
+      padding: ResponsiveUtils.p(15),
       child: Column(
         children: [
           Container(
-            width: 80,
-            height: 80,
-            margin: const EdgeInsets.only(bottom: 10),
+            width: 80.s,
+            height: 80.s,
+            margin: EdgeInsets.only(bottom: 10.s),
             decoration: BoxDecoration(
               color: const Color.fromRGBO(16, 16, 16, 0.5),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
               _getIconForItemType(item.itemType, item.itemId),
-              size: 40,
+              size: 40.s,
               color: AppColors.angolaYellow,
             ),
           ),
           Text(
             item.name,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              fontSize: 16.f,
               fontWeight: FontWeight.w600,
               color: AppColors.textLight,
             ),
           ),
-          const SizedBox(height: 5),
+          SizedBox(height: 5.s),
           Expanded(
             child: Text(
               item.description,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+              style: TextStyle(fontSize: 12.f, color: AppColors.textGrey),
             ),
           ),
-          const SizedBox(height: 15),
+          SizedBox(height: 15.s),
 
           SizedBox(
             width: double.infinity,
             child: PrimaryActionButton(
               text: '${item.price} HC',
               isLoading: isPurchasing,
-              padding: const EdgeInsets.symmetric(
+              padding: ResponsiveUtils.pSymmetric(
                 vertical: 12,
               ), // Override padding to match original
               onTap: (isPurchasing || !canAfford)

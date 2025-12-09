@@ -45,8 +45,8 @@ class InventoryScreen extends ConsumerWidget {
               ),
 
               // Banner ad
-              const BannerAdWidget(
-                margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+              BannerAdWidget(
+                margin: ResponsiveUtils.pSymmetric(horizontal: 15, vertical: 5),
               ),
 
               // Inventory content

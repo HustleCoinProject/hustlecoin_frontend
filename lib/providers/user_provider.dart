@@ -196,4 +196,9 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
       state = AsyncValue.data(updatedUser);
     }
   }
+
+  /// Manually refresh user data from the server
+  Future<void> refresh() async {
+    await _fetchUser();
+  }
 }

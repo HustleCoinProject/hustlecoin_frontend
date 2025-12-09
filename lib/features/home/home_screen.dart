@@ -9,6 +9,7 @@ import 'package:hustlecoin/features/leaderboard/leaderboard_screen.dart';
 import 'package:hustlecoin/features/payout/payout_screen.dart';
 import 'package:hustlecoin/features/profile/edit_profile.dart';
 import 'package:hustlecoin/features/quiz/quiz_screen.dart';
+import 'package:hustlecoin/features/safe_lock/safe_lock_screen.dart';
 
 import 'package:hustlecoin/providers/time_provider.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
@@ -255,7 +256,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final userState = ref.watch(userControllerProvider);
-    
+
     return userState.when(
       data: (user) {
         if (user == null) {
@@ -278,7 +279,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               const Icon(Icons.error, color: Colors.red, size: 48),
               const SizedBox(height: 16),
-              Text('Error: $error', style: const TextStyle(color: Colors.white)),
+              Text(
+                'Error: $error',
+                style: const TextStyle(color: Colors.white),
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.refresh(userControllerProvider),
@@ -293,41 +297,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildHomeScreen(BuildContext context, User user) {
     if (true) {
-    return Scaffold(
-      body: ScreenBackground(
-        imagePath:
-            'assets/images/${HustleUtils.getCurrentHustleKey(user.currentHustle)}.jpg',
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Banner ad at the top
-              BannerAdWidget(
-                margin: ResponsiveUtils.pSymmetric(horizontal: 15, vertical: 5),
-              ),
-              TopBar(user: user, onToggleLanguage: _toggleLanguage),
-              Text(
-                ref.t(LocalizationKeys.hustleCoin),
-                style: TextStyle(
-                  color: AppColors.textGrey,
-                  fontSize: 14.f,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 3,
-                  shadows: [const Shadow(blurRadius: 4, color: Colors.black87)],
+      return Scaffold(
+        body: ScreenBackground(
+          imagePath:
+              'assets/images/${HustleUtils.getCurrentHustleKey(user.currentHustle)}.jpg',
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Banner ad at the top
+                BannerAdWidget(
+                  margin: ResponsiveUtils.pSymmetric(
+                    horizontal: 15,
+                    vertical: 5,
+                  ),
                 ),
-              ),
-              Expanded(child: _buildGameArea(user)),
-              const UpgradesSection(),
-            ],
+                TopBar(user: user, onToggleLanguage: _toggleLanguage),
+                Text(
+                  ref.t(LocalizationKeys.hustleCoin),
+                  style: TextStyle(
+                    color: AppColors.textGrey,
+                    fontSize: 14.f,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 3,
+                    shadows: [
+                      const Shadow(blurRadius: 4, color: Colors.black87),
+                    ],
+                  ),
+                ),
+                Expanded(child: _buildGameArea(user)),
+                const UpgradesSection(),
+              ],
+            ),
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavBar(
-        activeIndex: _activeNavIndex,
-        onNavItemTapped: _onNavItemTapped,
-        onGetPaidTapped: _onGetPaidTapped,
-      ),
-    );
-  }
+        bottomNavigationBar: BottomNavBar(
+          activeIndex: _activeNavIndex,
+          onNavItemTapped: _onNavItemTapped,
+          onGetPaidTapped: _onGetPaidTapped,
+        ),
+      );
+    }
   }
 
   Widget _buildDailyRewardButton() {
@@ -472,8 +481,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           Positioned(
             left: 0,
-            top: 0,
-            bottom: 0,
+            top: 140.h,
+            bottom: 150.h,
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -535,11 +544,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       // which we can then use as the payload.
                       // Only complete task if user submitted an answer (globalQuizResult is non-null)
                       if (globalQuizResult != null) {
-                        Map<String, dynamic> payload = globalQuizResult!.toJson();
+                        Map<String, dynamic> payload = globalQuizResult!
+                            .toJson();
 
                         // Complete the task with the quiz result payload
                         await controller.completeTask(payload: payload);
-                        
+
                         // Clear the global result after sending to server
                         globalQuizResult = null;
                       }
@@ -551,8 +561,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           Positioned(
             right: 0,
-            top: 0,
-            bottom: 0,
+            top: 140.h,
+            bottom: 150.h,
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -573,6 +583,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                   SizedBox(height: 15.s),
+                  PressableScaleWidget(
+                    onTap: () {
+                      AdHelper.showInterstitialOnNavigation();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const SafeLockScreen(),
+                        ),
+                      );
+                    },
+                    child: _actionButton(
+                      FontAwesomeIcons.lock,
+                      ref.t(LocalizationKeys.safeLock),
+                    ),
+                  ),
+                  SizedBox(height: 15.s),
                   _actionButton(
                     FontAwesomeIcons.calendarAlt,
                     ref.t(LocalizationKeys.events),
@@ -581,8 +606,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ),
-          _buildMainTapButton(),
-          Positioned(bottom: 100.s, child: _buildDailyRewardButton()),
+          // NOTE: Main "Tap"/"Tocar" button temporarily disabled for Home screen
+          // Uncomment the line below to re-enable the central tap button functionality
+          // _buildMainTapButton(),
+          Positioned(bottom: 100.h, child: _buildDailyRewardButton()),
         ],
       ),
     );
@@ -610,6 +637,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             SizedBox(height: 4.s),
             Text(
               label.toUpperCase(),
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 9.f,
                 fontWeight: FontWeight.w600,
@@ -622,13 +650,66 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
 
     if (onTap != null) {
-      return PressableScaleWidget(
-        onTap: onTap,
-        child: buttonContent,
-      );
+      return PressableScaleWidget(onTap: onTap, child: buttonContent);
     }
-    
+
     return buttonContent;
+  }
+}
+
+class _AnimatedGlowingHeart extends StatefulWidget {
+  const _AnimatedGlowingHeart();
+
+  @override
+  State<_AnimatedGlowingHeart> createState() => _AnimatedGlowingHeartState();
+}
+
+class _AnimatedGlowingHeartState extends State<_AnimatedGlowingHeart>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _glowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _glowAnimation = Tween<double>(begin: 10.0, end: 25.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _glowAnimation,
+      builder: (context, child) {
+        return FaIcon(
+          FontAwesomeIcons.heart,
+          size: 80.s,
+          color: AppColors.angolaYellow,
+          shadows: [
+            Shadow(
+              color: AppColors.glowYellow,
+              blurRadius: _glowAnimation.value,
+            ),
+            Shadow(
+              color: AppColors.angolaYellow.withValues(alpha: 0.5),
+              blurRadius: _glowAnimation.value * 1.5,
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
@@ -654,18 +735,22 @@ class _MainTapButtonState extends ConsumerState<_MainTapButton> {
   Widget build(BuildContext context) {
     final tappingStatusAsync = ref.watch(tappingStatusProvider);
     final tappingStatusNotifier = ref.read(tappingStatusProvider.notifier);
-    
+
     return tappingStatusAsync.when(
       data: (tappingStatus) {
         final hasReachedDailyLimit = tappingStatusNotifier.hasReachedDailyLimit;
-        
+
         String displayText = ref.t(LocalizationKeys.tap);
         if (hasReachedDailyLimit) {
           if (tappingStatus.nextResetAt != null) {
             // Use server time for accurate countdown
-            final serverTime = ref.read(serverTimeProvider.notifier).currentServerTime;
-            final timeUntilReset = tappingStatus.nextResetAt!.difference(serverTime);
-            
+            final serverTime = ref
+                .read(serverTimeProvider.notifier)
+                .currentServerTime;
+            final timeUntilReset = tappingStatus.nextResetAt!.difference(
+              serverTime,
+            );
+
             if (timeUntilReset.isNegative) {
               // Reset time has passed, refresh status
               Future.microtask(() => tappingStatusNotifier.refreshStatus());
@@ -755,7 +840,7 @@ class _MainTapButtonState extends ConsumerState<_MainTapButton> {
       error: (error, stack) {
         // On error, allow tapping but refresh status
         Future.microtask(() => tappingStatusNotifier.refreshStatus());
-        
+
         return PressableScaleWidget(
           onTap: () {
             if (!_isRateLimited) {
@@ -777,10 +862,7 @@ class _MainTapButtonState extends ConsumerState<_MainTapButton> {
                     size: 50.s,
                     color: AppColors.angolaYellow,
                     shadows: const [
-                      Shadow(
-                        color: AppColors.glowYellow,
-                        blurRadius: 15,
-                      ),
+                      Shadow(color: AppColors.glowYellow, blurRadius: 15),
                     ],
                   ),
                   SizedBox(height: 10.s),

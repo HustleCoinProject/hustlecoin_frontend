@@ -21,11 +21,16 @@ import '../models/payout_request.dart';
 import '../models/task_completion_response.dart';
 import '../models/land_purchase_response.dart';
 import '../models/tapping_status.dart';
+import '../models/safe_lock_status.dart';
+import '../models/safe_lock_deposit_response.dart';
+import '../models/safe_lock_claim_response.dart';
+import '../models/safe_lock_global_stats.dart';
 
 // This class handles all communication with your backend API.
 
 class ApiRepository {
-  final String _baseUrl = "https://hustlecoin-backend.fly.dev"; // "http://10.247.33.41:8000";
+  final String _baseUrl =
+      "http://10.247.33.41:8000"; // "https://hustlecoin-backend.fly.dev";
   String? _accessToken;
   String? _refreshToken;
 
@@ -622,6 +627,71 @@ class ApiRepository {
       return json.decode(response.body);
     } else {
       throw Exception('Failed to fetch payout system status: ${response.body}');
+    }
+  }
+
+  // ========== Safe Lock API Methods ==========
+
+  /// Get the current safe lock status for the authenticated user
+  Future<SafeLockStatus> getSafeLockStatus() async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(
+        Uri.parse('$_baseUrl/api/safe-lock/status'),
+        headers: _headers,
+      ),
+    );
+    if (response.statusCode == 200) {
+      return SafeLockStatus.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to fetch safe lock status: ${response.body}');
+    }
+  }
+
+  /// Deposit HC to safe lock
+  Future<SafeLockDepositResponse> depositToSafeLock(int amount) async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/api/safe-lock/deposit'),
+        headers: _headers,
+        body: json.encode({'amount': amount}),
+      ),
+    );
+    if (response.statusCode == 200) {
+      return SafeLockDepositResponse.fromJson(json.decode(response.body));
+    } else {
+      final errorBody = json.decode(response.body);
+      throw Exception(errorBody['detail'] ?? 'Failed to deposit to safe lock');
+    }
+  }
+
+  /// Claim safe lock funds after 7 days have passed
+  Future<SafeLockClaimResponse> claimSafeLock() async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/api/safe-lock/claim'),
+        headers: _headers,
+      ),
+    );
+    if (response.statusCode == 200) {
+      return SafeLockClaimResponse.fromJson(json.decode(response.body));
+    } else {
+      final errorBody = json.decode(response.body);
+      throw Exception(errorBody['detail'] ?? 'Failed to claim safe lock');
+    }
+  }
+
+  /// Get global safe lock statistics (public endpoint)
+  Future<SafeLockGlobalStats> getSafeLockGlobalStats() async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/safe-lock/global-stats'),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 200) {
+      return SafeLockGlobalStats.fromJson(json.decode(response.body));
+    } else {
+      throw Exception(
+        'Failed to fetch safe lock global stats: ${response.body}',
+      );
     }
   }
 }

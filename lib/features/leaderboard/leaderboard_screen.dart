@@ -6,6 +6,7 @@ import 'package:hustlecoin/providers/leaderboard_provider.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'package:hustlecoin/utils/localization.dart';
+import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
 import 'package:hustlecoin/widgets/glass_container.dart';
 import 'package:hustlecoin/widgets/screen_background.dart';
@@ -120,14 +121,14 @@ class LeaderboardScreen extends ConsumerWidget {
           }).toList();
 
           return ListView.builder(
-            padding: const EdgeInsets.symmetric(
+            padding: ResponsiveUtils.pSymmetric(
               horizontal: 15.0,
               vertical: 15.0,
             ),
             itemCount: leaderboardData.length,
             itemBuilder: (context, index) {
               return Padding(
-                padding: const EdgeInsets.only(bottom: 10.0),
+                padding: EdgeInsets.only(bottom: 10.s),
                 child: _buildRankItem(leaderboardData[index]),
               );
             },
@@ -139,17 +140,17 @@ class LeaderboardScreen extends ConsumerWidget {
 
   Widget _buildPlayerHighlight(LeaderboardEntryUI playerEntry) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(15, 0, 15, 15),
+      margin: ResponsiveUtils.pLTRB(15, 0, 15, 15),
       decoration: BoxDecoration(
-        border: const Border(
-          top: BorderSide(color: AppColors.angolaYellow, width: 2),
+        border: Border(
+          top: BorderSide(color: AppColors.angolaYellow, width: 2.s),
         ),
         boxShadow: [
           BoxShadow(
             color: AppColors.glowYellow,
-            blurRadius: 20,
-            spreadRadius: -5,
-            offset: const Offset(0, -5),
+            blurRadius: 20.s,
+            spreadRadius: -5.s,
+            offset: Offset(0, -5.s),
           ),
         ],
       ),
@@ -166,35 +167,35 @@ class LeaderboardScreen extends ConsumerWidget {
       rankColor = AppColors.gold;
       borderColor = AppColors.gold;
       boxShadow = [
-        BoxShadow(color: AppColors.gold, blurRadius: 15, spreadRadius: -3),
+        BoxShadow(color: AppColors.gold, blurRadius: 15.s, spreadRadius: -3.s),
       ];
     } else if (entry.rank == 2) {
       rankColor = AppColors.silver;
       borderColor = AppColors.silver;
       boxShadow = [
-        BoxShadow(color: AppColors.silver, blurRadius: 15, spreadRadius: -3),
+        BoxShadow(color: AppColors.silver, blurRadius: 15.s, spreadRadius: -3.s),
       ];
     } else if (entry.rank == 3) {
       rankColor = AppColors.bronze;
       borderColor = AppColors.bronze;
       boxShadow = [
-        BoxShadow(color: AppColors.bronze, blurRadius: 15, spreadRadius: -3),
+        BoxShadow(color: AppColors.bronze, blurRadius: 15.s, spreadRadius: -3.s),
       ];
     }
 
     return GlassContainer(
-      borderRadius: 12,
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      borderRadius: 12.r,
+      padding: ResponsiveUtils.pSymmetric(horizontal: 15, vertical: 10),
       border: Border.all(
         color: isPlayer ? AppColors.angolaYellow : borderColor,
-        width: 2,
+        width: 2.s,
       ),
       boxShadow: boxShadow,
       child: Row(
         children: [
           // Rank
           SizedBox(
-            width: 40,
+            width: 40.s,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -203,24 +204,24 @@ class LeaderboardScreen extends ConsumerWidget {
                       ? (entry.rank > 0 ? '${entry.rank}' : '---')
                       : '${entry.rank}',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 20.f,
                     fontWeight: FontWeight.w700,
                     color: isPlayer ? AppColors.angolaYellow : rankColor,
                   ),
                 ),
                 if (!isPlayer && entry.rank == 1)
                   Padding(
-                    padding: const EdgeInsets.only(left: 2.0),
+                    padding: EdgeInsets.only(left: 2.s),
                     child: FaIcon(
                       FontAwesomeIcons.crown,
-                      size: 14,
+                      size: 14.s,
                       color: rankColor,
                     ),
                   ),
               ],
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.s),
           // User Info
           Text(
             entry.username,
@@ -234,14 +235,14 @@ class LeaderboardScreen extends ConsumerWidget {
           FaIcon(
             FontAwesomeIcons.trophy,
             color: AppColors.angolaYellow,
-            size: 16,
+            size: 16.s,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.s),
           Text(
             entry.score.toString(),
             style: TextStyle(
               fontWeight: FontWeight.w700,
-              fontSize: 16,
+              fontSize: 16.f,
               color: isPlayer ? AppColors.angolaYellow : null,
             ),
           ),
