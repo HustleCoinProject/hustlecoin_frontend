@@ -11,5 +11,5 @@ final quizQuestionProvider = FutureProvider.autoDispose<QuizQuestion>((
   if (user == null) {
     throw Exception("User must be logged in to fetch a quiz question.");
   }
-  return ref.read(apiRepositoryProvider).fetchQuizQuestion();
+  return ref.read(dataRepositoryProvider).fetchQuizQuestion();
 });

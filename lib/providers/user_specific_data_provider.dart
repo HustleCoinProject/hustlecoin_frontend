@@ -15,7 +15,7 @@ final availableHustlesProvider =
         error: (_, __) => null,
       );
       if (user == null) return <String, String>{};
-      return ref.read(apiRepositoryProvider).getAvailableHustles();
+      return ref.read(dataRepositoryProvider).getAvailableHustles();
     });
 
 final levelStatusProvider = FutureProvider.autoDispose<LevelStatus?>((ref) async {
@@ -26,7 +26,7 @@ final levelStatusProvider = FutureProvider.autoDispose<LevelStatus?>((ref) async
     error: (_, __) => null,
   );
   if (user == null) return null;
-  return ref.read(apiRepositoryProvider).getLevelStatus();
+  return ref.read(dataRepositoryProvider).getLevelStatus();
 });
 
 final inventoryProvider = FutureProvider.autoDispose<List<InventoryItemOut>>((
@@ -52,7 +52,7 @@ final inventoryProvider = FutureProvider.autoDispose<List<InventoryItemOut>>((
   
   try {
     print('DEBUG: inventoryProvider - fetching inventory...');
-    final inventory = await ref.read(apiRepositoryProvider).getInventory();
+    final inventory = await ref.read(dataRepositoryProvider).getInventory();
     print('DEBUG: inventoryProvider - fetched ${inventory.length} items');
     return inventory;
   } catch (e) {

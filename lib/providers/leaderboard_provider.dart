@@ -5,5 +5,5 @@ import 'foundational_providers.dart';
 final leaderboardProvider = FutureProvider.autoDispose<List<LeaderboardEntry>>((
   ref,
 ) async {
-  return ref.read(apiRepositoryProvider).getLeaderboard();
+  return ref.read(dataRepositoryProvider).getLeaderboard();
 });

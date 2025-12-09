@@ -19,6 +19,7 @@ import 'package:hustlecoin/theme/responsive_theme.dart';
 import 'package:hustlecoin/utils/admob_debug_helper.dart';
 
 import 'package:flutter/services.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 // We need to initialize the server time sync after the app starts
 // Create a StatefulWidget that will synchronize with server on initialization
@@ -103,6 +104,11 @@ Future<void> main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
   print('DEBUG: main() - Flutter bindings initialized');
+
+  // Initialize Hive for caching
+  print('DEBUG: main() - Initializing Hive...');
+  await Hive.initFlutter();
+  print('DEBUG: main() - ✅ Hive initialized successfully');
 
   // Initialize Google Mobile Ads SDK
   print('DEBUG: main() - Initializing Google Mobile Ads SDK...');

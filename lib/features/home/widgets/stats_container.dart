@@ -196,10 +196,10 @@ class StatsContainer extends ConsumerWidget {
                                       duration: const Duration(seconds: 2),
                                     ),
                                   );
-                                  final apiRepo = ref.read(
-                                    apiRepositoryProvider,
+                                  final dataRepo = ref.read(
+                                    dataRepositoryProvider,
                                   );
-                                  final result = await apiRepo.levelUpgrade();
+                                  final result = await dataRepo.levelUpgrade();
                                   final int newLevel = result['new_level'];
                                   final dynamic newHustleObj =
                                       result['new_hustle'];

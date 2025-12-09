@@ -2,38 +2,38 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/payout.dart';
 import '../data/models/payout_info.dart';
 import '../data/models/payout_request.dart';
-import '../data/repositories/api_repository.dart';
+import '../data/repositories/data_repository.dart';
 import 'foundational_providers.dart';
 
 // Provider for payout info
 final payoutInfoProvider = FutureProvider<PayoutInfo>((ref) async {
-  final apiRepository = ref.read(apiRepositoryProvider);
-  return apiRepository.getPayoutInfo();
+  final dataRepository = ref.read(dataRepositoryProvider);
+  return dataRepository.getPayoutInfo();
 });
 
 // Provider for payout methods
 final payoutMethodsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final apiRepository = ref.read(apiRepositoryProvider);
-  return apiRepository.getPayoutMethods();
+  final dataRepository = ref.read(dataRepositoryProvider);
+  return dataRepository.getPayoutMethods();
 });
 
 // Provider for payout history
 final payoutHistoryProvider = FutureProvider.family<List<Payout>, PayoutHistoryParams>((ref, params) async {
-  final apiRepository = ref.read(apiRepositoryProvider);
-  return apiRepository.getPayoutHistory(limit: params.limit, offset: params.offset);
+  final dataRepository = ref.read(dataRepositoryProvider);
+  return dataRepository.getPayoutHistory(limit: params.limit, offset: params.offset);
 });
 
 // Provider for system status
 final payoutSystemStatusProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final apiRepository = ref.read(apiRepositoryProvider);
-  return apiRepository.getPayoutSystemStatus();
+  final dataRepository = ref.read(dataRepositoryProvider);
+  return dataRepository.getPayoutSystemStatus();
 });
 
 // StateNotifier for payout operations
 class PayoutNotifier extends StateNotifier<PayoutState> {
-  PayoutNotifier(this._apiRepository) : super(PayoutState.initial());
+  PayoutNotifier(this._dataRepository) : super(PayoutState.initial());
 
-  final ApiRepository _apiRepository;
+  final DataRepository _dataRepository;
 
   Future<void> updatePayoutInfo({
     String? phoneNumber,
@@ -45,7 +45,7 @@ class PayoutNotifier extends StateNotifier<PayoutState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      await _apiRepository.updatePayoutInfo(
+      await _dataRepository.updatePayoutInfo(
         phoneNumber: phoneNumber,
         fullName: fullName,
         nationalId: nationalId,
@@ -62,7 +62,7 @@ class PayoutNotifier extends StateNotifier<PayoutState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final payout = await _apiRepository.requestPayout(payoutRequest);
+      final payout = await _dataRepository.requestPayout(payoutRequest);
       state = state.copyWith(
         isLoading: false,
         lastPayout: payout,
@@ -86,8 +86,8 @@ class PayoutNotifier extends StateNotifier<PayoutState> {
 
 // StateNotifier provider
 final payoutProvider = StateNotifierProvider<PayoutNotifier, PayoutState>((ref) {
-  final apiRepository = ref.read(apiRepositoryProvider);
-  return PayoutNotifier(apiRepository);
+  final dataRepository = ref.read(dataRepositoryProvider);
+  return PayoutNotifier(dataRepository);
 });
 
 // State class for payout operations

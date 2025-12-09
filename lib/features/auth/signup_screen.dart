@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:hustlecoin/data/repositories/api_repository.dart';
+import 'package:hustlecoin/providers/foundational_providers.dart';
 import 'package:hustlecoin/features/auth/login_screen.dart';
 import 'package:hustlecoin/features/home/home_screen.dart';
 import 'package:hustlecoin/providers/auth_provider.dart';
@@ -64,8 +64,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     });
 
     try {
-      final apiRepo = ApiRepository(); // Create instance without auth token
-      final allHustles = await apiRepo.getAllHustles();
+      final dataRepo = ref.read(dataRepositoryProvider); // Use DataRepository from provider
+      final allHustles = await dataRepo.getAllHustles();
 
       // Extract level 1 hustles (now returns Map<String, String>)
       final level1HustleMap = allHustles['1'] ?? <String, String>{};
@@ -158,14 +158,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     // Get the selected hustle key (English name for API)
     final selectedHustleKey = _level1Hustles[_selectedHustleIndex]['key'] ?? '';
 
-    // Create an instance of ApiRepository
-    final apiRepo = ApiRepository();
+    // Get DataRepository from provider
+    final dataRepo = ref.read(dataRepositoryProvider);
 
     // Use Future.delayed to avoid the "Future<void> Function()?" error with onTap
     Future.delayed(Duration.zero, () async {
       try {
         // Register the user using the hustle key
-        await apiRepo.register(
+        await dataRepo.register(
           _emailController.text.trim(),
           _passwordController.text,
           _usernameController.text.trim(),

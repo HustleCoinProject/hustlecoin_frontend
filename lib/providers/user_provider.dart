@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/user.dart';
 import '../data/models/auth_tokens.dart';
-import '../data/repositories/api_repository.dart';
+import '../data/repositories/data_repository.dart';
 import 'auth_provider.dart';
 import 'foundational_providers.dart';
 import 'user_specific_data_provider.dart';
@@ -17,7 +17,7 @@ final userControllerProvider =
       dependencies: [
         sharedPreferencesProvider,
         authControllerProvider,
-        apiRepositoryProvider,
+        dataRepositoryProvider,
       ],
     );
 
@@ -52,7 +52,7 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
     ); // This ensures we check the current state immediately
   }
 
-  ApiRepository get _api => _ref.read(apiRepositoryProvider);
+  DataRepository get _api => _ref.read(dataRepositoryProvider);
 
   Future<void> _fetchUser() async {
     final hasUserData = state.when(
@@ -82,10 +82,31 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
     Map<String, dynamic>? payload,
   }) async {
     try {
-      await _api.completeTask(taskId, payload: payload);
+      final response = await _api.completeTask(taskId, payload: payload);
+      
+      // Update user state with the response data instead of refetching
+      state.whenData((currentUser) {
+        if (currentUser != null) {
+          // Create updated task cooldowns map
+          final updatedCooldowns = Map<String, DateTime>.from(currentUser.taskCooldowns);
+          
+          // Update the cooldown for this specific task if provided in response
+          if (response.cooldownExpiresAt != null) {
+            updatedCooldowns[taskId] = response.cooldownExpiresAt!;
+          }
+          
+          state = AsyncValue.data(
+            currentUser.copyWith(
+              hcBalance: response.newBalance,
+              rankPoints: response.newRankPoints,
+              taskCooldowns: updatedCooldowns,
+            ),
+          );
+        }
+      });
     } catch (e) {
-      debugPrint("Action failed but refetching user: $e");
-    } finally {
+      debugPrint("Action failed: $e");
+      // Only refetch on error as fallback
       await _fetchUser();
     }
   }

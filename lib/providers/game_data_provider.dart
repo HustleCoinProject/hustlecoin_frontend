@@ -8,7 +8,7 @@ import 'user_provider.dart';
 final allHustlesProvider = FutureProvider<Map<String, Map<String, String>>>((
   ref,
 ) async {
-  return ref.read(apiRepositoryProvider).getAllHustles();
+  return ref.read(dataRepositoryProvider).getAllHustles();
 });
 
 final allTasksProvider = FutureProvider<List<Task>>((ref) async {
@@ -19,7 +19,7 @@ final allTasksProvider = FutureProvider<List<Task>>((ref) async {
     error: (_, __) => null,
   );
   if (user == null) return [];
-  return ref.read(apiRepositoryProvider).getAllTasks();
+  return ref.read(dataRepositoryProvider).getAllTasks();
 });
 
 final shopItemsProvider = FutureProvider<List<ShopItem>>((ref) async {
@@ -30,5 +30,5 @@ final shopItemsProvider = FutureProvider<List<ShopItem>>((ref) async {
     error: (_, __) => null,
   );
   if (user == null) return [];
-  return ref.read(apiRepositoryProvider).getShopItems();
+  return ref.read(dataRepositoryProvider).getShopItems();
 });

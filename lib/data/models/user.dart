@@ -79,6 +79,53 @@ class User {
     );
   }
 
+  // Create a copy of this User with updated fields
+  User copyWith({
+    String? id,
+    String? username,
+    String? email,
+    int? hcBalance,
+    int? rankPoints,
+    int? level,
+    dynamic currentHustle,
+    DateTime? levelEntryDate,
+    int? hcEarnedInLevel,
+    String? language,
+    Map<String, DateTime>? taskCooldowns,
+    int? dailyStreak,
+    DateTime? createdAt,
+    int? dailyTapEarnings,
+    DateTime? lastTapResetDate,
+    String? phoneNumber,
+    String? fullName,
+    String? nationalId,
+    String? bankIban,
+    String? bankName,
+  }) {
+    return User(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      hcBalance: hcBalance ?? this.hcBalance,
+      rankPoints: rankPoints ?? this.rankPoints,
+      level: level ?? this.level,
+      currentHustle: currentHustle ?? this.currentHustle,
+      levelEntryDate: levelEntryDate ?? this.levelEntryDate,
+      hcEarnedInLevel: hcEarnedInLevel ?? this.hcEarnedInLevel,
+      language: language ?? this.language,
+      taskCooldowns: taskCooldowns ?? this.taskCooldowns,
+      dailyStreak: dailyStreak ?? this.dailyStreak,
+      createdAt: createdAt ?? this.createdAt,
+      dailyTapEarnings: dailyTapEarnings ?? this.dailyTapEarnings,
+      lastTapResetDate: lastTapResetDate ?? this.lastTapResetDate,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      fullName: fullName ?? this.fullName,
+      nationalId: nationalId ?? this.nationalId,
+      bankIban: bankIban ?? this.bankIban,
+      bankName: bankName ?? this.bankName,
+    );
+  }
+
   // Visual-only Kwanza balance
   int get kzBalance => (hcBalance / 8).floor();
 }

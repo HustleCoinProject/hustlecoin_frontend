@@ -3,7 +3,7 @@ import '../data/models/safe_lock_status.dart';
 import '../data/models/safe_lock_deposit_response.dart';
 import '../data/models/safe_lock_claim_response.dart';
 import '../data/models/safe_lock_global_stats.dart';
-import '../data/repositories/api_repository.dart';
+import '../data/repositories/data_repository.dart';
 import 'foundational_providers.dart';
 import 'user_provider.dart';
 
@@ -13,7 +13,7 @@ final safeLockStatusProvider =
       ref,
     ) {
       return SafeLockController(ref);
-    }, dependencies: [apiRepositoryProvider, userControllerProvider]);
+    }, dependencies: [dataRepositoryProvider, userControllerProvider]);
 
 class SafeLockController extends StateNotifier<AsyncValue<SafeLockStatus>> {
   final Ref _ref;
@@ -33,7 +33,7 @@ class SafeLockController extends StateNotifier<AsyncValue<SafeLockStatus>> {
     }, fireImmediately: true);
   }
 
-  ApiRepository get _api => _ref.read(apiRepositoryProvider);
+  DataRepository get _api => _ref.read(dataRepositoryProvider);
 
   /// Fetch the current safe lock status
   Future<void> fetchStatus() async {
@@ -109,6 +109,6 @@ final safeLockTimeRemainingProvider = StreamProvider<Duration>((ref) {
 final safeLockGlobalStatsProvider = FutureProvider<SafeLockGlobalStats>((
   ref,
 ) async {
-  final api = ref.read(apiRepositoryProvider);
+  final api = ref.read(dataRepositoryProvider);
   return await api.getSafeLockGlobalStats();
 });

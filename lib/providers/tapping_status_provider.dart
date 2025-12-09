@@ -23,9 +23,9 @@ class TappingStatusNotifier extends AsyncNotifier<TappingStatus> {
   }
 
   Future<TappingStatus> _fetchTappingStatus() async {
-    final apiRepository = ref.read(apiRepositoryProvider);
+    final dataRepository = ref.read(dataRepositoryProvider);
     try {
-      return await apiRepository.getTappingStatus();
+      return await dataRepository.getTappingStatus();
     } catch (e) {
       print('Failed to fetch tapping status: $e');
       // Return a default status if fetching fails

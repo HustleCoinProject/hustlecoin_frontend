@@ -7,15 +7,22 @@ import 'package:hustlecoin/theme/app_colors.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/widgets/glass_container.dart';
 import 'package:hustlecoin/widgets/pressable_scale_widget.dart';
+import 'package:hustlecoin/providers/user_provider.dart';
 
 class TopBar extends ConsumerWidget {
-  final User user;
-  final Future<void> Function(String) onToggleLanguage;
+  final void Function() onToggleLanguage;
 
-  const TopBar({super.key, required this.user, required this.onToggleLanguage});
+  const TopBar({super.key, required this.onToggleLanguage});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(userControllerProvider).value;
+    final currentLanguage = user?.language ?? 'en';
+
+    if (user == null) {
+      return const SizedBox.shrink();
+    }
+
     return Padding(
       padding: ResponsiveUtils.pSymmetric(horizontal: 15.0, vertical: 10.0),
       child: Row(
@@ -90,7 +97,7 @@ class TopBar extends ConsumerWidget {
             ),
           ),
           PressableScaleWidget(
-            onTap: () => onToggleLanguage(user.language),
+            onTap: onToggleLanguage,
             soundType:
                 SoundType.switchSound, // Use switch sound for language toggle
             child: GlassContainer(
@@ -108,7 +115,7 @@ class TopBar extends ConsumerWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: user.language.toUpperCase() == 'EN'
+                        color: currentLanguage.toUpperCase() == 'EN'
                             ? AppColors.angolaYellow
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(8.r),
@@ -116,7 +123,7 @@ class TopBar extends ConsumerWidget {
                       child: Text(
                         'EN',
                         style: TextStyle(
-                          color: user.language.toUpperCase() == 'EN'
+                          color: currentLanguage.toUpperCase() == 'EN'
                               ? AppColors.angolaBlack
                               : AppColors.textGrey,
                           fontWeight: FontWeight.w700,
@@ -130,7 +137,7 @@ class TopBar extends ConsumerWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: user.language.toUpperCase() == 'PT'
+                        color: currentLanguage.toUpperCase() == 'PT'
                             ? AppColors.angolaYellow
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(8.r),
@@ -138,7 +145,7 @@ class TopBar extends ConsumerWidget {
                       child: Text(
                         'PT',
                         style: TextStyle(
-                          color: user.language.toUpperCase() == 'PT'
+                          color: currentLanguage.toUpperCase() == 'PT'
                               ? AppColors.angolaBlack
                               : AppColors.textGrey,
                           fontWeight: FontWeight.w700,

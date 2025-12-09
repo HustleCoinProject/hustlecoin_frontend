@@ -8,11 +8,11 @@ import 'foundational_providers.dart';
 final serverTimeProvider =
     StateNotifierProvider<ServerTimeController, AsyncValue<Duration>>((ref) {
       return ServerTimeController(ref);
-    }, dependencies: [apiRepositoryProvider]);
+    }, dependencies: [dataRepositoryProvider]);
 
 class ServerTimeController extends StateNotifier<AsyncValue<Duration>> {
   final Ref _ref;
-  static const refreshInterval = Duration(minutes: 10);
+  static const refreshInterval = Duration(minutes: 20);
   Timer? _refreshTimer;
 
   ServerTimeController(this._ref) : super(const AsyncValue.loading()) {
@@ -43,7 +43,7 @@ class ServerTimeController extends StateNotifier<AsyncValue<Duration>> {
 
   Future<void> syncWithServer() async {
     try {
-      final api = _ref.read(apiRepositoryProvider);
+      final api = _ref.read(dataRepositoryProvider);
       final localTimeBefore = DateTime.now();
       final serverTime = await api.getServerTime();
       final localTimeAfter = DateTime.now();

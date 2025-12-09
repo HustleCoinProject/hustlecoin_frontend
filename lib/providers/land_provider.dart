@@ -17,7 +17,7 @@ final landTilesProvider = FutureProvider.family
       );
       if (user == null) return [];
 
-      final api = ref.read(apiRepositoryProvider);
+      final api = ref.read(dataRepositoryProvider);
       return api.getTilesInBbox(bbox);
     });
 
@@ -32,7 +32,7 @@ final myLandsProvider = FutureProvider.autoDispose<List<MyLandTile>>((
   );
   if (user == null) return [];
 
-  final api = ref.read(apiRepositoryProvider);
+  final api = ref.read(dataRepositoryProvider);
   return api.getMyLands();
 });
 
@@ -49,7 +49,7 @@ final landClaimStatusProvider = FutureProvider.autoDispose<LandClaimStatus?>((
   );
   if (user == null) return null;
 
-  final api = ref.read(apiRepositoryProvider);
+  final api = ref.read(dataRepositoryProvider);
   try {
     return await api.getLandClaimStatus();
   } catch (e) {

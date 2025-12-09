@@ -19,7 +19,7 @@ final landClaimCountdownProvider = StreamProvider.autoDispose<LandClaimStatus?>(
       return;
     }
 
-    final api = ref.read(apiRepositoryProvider);
+    final api = ref.read(dataRepositoryProvider);
 
     // Initial fetch
     LandClaimStatus? currentStatus;

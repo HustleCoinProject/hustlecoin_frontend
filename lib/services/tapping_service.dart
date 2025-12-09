@@ -41,8 +41,8 @@ class TappingService {
     _pendingTaps = 0; // Reset the counter
 
     try {
-      final apiRepository = _ref.read(apiRepositoryProvider);
-      final tapResponse = await apiRepository.submitTaps(tapsToSubmit);
+      final dataRepository = _ref.read(dataRepositoryProvider);
+      final tapResponse = await dataRepository.submitTaps(tapsToSubmit);
 
       // Update tapping status based on server response
       _ref.read(tappingStatusProvider.notifier).updateFromTapResponse(tapResponse);

@@ -4,12 +4,14 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/data/models/quiz_result.dart';
 
 import 'package:hustlecoin/data/models/user.dart';
+import 'package:hustlecoin/features/events/events_screen.dart';
 import 'package:hustlecoin/features/land/land_map_screen.dart';
 import 'package:hustlecoin/features/leaderboard/leaderboard_screen.dart';
 import 'package:hustlecoin/features/payout/payout_screen.dart';
 import 'package:hustlecoin/features/profile/edit_profile.dart';
 import 'package:hustlecoin/features/quiz/quiz_screen.dart';
 import 'package:hustlecoin/features/safe_lock/safe_lock_screen.dart';
+import 'package:hustlecoin/features/settings/settings_screen.dart';
 
 import 'package:hustlecoin/providers/time_provider.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
@@ -167,34 +169,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _activeNavIndex = 0;
 
   // Method to toggle language between EN and PT
-  Future<void> _toggleLanguage(String currentLanguage) async {
-    final newLanguage = currentLanguage.toLowerCase() == 'en' ? 'pt' : 'en';
+  Future<void> _toggleLanguage() async {
     final userController = ref.read(userControllerProvider.notifier);
+    final currentUser = ref.read(userControllerProvider).value;
+    if (currentUser == null) return;
+
+    final newLanguage = currentUser.language == 'en' ? 'pt' : 'en';
     try {
       await userController.updateProfile(language: newLanguage);
-      // Show a success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Language updated to ${newLanguage.toUpperCase()}'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
     } catch (e) {
-      // Show error message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Failed to update language: ${e.toString().replaceAll('Exception: ', '')}',
-            ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
+      print('Failed to toggle language: $e');
     }
   }
 
@@ -232,10 +216,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             });
         break;
       case 3:
-        // Settings - no page created yet, just update state
-        setState(() {
-          _activeNavIndex = index;
-        });
+        // Settings
+        AdHelper.showInterstitialOnNavigation();
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (_) => const SettingsScreen()))
+            .then((_) {
+              // Reset to home when returning
+              setState(() {
+                _activeNavIndex = 0;
+              });
+            });
         break;
     }
   }
@@ -311,7 +301,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     vertical: 5,
                   ),
                 ),
-                TopBar(user: user, onToggleLanguage: _toggleLanguage),
+                TopBar(onToggleLanguage: _toggleLanguage),
                 Text(
                   ref.t(LocalizationKeys.hustleCoin),
                   style: TextStyle(
@@ -598,9 +588,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                   SizedBox(height: 15.s),
-                  _actionButton(
-                    FontAwesomeIcons.calendarAlt,
-                    ref.t(LocalizationKeys.events),
+                  PressableScaleWidget(
+                    onTap: () {
+                      AdHelper.showInterstitialOnNavigation();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const EventsScreen()),
+                      );
+                    },
+                    child: _actionButton(
+                      FontAwesomeIcons.calendarAlt,
+                      ref.t(LocalizationKeys.events),
+                    ),
                   ),
                 ],
               ),
@@ -677,9 +675,10 @@ class _AnimatedGlowingHeartState extends State<_AnimatedGlowingHeart>
       vsync: this,
     )..repeat(reverse: true);
 
-    _glowAnimation = Tween<double>(begin: 10.0, end: 25.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _glowAnimation = Tween<double>(
+      begin: 10.0,
+      end: 25.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override

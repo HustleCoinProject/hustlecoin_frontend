@@ -162,6 +162,33 @@ class LocalizationKeys {
   static const String amountRequired = 'amount_required';
   static const String enterValidAmount = 'enter_valid_amount';
 
+  // Settings
+  static const String credits = 'credits';
+  static const String general = 'general';
+  static const String gameplay = 'gameplay';
+  static const String about = 'about';
+  static const String pushNotifications = 'push_notifications';
+  static const String pushNotificationsDesc = 'push_notifications_desc';
+  static const String soundEffects = 'sound_effects';
+  static const String soundEffectsDesc = 'sound_effects_desc';
+  static const String hapticFeedback = 'haptic_feedback';
+  static const String hapticFeedbackDesc = 'haptic_feedback_desc';
+  static const String autoCollectRewards = 'auto_collect_rewards';
+  static const String autoCollectRewardsDesc = 'auto_collect_rewards_desc';
+  static const String creditsDesc = 'credits_desc';
+  static const String appVersion = 'app_version';
+  
+  // Credits
+  static const String founderVisionary = 'founder_visionary';
+  static const String development = 'development';
+  static const String leadDeveloper = 'lead_developer';
+  static const String madeWithLove = 'made_with_love';
+  
+  // Events
+  static const String noEventsYet = 'no_events_yet';
+  static const String eventsComingSoon = 'events_coming_soon';
+  static const String comingSoon = 'coming_soon';
+
   // Safe Lock
   static const String safeLock = 'safe_lock';
   static const String safeLockSavings = 'safe_lock_savings';
@@ -358,6 +385,33 @@ class _Translations {
       LocalizationKeys.ibanRequired: 'IBAN is required',
       LocalizationKeys.amountRequired: 'Amount is required',
       LocalizationKeys.enterValidAmount: 'Enter a valid amount',
+
+      // Settings
+      LocalizationKeys.credits: 'Credits',
+      LocalizationKeys.general: 'GENERAL',
+      LocalizationKeys.gameplay: 'GAMEPLAY',
+      LocalizationKeys.about: 'ABOUT',
+      LocalizationKeys.pushNotifications: 'Push Notifications',
+      LocalizationKeys.pushNotificationsDesc: 'Receive notifications about rewards',
+      LocalizationKeys.soundEffects: 'Sound Effects',
+      LocalizationKeys.soundEffectsDesc: 'Enable in-app sound effects',
+      LocalizationKeys.hapticFeedback: 'Haptic Feedback',
+      LocalizationKeys.hapticFeedbackDesc: 'Vibration on button presses',
+      LocalizationKeys.autoCollectRewards: 'Auto-Collect Rewards',
+      LocalizationKeys.autoCollectRewardsDesc: 'Automatically collect available rewards',
+      LocalizationKeys.creditsDesc: 'View app credits and attribution',
+      LocalizationKeys.appVersion: 'App Version',
+      
+      // Credits
+      LocalizationKeys.founderVisionary: 'Founder & Visionary',
+      LocalizationKeys.development: 'DEVELOPMENT',
+      LocalizationKeys.leadDeveloper: 'Lead Developer',
+      LocalizationKeys.madeWithLove: 'Made with ❤️',
+      
+      // Events
+      LocalizationKeys.noEventsYet: 'No Events Yet',
+      LocalizationKeys.eventsComingSoon: 'Exciting events are coming soon!\nStay tuned for updates.',
+      LocalizationKeys.comingSoon: 'Coming Soon',
 
       // Safe Lock
       LocalizationKeys.safeLock: 'Safe Lock',
@@ -561,6 +615,33 @@ class _Translations {
       LocalizationKeys.amountRequired: 'Valor é obrigatório',
       LocalizationKeys.enterValidAmount: 'Digite um valor válido',
 
+      // Settings
+      LocalizationKeys.credits: 'Créditos',
+      LocalizationKeys.general: 'GERAL',
+      LocalizationKeys.gameplay: 'JOGO',
+      LocalizationKeys.about: 'SOBRE',
+      LocalizationKeys.pushNotifications: 'Notificações Push',
+      LocalizationKeys.pushNotificationsDesc: 'Receber notificações sobre recompensas',
+      LocalizationKeys.soundEffects: 'Efeitos Sonoros',
+      LocalizationKeys.soundEffectsDesc: 'Ativar efeitos sonoros no aplicativo',
+      LocalizationKeys.hapticFeedback: 'Feedback Tátil',
+      LocalizationKeys.hapticFeedbackDesc: 'Vibração ao pressionar botões',
+      LocalizationKeys.autoCollectRewards: 'Auto-Coletar Recompensas',
+      LocalizationKeys.autoCollectRewardsDesc: 'Coletar automaticamente recompensas disponíveis',
+      LocalizationKeys.creditsDesc: 'Ver créditos e atribuições do aplicativo',
+      LocalizationKeys.appVersion: 'Versão do App',
+      
+      // Credits
+      LocalizationKeys.founderVisionary: 'Fundador e Visionário',
+      LocalizationKeys.development: 'DESENVOLVIMENTO',
+      LocalizationKeys.leadDeveloper: 'Desenvolvedor Principal',
+      LocalizationKeys.madeWithLove: 'Feito com ❤️',
+      
+      // Events
+      LocalizationKeys.noEventsYet: 'Ainda Sem Eventos',
+      LocalizationKeys.eventsComingSoon: 'Eventos emocionantes em breve!\nFique atento às atualizações.',
+      LocalizationKeys.comingSoon: 'Em Breve',
+
       // Safe Lock
       LocalizationKeys.safeLock: 'Cofre Seguro',
       LocalizationKeys.safeLockSavings: 'Poupança de Cofre Seguro',
@@ -603,14 +684,9 @@ class _Translations {
   };
 }
 
-// Localization provider that gets the user's language
+// Localization provider that gets the user's language from the server
 final localizationProvider = Provider<String>((ref) {
-  final userState = ref.watch(userControllerProvider);
-  final user = userState.when(
-    data: (user) => user,
-    loading: () => null,
-    error: (_, __) => null,
-  );
+  final user = ref.watch(userControllerProvider).value;
   return user?.language.toLowerCase() ?? 'en';
 });
 

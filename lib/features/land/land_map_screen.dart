@@ -42,6 +42,10 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
   // A map for quick lookup of owned tiles in the current view
   Map<String, LandTileInfo> _ownedTilesInView = {};
 
+  // Cooldown mechanism to prevent excessive server requests
+  DateTime? _lastFetchTime;
+  static const Duration _fetchCooldown = Duration(seconds: 3);
+
   // Constants
   static const int DATA_RESOLUTION = 8;
   static const double MAX_COLOR_ZOOM =
@@ -81,8 +85,17 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
     });
   }
 
-  Future<void> _fetchAndDrawHexagons() async {
+  Future<void> _fetchAndDrawHexagons({bool forceFetch = false}) async {
     if (!mounted) return;
+
+    // Check cooldown period (unless forced)
+    if (!forceFetch && _lastFetchTime != null) {
+      final timeSinceLastFetch = DateTime.now().difference(_lastFetchTime!);
+      if (timeSinceLastFetch < _fetchCooldown) {
+        debugPrint("Fetch cooldown active. Skipping request.");
+        return;
+      }
+    }
 
     final bounds = _mapController.camera.visibleBounds;
     final zoom = _mapController.camera.zoom;
@@ -101,6 +114,9 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
       // Update the local lookup map
       _ownedTilesInView = {for (var tile in ownedTilesData) tile.h3Index: tile};
       debugPrint("Loaded ${ownedTilesData.length} owned tiles in current view");
+      
+      // Update last fetch time after successful fetch
+      _lastFetchTime = DateTime.now();
     } catch (e) {
       debugPrint("Failed to fetch owned tiles: $e");
       // Continue with empty owned tiles if fetch fails
@@ -126,48 +142,40 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
 
     final List<Polygon> newHexes = [];
     for (final index in visibleIndexes) {
-      final boundary = h3.cellToBoundary(index);
-      final points = boundary.map((geo) => LatLng(geo.lat, geo.lon)).toList();
-
-      Color borderColor = Colors.white;
-      double borderOpacity = 0.15;
-      Color? fillColor;
-      double fillOpacity = 0.4;
-
       final h3IndexStr = index.toRadixString(16).toLowerCase();
       final ownedTile = _ownedTilesInView[h3IndexStr];
 
-      // Always show owned land colors if there's an owned tile, regardless of zoom
+      // Only render hexagons for owned land (skip vacant slots for performance)
       if (ownedTile != null) {
+        final boundary = h3.cellToBoundary(index);
+        final points = boundary.map((geo) => LatLng(geo.lat, geo.lon)).toList();
+
+        Color borderColor;
+        Color fillColor;
+        double borderOpacity = 1.0;
+        double fillOpacity;
+
         if (ownedTile.ownerId == currentUser.id) {
           // Current user's land - Green
           borderColor = const Color(0xFF14DC78);
           fillColor = const Color(0xFF14DC78);
-          borderOpacity = 1.0;
-          fillOpacity = 0.6; // Make it more visible
+          fillOpacity = 0.6;
         } else {
-          // Other player's land - Orange/Red
-          borderColor = AppColors
-              .angolaYellow; // Changed to yellow/orange for better visibility
+          // Other player's land - Yellow/Orange
+          borderColor = AppColors.angolaYellow;
           fillColor = AppColors.angolaYellow;
-          borderOpacity = 1.0;
           fillOpacity = 0.5;
         }
-      } else if (showColors) {
-        // Show subtle grid for unowned land only at high zoom
-        borderOpacity = 0.15;
-        fillOpacity = 0.1;
-      }
 
-      newHexes.add(
-        Polygon(
-          points: points,
-          borderColor: borderColor.withValues(alpha: borderOpacity),
-          borderStrokeWidth: 1,
-          color:
-              fillColor?.withValues(alpha: fillOpacity) ?? Colors.transparent,
-        ),
-      );
+        newHexes.add(
+          Polygon(
+            points: points,
+            borderColor: borderColor.withValues(alpha: borderOpacity),
+            borderStrokeWidth: 1,
+            color: fillColor.withValues(alpha: fillOpacity),
+          ),
+        );
+      }
     }
     if (mounted) {
       setState(() => _visibleHexagons = newHexes);
@@ -311,8 +319,8 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
             // Small additional delay to ensure providers are invalidated
             await Future.delayed(const Duration(milliseconds: 100));
 
-            // Force refresh the hexagons display with new data
-            await _fetchAndDrawHexagons();
+            // Force refresh the hexagons display with new data (bypass cooldown)
+            await _fetchAndDrawHexagons(forceFetch: true);
           }
         });
       }
@@ -357,7 +365,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
             children: [
               TileLayer(
                 urlTemplate:
-                    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                 subdomains: const ['a', 'b', 'c', 'd'],
               ),
               PolygonLayer(polygons: _visibleHexagons),

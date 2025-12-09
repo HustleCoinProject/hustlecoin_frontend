@@ -57,8 +57,8 @@ class _SelectHustleScreenState extends ConsumerState<SelectHustleScreen> {
     });
 
     try {
-      final apiRepo = ref.read(apiRepositoryProvider);
-      final availableHustles = await apiRepo.getAvailableHustles();
+      final dataRepo = ref.read(dataRepositoryProvider);
+      final availableHustles = await dataRepo.getAvailableHustles();
 
       setState(() {
         _availableHustles = availableHustles.entries
@@ -101,10 +101,10 @@ class _SelectHustleScreenState extends ConsumerState<SelectHustleScreen> {
         _availableHustles[_selectedHustleIndex]['name'] ?? '';
 
     try {
-      final apiRepo = ref.read(apiRepositoryProvider);
+      final dataRepo = ref.read(dataRepositoryProvider);
 
       // Make the API call to select the hustle using the key
-      await apiRepo.selectHustle(selectedHustleKey);
+      await dataRepo.selectHustle(selectedHustleKey);
 
       // Show success message with the display name
       if (mounted) {
