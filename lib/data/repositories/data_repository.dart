@@ -34,19 +34,19 @@ class DataRepository {
   static const Duration _defaultTTL = Duration(minutes: 5); // Payout methods, payout system status
   static const Duration _userTTL = Duration(minutes: 5); // /api/users/me - User profile data
   static const Duration _inventoryTTL = Duration(minutes: 5); // /api/users/inventory - User items
-  static const Duration _hustlesTTL = Duration(days: 3); // /api/hustles/all, /api/hustles/available - Hustle lists
-  static const Duration _levelStatusTTL = Duration(minutes: 15); // /api/hustles/level-status - Level progress
-  static const Duration _tasksTTL = Duration(days: 3); // /api/tasks/all - Task list
-  static const Duration _shopTTL = Duration(days: 3); // /api/shop/items - Shop items
+  static const Duration _hustlesTTL = Duration(days: 7); // /api/hustles/all, /api/hustles/available - Hustle lists
+  static const Duration _levelStatusTTL = Duration(minutes: 30); // /api/hustles/level-status - Level progress
+  static const Duration _tasksTTL = Duration(days: 7); // /api/tasks/all - Task list
+  static const Duration _shopTTL = Duration(days: 7); // /api/shop/items - Shop items
   static const Duration _leaderboardTTL = Duration(minutes: 8); // /api/leaderboard - Rankings
-  static const Duration _landTilesTTL = Duration(minutes: 5); // /api/land/tiles - Map tiles in bbox
+  // Note: Land tiles (/api/land/tiles) are NOT cached - UI implements 3-second rate limiting
   static const Duration _myLandsTTL = Duration(minutes: 5); // /api/land/my-lands - Owned lands
   static const Duration _landClaimStatusTTL = Duration(minutes: 5); // /api/land/claim-status - Land income status
   static const Duration _tappingStatusTTL = Duration(seconds: 30); // /api/tapping/status - Tap limits & earnings
-  static const Duration _payoutInfoTTL = Duration(minutes: 3); // /api/payouts/info - Payout account info
-  static const Duration _payoutHistoryTTL = Duration(minutes: 5); // /api/payouts/history - Past payouts
-  static const Duration _safeLockStatusTTL = Duration(minutes: 5); // /api/safe-lock/status - Safe lock balance & timer
-  static const Duration _safeLockGlobalStatsTTL = Duration(minutes: 5); // /api/safe-lock/global-stats - Global safe lock stats
+  static const Duration _payoutInfoTTL = Duration(minutes: 10); // /api/payouts/info - Payout account info
+  static const Duration _payoutHistoryTTL = Duration(minutes: 10); // /api/payouts/history - Past payouts
+  static const Duration _safeLockStatusTTL = Duration(minutes: 10); // /api/safe-lock/status - Safe lock balance & timer
+  static const Duration _safeLockGlobalStatsTTL = Duration(minutes: 10); // /api/safe-lock/global-stats - Global safe lock stats
 
   DataRepository(this._apiRepository, this._cacheManager);
 
@@ -338,19 +338,9 @@ class DataRepository {
 
   // --- Land System ---
   Future<List<LandTileInfo>> getTilesInBbox(String bbox) async {
-    return await _getOrFetch(
-      'land_tiles_$bbox',
-      () => _apiRepository.getTilesInBbox(bbox),
-      _landTilesTTL,
-      fromJson: (json) {
-        final list = json as List<dynamic>;
-        return list.map((item) => LandTileInfo.fromJson(item as Map<String, dynamic>)).toList();
-      },
-      toJson: (tiles) => tiles.map((tile) => {
-        'h3_index': tile.h3Index,
-        'owner_id': tile.ownerId,
-      }).toList(),
-    );
+    // Land tiles are not cached - UI implements 3-second rate limiting
+    // to prevent excessive requests while user moves the map
+    return await _apiRepository.getTilesInBbox(bbox);
   }
 
   Future<List<MyLandTile>> getMyLands() async {
@@ -375,13 +365,7 @@ class DataRepository {
     // Invalidate related caches
     await _cacheManager.delete('my_lands');
     await _cacheManager.delete('user_me');
-    // Invalidate land tiles cache for all bboxes
-    final allKeys = await _cacheManager.getAllKeys();
-    for (final key in allKeys) {
-      if (key.startsWith('land_tiles_')) {
-        await _cacheManager.delete(key);
-      }
-    }
+    // Note: Land tiles are not cached, so no need to invalidate them
     return result;
   }
 
@@ -390,13 +374,7 @@ class DataRepository {
     // Invalidate related caches
     await _cacheManager.delete('my_lands');
     await _cacheManager.delete('user_me');
-    // Invalidate land tiles cache for all bboxes
-    final allKeys = await _cacheManager.getAllKeys();
-    for (final key in allKeys) {
-      if (key.startsWith('land_tiles_')) {
-        await _cacheManager.delete(key);
-      }
-    }
+    // Note: Land tiles are not cached, so no need to invalidate them
   }
 
   // --- Land Income Claim System ---

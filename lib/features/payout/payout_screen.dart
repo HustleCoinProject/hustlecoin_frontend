@@ -12,6 +12,7 @@ import 'package:hustlecoin/providers/payout_provider.dart';
 import 'package:hustlecoin/data/models/payout_request.dart';
 import 'package:hustlecoin/data/models/payout_info.dart';
 import 'package:hustlecoin/features/payout/payout_history_screen.dart' show PayoutHistoryScreen;
+import 'package:hustlecoin/providers/time_provider.dart';
 
 enum PayoutMethod { multicaixaExpress, bank }
 
@@ -222,6 +223,34 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
         SnackBar(
           content: const Text('Please select a payout method'),
           backgroundColor: Colors.red.withValues(alpha: 0.9),
+        ),
+      );
+      return;
+    }
+    
+    // Validate amount is within allowed range (10,000 - 30,000 HC)
+    final amountHc = int.tryParse(_amountController.text) ?? 0;
+    if (amountHc < 10000 || amountHc > 30000) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Payout amount must be between 10,000 HC and 30,000 HC'),
+          backgroundColor: Colors.red.withValues(alpha: 0.9),
+        ),
+      );
+      return;
+    }
+    
+    // Validate that today is Sunday in Angola time (UTC+1)
+    final serverTime = ref.read(serverTimeProvider.notifier).currentServerTime;
+    final angolaTime = serverTime.add(const Duration(hours: 1)); // Angola is UTC+1
+    if (angolaTime.weekday != DateTime.sunday) {
+      final daysUntilSunday = (DateTime.sunday - angolaTime.weekday) % 7;
+      final nextSunday = daysUntilSunday == 0 ? 7 : daysUntilSunday;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Payouts are only allowed on Sundays (Angola time).\nNext available payout: in $nextSunday day${nextSunday > 1 ? "s" : ""}'),
+          backgroundColor: Colors.red.withValues(alpha: 0.9),
+          duration: const Duration(seconds: 5),
         ),
       );
       return;
@@ -753,6 +782,29 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
     );
   }
 
+  Widget _buildRestrictionRow(String text, {bool isActive = false}) {
+    return Row(
+      children: [
+        FaIcon(
+          isActive ? FontAwesomeIcons.circleCheck : FontAwesomeIcons.circle,
+          color: isActive ? Colors.green : AppColors.textGrey,
+          size: 10.s,
+        ),
+        SizedBox(width: 8.s),
+        Flexible(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: isActive ? Colors.green : AppColors.textLight,
+              fontSize: 12.f,
+              fontWeight: isActive ? FontWeight.w500 : FontWeight.w400,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildAmountInput() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -777,7 +829,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
               fontWeight: FontWeight.w600,
             ),
             decoration: InputDecoration(
-              hintText: '100',
+              hintText: '10000',
               hintStyle: TextStyle(
                 color: AppColors.textGrey,
                 fontSize: 18.f,
@@ -823,14 +875,19 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
               if (amount == null || amount <= 0) {
                 return ref.t(LocalizationKeys.enterValidAmount);
               }
+              
+              // Enforce payout range (10,000 - 30,000 HC)
+              if (amount < 10000) {
+                return 'Minimum payout amount is 10,000 HC';
+              }
+              if (amount > 30000) {
+                return 'Maximum payout amount is 30,000 HC';
+              }
 
               // Check against minimum payout amount from API
               final payoutInfoAsync = ref.read(payoutInfoProvider);
               return payoutInfoAsync.maybeWhen(
                 data: (payoutInfo) {
-                  if (amount < payoutInfo.minimumPayoutHc) {
-                    return 'Minimum payout is ${payoutInfo.minimumPayoutHc} HC';
-                  }
                   if (amount > payoutInfo.availableHc) {
                     return 'Insufficient balance. Available: ${payoutInfo.availableHc} HC';
                   }
@@ -840,6 +897,60 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
               );
             },
             onChanged: (_) => setState(() {}),
+          ),
+        ),
+        SizedBox(height: 12.s),
+        // Payout restrictions info
+        Container(
+          padding: ResponsiveUtils.pSymmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.angolaRed.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: AppColors.angolaRed.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  FaIcon(
+                    FontAwesomeIcons.circleInfo,
+                    color: AppColors.angolaYellow,
+                    size: 14.s,
+                  ),
+                  SizedBox(width: 8.s),
+                  Text(
+                    'Payout Restrictions',
+                    style: TextStyle(
+                      color: AppColors.angolaYellow,
+                      fontSize: 13.f,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8.s),
+              _buildRestrictionRow('Amount: 10,000 - 30,000 HC'),
+              SizedBox(height: 4.s),
+              Consumer(
+                builder: (context, ref, child) {
+                  final serverTime = ref.watch(serverTimeProvider.notifier).currentServerTime;
+                  final angolaTime = serverTime.add(const Duration(hours: 1));
+                  final isSunday = angolaTime.weekday == DateTime.sunday;
+                  final daysUntilSunday = (DateTime.sunday - angolaTime.weekday) % 7;
+                  final nextSunday = daysUntilSunday == 0 ? 7 : daysUntilSunday;
+                  
+                  return _buildRestrictionRow(
+                    isSunday 
+                      ? 'Day: Sundays only (Today ✓)'
+                      : 'Day: Sundays only (Next: in $nextSunday day${nextSunday > 1 ? "s" : ""})',
+                    isActive: isSunday,
+                  );
+                },
+              ),
+            ],
           ),
         ),
       ],

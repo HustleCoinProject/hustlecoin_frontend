@@ -46,10 +46,12 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
   DateTime? _lastFetchTime;
   static const Duration _fetchCooldown = Duration(seconds: 3);
 
+  // Zoom level tracking for fetch control
+  double _currentZoom = 13.0;
+  static const double MIN_ZOOM_FOR_FETCH = 12.5; // Minimum zoom to fetch tiles from server
+
   // Constants
   static const int DATA_RESOLUTION = 8;
-  static const double MAX_COLOR_ZOOM =
-      10.0; // Lowered from 14.0 to show colors earlier
   static const int LAND_PRICE = 500; // Corresponds to backend LAND_PRICE
   static const int LAND_SELL_PRICE = 400; // 80% of purchase price
 
@@ -67,18 +69,15 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
 
   // --- Core Logic ---
 
-  int getVisualResolutionForZoom(double zoom) {
-    if (zoom <= 3) return 1;
-    if (zoom <= 5) return 2;
-    if (zoom <= 7) return 4;
-    if (zoom <= 9) return 5;
-    if (zoom <= 12) return 6;
-    if (zoom <= 14) return 7;
-    return DATA_RESOLUTION;
-  }
-
   // Debounced function to avoid spamming the API while panning the map
   void _onMapMove() {
+    // Update current zoom immediately for UI updates
+    if (mounted) {
+      setState(() {
+        _currentZoom = _mapController.camera.zoom;
+      });
+    }
+
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 350), () {
       _fetchAndDrawHexagons();
@@ -88,66 +87,70 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
   Future<void> _fetchAndDrawHexagons({bool forceFetch = false}) async {
     if (!mounted) return;
 
-    // Check cooldown period (unless forced)
-    if (!forceFetch && _lastFetchTime != null) {
-      final timeSinceLastFetch = DateTime.now().difference(_lastFetchTime!);
-      if (timeSinceLastFetch < _fetchCooldown) {
-        debugPrint("Fetch cooldown active. Skipping request.");
-        return;
-      }
-    }
-
     final bounds = _mapController.camera.visibleBounds;
     final zoom = _mapController.camera.zoom;
-
-    // Format the bounding box string for the API
-    final bbox =
-        '${bounds.southWest.longitude},${bounds.southWest.latitude},${bounds.northEast.longitude},${bounds.northEast.latitude}';
-    _currentBbox = bbox; // Store for invalidation on purchase
-
-    // Fetch owned tiles within the current view
     final currentUser = ref.read(userControllerProvider).value;
     if (currentUser == null) return;
 
-    try {
-      final ownedTilesData = await ref.read(landTilesProvider(bbox).future);
-      // Update the local lookup map
-      _ownedTilesInView = {for (var tile in ownedTilesData) tile.h3Index: tile};
-      debugPrint("Loaded ${ownedTilesData.length} owned tiles in current view");
-      
-      // Update last fetch time after successful fetch
-      _lastFetchTime = DateTime.now();
-    } catch (e) {
-      debugPrint("Failed to fetch owned tiles: $e");
-      // Continue with empty owned tiles if fetch fails
-      _ownedTilesInView = {};
+    // Update current zoom for status indicator
+    if (mounted) {
+      setState(() {
+        _currentZoom = zoom;
+      });
     }
 
-    final showColors = zoom >= MAX_COLOR_ZOOM;
-    final renderResolution = showColors
-        ? DATA_RESOLUTION
-        : getVisualResolutionForZoom(zoom);
+    // --- Fetching Logic (only when zoomed in enough) ---
+    final shouldFetch = zoom >= MIN_ZOOM_FOR_FETCH;
+    
+    if (shouldFetch) {
+      // Check cooldown period (unless forced)
+      bool canFetch = forceFetch;
+      if (!forceFetch) {
+        if (_lastFetchTime != null) {
+          final timeSinceLastFetch = DateTime.now().difference(_lastFetchTime!);
+          canFetch = timeSinceLastFetch >= _fetchCooldown;
+          if (!canFetch) {
+            debugPrint("Fetch cooldown active. Skipping request.");
+          }
+        } else {
+          canFetch = true;
+        }
+      }
 
-    final geoPolygon = [
-      GeoCoord(lat: bounds.northWest.latitude, lon: bounds.northWest.longitude),
-      GeoCoord(lat: bounds.northEast.latitude, lon: bounds.northEast.longitude),
-      GeoCoord(lat: bounds.southEast.latitude, lon: bounds.southEast.longitude),
-      GeoCoord(lat: bounds.southWest.latitude, lon: bounds.southWest.longitude),
-    ];
+      if (canFetch) {
+        // Format the bounding box string for the API
+        final bbox =
+            '${bounds.southWest.longitude},${bounds.southWest.latitude},${bounds.northEast.longitude},${bounds.northEast.latitude}';
+        _currentBbox = bbox; // Store for invalidation on purchase
 
-    final visibleIndexes = h3.polygonToCells(
-      perimeter: geoPolygon,
-      resolution: renderResolution,
-    );
+        try {
+          final ownedTilesData = await ref.read(landTilesProvider(bbox).future);
+          // Merge new tiles with existing ones (accumulate, don't replace)
+          for (var tile in ownedTilesData) {
+            _ownedTilesInView[tile.h3Index] = tile;
+          }
+          debugPrint("Loaded ${ownedTilesData.length} owned tiles. Total cached: ${_ownedTilesInView.length}");
+          
+          // Update last fetch time after successful fetch
+          _lastFetchTime = DateTime.now();
+        } catch (e) {
+          debugPrint("Failed to fetch owned tiles: $e");
+          // Don't clear existing tiles on error, just skip this fetch
+        }
+      }
+    } else {
+      debugPrint("Zoom level too low ($zoom < $MIN_ZOOM_FOR_FETCH). Skipping fetch.");
+    }
 
+    // --- Rendering Logic (always render all cached tiles) ---
     final List<Polygon> newHexes = [];
-    for (final index in visibleIndexes) {
-      final h3IndexStr = index.toRadixString(16).toLowerCase();
-      final ownedTile = _ownedTilesInView[h3IndexStr];
-
-      // Only render hexagons for owned land (skip vacant slots for performance)
-      if (ownedTile != null) {
-        final boundary = h3.cellToBoundary(index);
+    
+    // Render all cached tiles regardless of current viewport
+    for (final tile in _ownedTilesInView.values) {
+      try {
+        // Convert h3 index string to H3Index type
+        final h3IndexInt = BigInt.parse(tile.h3Index, radix: 16);
+        final boundary = h3.cellToBoundary(h3IndexInt);
         final points = boundary.map((geo) => LatLng(geo.lat, geo.lon)).toList();
 
         Color borderColor;
@@ -155,7 +158,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
         double borderOpacity = 1.0;
         double fillOpacity;
 
-        if (ownedTile.ownerId == currentUser.id) {
+        if (tile.ownerId == currentUser.id) {
           // Current user's land - Green
           borderColor = const Color(0xFF14DC78);
           fillColor = const Color(0xFF14DC78);
@@ -175,8 +178,11 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
             color: fillColor.withValues(alpha: fillOpacity),
           ),
         );
+      } catch (e) {
+        debugPrint("Error rendering tile ${tile.h3Index}: $e");
       }
     }
+    
     if (mounted) {
       setState(() => _visibleHexagons = newHexes);
     }
@@ -416,6 +422,12 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
                 ),
               ),
             ),
+          ),
+          // Zoom Status Indicator (Top-Right)
+          Positioned(
+            top: 15.h,
+            right: 15.w,
+            child: _buildZoomStatusIndicator(),
           ),
           // Land Income Claim Panel and Daily Income Info Panel
           Positioned(
@@ -718,6 +730,72 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildZoomStatusIndicator() {
+    final isZoomedEnough = _currentZoom >= MIN_ZOOM_FOR_FETCH;
+    final zoomText = _currentZoom.toStringAsFixed(1);
+    final minZoomText = MIN_ZOOM_FOR_FETCH.toStringAsFixed(1);
+
+    // Determine status icon, color, and text based on zoom level
+    IconData statusIcon;
+    Color statusColor;
+    String statusText;
+    String statusSubtext;
+
+    if (isZoomedEnough) {
+      statusIcon = Icons.check_circle;
+      statusColor = const Color(0xFF14DC78); // Green
+      statusText = 'Loading Tiles';
+      statusSubtext = 'Zoom: $zoomText';
+    } else {
+      statusIcon = Icons.zoom_in;
+      statusColor = AppColors.angolaYellow; // Yellow
+      statusText = 'Zoom In to Load';
+      statusSubtext = '$zoomText / $minZoomText';
+    }
+
+    return GlassContainer(
+      borderRadius: 12.r,
+      padding: ResponsiveUtils.pSymmetric(
+        horizontal: 10,
+        vertical: 8,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                statusIcon,
+                size: 14.s,
+                color: statusColor,
+              ),
+              SizedBox(width: 5.s),
+              Text(
+                statusText,
+                style: TextStyle(
+                  color: statusColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11.f,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            statusSubtext,
+            style: TextStyle(
+              color: statusColor.withValues(alpha: 0.8),
+              fontWeight: FontWeight.w500,
+              fontSize: 9.f,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
