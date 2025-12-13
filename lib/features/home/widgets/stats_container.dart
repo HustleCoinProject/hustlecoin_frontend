@@ -13,6 +13,7 @@ import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/widgets/glass_container.dart';
 import 'package:hustlecoin/widgets/pressable_scale_widget.dart';
 import 'package:hustlecoin/providers/foundational_providers.dart';
+import 'package:hustlecoin/widgets/info_popup.dart';
 import './upgrade_button_animator.dart';
 
 class StatsContainer extends ConsumerWidget {
@@ -163,107 +164,171 @@ class StatsContainer extends ConsumerWidget {
                 ),
               ),
               SizedBox(height: 12.s),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: status.isEligibleForUpgrade
-                              ? AppColors.glowYellow
-                              : AppColors.orange.withValues(alpha: 0.3),
-                          blurRadius: status.isEligibleForUpgrade ? 15 : 10,
-                          spreadRadius: status.isEligibleForUpgrade ? 0 : -2,
-                        ),
-                      ],
-                      borderRadius: BorderRadius.circular(10.r),
+                  // Info Icon
+                  GestureDetector(
+                    onTap: () {
+                      final daysRemaining = (status.daysInLevelRequired - status.daysInLevelProgress).clamp(0, double.infinity);
+                      final hcRemaining = (status.hcEarnedInLevelRequired - status.hcEarnedInLevelProgress).clamp(0, double.infinity);
+                      
+                      String description = 'Current: ${status.hcEarnedInLevelProgress} HC, ${status.daysInLevelProgress.toStringAsFixed(1)} days. '
+                          'Required: ${status.hcEarnedInLevelRequired} HC, ${status.daysInLevelRequired} days, ${status.upgradeFee} HC fee.';
+                      
+                      if (!status.isEligibleForUpgrade) {
+                        description += ' Still need:';
+                        if (hcRemaining > 0) description += ' ${hcRemaining.toInt()} HC';
+                        if (hcRemaining > 0 && daysRemaining > 0) description += ',';
+                        if (daysRemaining > 0) description += ' ${daysRemaining.toStringAsFixed(1)} days';
+                        description += '.';
+                      } else {
+                        description += ' Ready to upgrade!';
+                      }
+                      
+                      InfoPopup.show(
+                        context: context,
+                        title: 'Level ${status.currentLevel + 1} Upgrade',
+                        description: description,
+                      );
+                    },
+                    child: Container(
+                      padding: ResponsiveUtils.p(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.textGrey.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Icon(
+                        Icons.info_outline,
+                        color: AppColors.angolaYellow,
+                        size: 18.s,
+                      ),
                     ),
-                    child: UpgradeButtonAnimator(
-                      isEnabled: status.isEligibleForUpgrade,
-                      child: PressableScaleWidget(
-                        onTap: status.isEligibleForUpgrade
-                            ? () async {
-                                try {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        ref.t(
-                                          LocalizationKeys
-                                              .processingLevelUpgrade,
+                  ),
+                  SizedBox(width: 8.s),
+                  // Upgrade Button
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: status.isEligibleForUpgrade
+                                  ? AppColors.glowYellow
+                                  : AppColors.orange.withValues(alpha: 0.3),
+                              blurRadius: status.isEligibleForUpgrade ? 15 : 10,
+                              spreadRadius: status.isEligibleForUpgrade ? 0 : -2,
+                            ),
+                          ],
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        child: UpgradeButtonAnimator(
+                          isEnabled: status.isEligibleForUpgrade,
+                          child: PressableScaleWidget(
+                            onTap: status.isEligibleForUpgrade
+                                ? () async {
+                                    try {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            ref.t(
+                                              LocalizationKeys
+                                                  .processingLevelUpgrade,
+                                            ),
+                                          ),
+                                          duration: const Duration(seconds: 2),
                                         ),
-                                      ),
-                                      duration: const Duration(seconds: 2),
-                                    ),
-                                  );
-                                  final dataRepo = ref.read(
-                                    dataRepositoryProvider,
-                                  );
-                                  final result = await dataRepo.levelUpgrade();
-                                  final int newLevel = result['new_level'];
-                                  final dynamic newHustleObj =
-                                      result['new_hustle'];
-                                  final String newHustleKey =
-                                      HustleUtils.getCurrentHustleKey(
-                                        newHustleObj,
                                       );
-                                  if (context.mounted) {
-                                    await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => SelectHustleScreen(
-                                          newLevel: newLevel,
-                                          newHustle: newHustleKey,
-                                        ),
-                                      ),
-                                    );
+                                      final dataRepo = ref.read(
+                                        dataRepositoryProvider,
+                                      );
+                                      final result = await dataRepo.levelUpgrade();
+                                      final int newLevel = result['new_level'];
+                                      final dynamic newHustleObj =
+                                          result['new_hustle'];
+                                      final String newHustleKey =
+                                          HustleUtils.getCurrentHustleKey(
+                                            newHustleObj,
+                                          );
+                                      if (context.mounted) {
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => SelectHustleScreen(
+                                              newLevel: newLevel,
+                                              newHustle: newHustleKey,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                      ref.invalidate(userControllerProvider);
+                                      ref.invalidate(levelStatusProvider);
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Error: $e'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    }
                                   }
-                                  ref.invalidate(userControllerProvider);
-                                  ref.invalidate(levelStatusProvider);
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Error: $e'),
-                                        backgroundColor: Colors.red,
-                                      ),
+                                : () {
+                                    // Show info popup when not eligible
+                                    final daysRemaining = (status.daysInLevelRequired - status.daysInLevelProgress).clamp(0, double.infinity);
+                                    final hcRemaining = (status.hcEarnedInLevelRequired - status.hcEarnedInLevelProgress).clamp(0, double.infinity);
+                                    
+                                    String description = 'Current: ${status.hcEarnedInLevelProgress} HC, ${status.daysInLevelProgress.toStringAsFixed(1)} days. '
+                                        'Required: ${status.hcEarnedInLevelRequired} HC, ${status.daysInLevelRequired} days, ${status.upgradeFee} HC fee. '
+                                        'Still need:';
+                                    
+                                    if (hcRemaining > 0) description += ' ${hcRemaining.toInt()} HC';
+                                    if (hcRemaining > 0 && daysRemaining > 0) description += ',';
+                                    if (daysRemaining > 0) description += ' ${daysRemaining.toStringAsFixed(1)} days';
+                                    description += '.';
+                                    
+                                    InfoPopup.show(
+                                      context: context,
+                                      title: 'Level ${status.currentLevel + 1} Upgrade',
+                                      description: description,
                                     );
-                                  }
-                                }
-                              }
-                            : null,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: status.isEligibleForUpgrade
-                                ? AppColors.angolaYellow
-                                : AppColors.orange,
-                            borderRadius: BorderRadius.circular(10.r),
-                          ),
-                          padding: ResponsiveUtils.pSymmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          child: Text(
-                            '${status.upgradeFee} HC',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14.f,
-                              color: AppColors.angolaBlack,
+                                  },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: status.isEligibleForUpgrade
+                                    ? AppColors.angolaYellow
+                                    : AppColors.orange,
+                                borderRadius: BorderRadius.circular(10.r),
+                              ),
+                              padding: ResponsiveUtils.pSymmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              child: Text(
+                                '${status.upgradeFee} HC',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14.f,
+                                  color: AppColors.angolaBlack,
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                  SizedBox(height: 2.s),
-                  Text(
-                    ref.t(LocalizationKeys.upgradeLevel),
-                    style: TextStyle(
-                      fontSize: 10.f,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textGrey,
-                      shadows: textShadow,
-                    ),
+                      SizedBox(height: 2.s),
+                      Text(
+                        ref.t(LocalizationKeys.upgradeLevel),
+                        style: TextStyle(
+                          fontSize: 10.f,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textGrey,
+                          shadows: textShadow,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
