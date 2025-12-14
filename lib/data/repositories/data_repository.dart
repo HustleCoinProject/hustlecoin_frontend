@@ -103,6 +103,14 @@ class DataRepository {
     return tokens;
   }
 
+  Future<AuthTokens> loginWithFirebase(String firebaseIdToken) async {
+    // Firebase login should always hit the server, never cached
+    final tokens = await _apiRepository.loginWithFirebase(firebaseIdToken);
+    // Clear all cache on new login
+    await _cacheManager.clear();
+    return tokens;
+  }
+
   Future<User> register(
     String email,
     String password,

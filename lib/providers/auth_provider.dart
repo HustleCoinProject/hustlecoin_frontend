@@ -5,18 +5,25 @@ import '../data/models/auth_tokens.dart';
 import '../data/repositories/api_repository.dart';
 import '../data/repositories/data_repository.dart';
 import '../data/cache/cache_manager.dart';
+import '../services/firebase_auth_service.dart';
 import 'foundational_providers.dart';
 
 // --- Authentication State ---
 
 final authControllerProvider =
     StateNotifierProvider<AuthController, AsyncValue<AuthTokens?>>((ref) {
-      return AuthController(ref.watch(sharedPreferencesProvider));
+      return AuthController(
+        ref.watch(sharedPreferencesProvider),
+        FirebaseAuthService(),
+      );
     });
 
 class AuthController extends StateNotifier<AsyncValue<AuthTokens?>> {
   final SharedPreferences _prefs;
-  AuthController(this._prefs) : super(const AsyncValue.loading()) {
+  final FirebaseAuthService _firebaseAuthService;
+  
+  AuthController(this._prefs, this._firebaseAuthService)
+      : super(const AsyncValue.loading()) {
     _tryAutoLogin();
   }
 
@@ -52,6 +59,25 @@ class AuthController extends StateNotifier<AsyncValue<AuthTokens?>> {
     }
   }
 
+  /// Sign in with Google using Firebase
+  Future<void> signInWithGoogle() async {
+    state = const AsyncValue.loading();
+    try {
+      // Sign in with Google and get Firebase ID token
+      final firebaseIdToken = await _firebaseAuthService.signInWithGoogle();
+
+      // Send the Firebase ID token to backend for verification
+      final tempRepo = DataRepository(ApiRepository(), CacheManager());
+      final tokens = await tempRepo.loginWithFirebase(firebaseIdToken);
+      
+      await _prefs.setString(_tokensKey, json.encode(tokens.toJson()));
+      state = AsyncValue.data(tokens);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      await _firebaseAuthService.signOut();
+    }
+  }
+
   Future<void> updateTokens(AuthTokens newTokens) async {
     try {
       await _prefs.setString(_tokensKey, json.encode(newTokens.toJson()));
@@ -64,6 +90,8 @@ class AuthController extends StateNotifier<AsyncValue<AuthTokens?>> {
 
   Future<void> logout() async {
     await _prefs.remove(_tokensKey);
+    // Sign out from Firebase/Google if user was signed in via Google
+    await _firebaseAuthService.signOut();
     state = const AsyncValue.data(null);
   }
 }

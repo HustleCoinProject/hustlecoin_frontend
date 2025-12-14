@@ -30,7 +30,7 @@ import '../models/safe_lock_global_stats.dart';
 
 class ApiRepository {
   final String _baseUrl =
-      "https://hustlecoin-backend.fly.dev"; // "http://10.247.33.41:8000";
+      "http://10.247.33.41:8000"; // "https://hustlecoin-backend.fly.dev";
   String? _accessToken;
   String? _refreshToken;
 
@@ -105,6 +105,20 @@ class ApiRepository {
       return AuthTokens.fromJson(responseData);
     } else {
       throw Exception('Failed to login: ${response.body}');
+    }
+  }
+
+  Future<AuthTokens> loginWithFirebase(String firebaseIdToken) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/api/users/firebase-login'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'firebase_token': firebaseIdToken}),
+    );
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      return AuthTokens.fromJson(responseData);
+    } else {
+      throw Exception('Failed to login with Firebase: ${response.body}');
     }
   }
 

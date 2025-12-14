@@ -136,6 +136,67 @@ class LoginScreen extends ConsumerWidget {
                         },
                       ),
                     ),
+                    SizedBox(height: 20.s),
+
+                    // Or Divider
+                    Row(
+                      children: [
+                        Expanded(child: Divider(color: AppColors.textGrey)),
+                        Padding(
+                          padding: ResponsiveUtils.pSymmetric(horizontal: 12.0),
+                          child: Text(
+                            'OR',
+                            style: TextStyle(
+                              color: AppColors.textGrey,
+                              fontSize: 14.f,
+                            ),
+                          ),
+                        ),
+                        Expanded(child: Divider(color: AppColors.textGrey)),
+                      ],
+                    ),
+                    SizedBox(height: 20.s),
+
+                    // Google Sign-In Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: GlassContainer(
+                        borderRadius: 12,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12.r),
+                            onTap: () async {
+                              await ref
+                                  .read(authControllerProvider.notifier)
+                                  .signInWithGoogle();
+                            },
+                            child: Padding(
+                              padding: ResponsiveUtils.pSymmetric(vertical: 15.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    FontAwesomeIcons.google,
+                                    color: Colors.white,
+                                    size: 20.s,
+                                  ),
+                                  SizedBox(width: 10.s),
+                                  Text(
+                                    'Continue with Google',
+                                    style: TextStyle(
+                                      color: AppColors.textLight,
+                                      fontSize: 16.f,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                     SizedBox(height: 30.s),
 
                     // Sign Up Link

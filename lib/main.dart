@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hustlecoin/features/auth/start_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 import 'package:hustlecoin/features/home/home_screen.dart';
 
@@ -104,6 +106,17 @@ Future<void> main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
   print('DEBUG: main() - Flutter bindings initialized');
+
+  // Initialize Firebase
+  print('DEBUG: main() - Initializing Firebase...');
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('DEBUG: main() - ✅ Firebase initialized successfully');
+  } catch (e) {
+    print('DEBUG: main() - ❌ Failed to initialize Firebase: $e');
+  }
 
   // Initialize Hive for caching
   print('DEBUG: main() - Initializing Hive...');
