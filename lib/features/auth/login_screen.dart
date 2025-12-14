@@ -19,9 +19,11 @@ class LoginScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    /* ========== TRADITIONAL LOGIN - COMMENTED OUT ==========
     // Example: Add controllers for your text fields
     final usernameController = TextEditingController();
     final passwordController = TextEditingController();
+    ========== END TRADITIONAL LOGIN ========== */
 
     // Listen for the user state to change to navigate upon successful login
     ref.listen<AsyncValue<User?>>(userControllerProvider, (previous, next) {
@@ -94,6 +96,7 @@ class LoginScreen extends ConsumerWidget {
                     ),
                     SizedBox(height: 30.s),
 
+                    /* ========== TRADITIONAL LOGIN FORM - COMMENTED OUT TEMPORARILY IN FAVOUR OF GOOGLE OAUTH ==========
                     // Input Fields
                     _buildInputField(
                       icon: FontAwesomeIcons.user,
@@ -120,9 +123,6 @@ class LoginScreen extends ConsumerWidget {
                       child: PrimaryActionButton(
                         text: ref.t(LocalizationKeys.logIn),
                         onTap: () async {
-                          /*Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (_) => const HomeScreen()),
-                          );*/
                           // Call the login method from the provider
                           await ref
                               .read(authControllerProvider.notifier)
@@ -154,6 +154,7 @@ class LoginScreen extends ConsumerWidget {
                       ],
                     ),
                     SizedBox(height: 20.s),
+                    ========== END TRADITIONAL LOGIN FORM ========== */
 
                     // Google Sign-In Button
                     SizedBox(
@@ -197,8 +198,10 @@ class LoginScreen extends ConsumerWidget {
                     ),
                     SizedBox(height: 30.s),
 
+                    /* ========== SIGNUP LINK - COMMENTED OUT TEMPORARILY IN FAVOUR OF GOOGLE OAUTH ==========
                     // Sign Up Link
                     _buildSignUpLink(context, ref),
+                    ========== END SIGNUP LINK ========== */
                   ],
                 ),
               ),

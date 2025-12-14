@@ -164,50 +164,8 @@ class StatsContainer extends ConsumerWidget {
                 ),
               ),
               SizedBox(height: 12.s),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  // Info Icon
-                  GestureDetector(
-                    onTap: () {
-                      final daysRemaining = (status.daysInLevelRequired - status.daysInLevelProgress).clamp(0, double.infinity);
-                      final hcRemaining = (status.hcEarnedInLevelRequired - status.hcEarnedInLevelProgress).clamp(0, double.infinity);
-                      
-                      String description = 'Current: ${status.hcEarnedInLevelProgress} HC, ${status.daysInLevelProgress.toStringAsFixed(1)} days. '
-                          'Required: ${status.hcEarnedInLevelRequired} HC, ${status.daysInLevelRequired} days, ${status.upgradeFee} HC fee.';
-                      
-                      if (!status.isEligibleForUpgrade) {
-                        description += ' Still need:';
-                        if (hcRemaining > 0) description += ' ${hcRemaining.toInt()} HC';
-                        if (hcRemaining > 0 && daysRemaining > 0) description += ',';
-                        if (daysRemaining > 0) description += ' ${daysRemaining.toStringAsFixed(1)} days';
-                        description += '.';
-                      } else {
-                        description += ' Ready to upgrade!';
-                      }
-                      
-                      InfoPopup.show(
-                        context: context,
-                        title: 'Level ${status.currentLevel + 1} Upgrade',
-                        description: description,
-                      );
-                    },
-                    child: Container(
-                      padding: ResponsiveUtils.p(6),
-                      decoration: BoxDecoration(
-                        color: AppColors.textGrey.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Icon(
-                        Icons.info_outline,
-                        color: AppColors.angolaYellow,
-                        size: 18.s,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 8.s),
-                  // Upgrade Button
-                  Column(
+              // Upgrade Button
+              Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Container(
@@ -330,8 +288,6 @@ class StatsContainer extends ConsumerWidget {
                       ),
                     ],
                   ),
-                ],
-              ),
             ],
           ),
         ),

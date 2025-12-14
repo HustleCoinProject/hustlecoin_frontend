@@ -13,6 +13,7 @@ import 'package:hustlecoin/widgets/glass_container.dart';
 import 'package:hustlecoin/widgets/primary_action_button.dart';
 import 'package:hustlecoin/widgets/screen_background.dart';
 import 'package:hustlecoin/widgets/screen_header.dart';
+import 'package:hustlecoin/widgets/info_popup.dart';
 
 // Provider to track loading state for each shop item
 final itemPurchasingProvider = StateProvider.autoDispose.family<bool, String>(
@@ -222,12 +223,15 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     return GlassContainer(
       borderRadius: 16.r,
       padding: ResponsiveUtils.p(15),
-      child: Column(
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          Container(
-            width: 80.s,
-            height: 80.s,
-            margin: EdgeInsets.only(bottom: 10.s),
+          Column(
+            children: [
+              Container(
+                width: 80.s,
+                height: 80.s,
+                margin: EdgeInsets.only(bottom: 10.s),
             decoration: BoxDecoration(
               color: const Color.fromRGBO(16, 16, 16, 0.5),
               borderRadius: BorderRadius.circular(12.r),
@@ -323,8 +327,34 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                       });
                     },
             ),
+          ),            ],
           ),
-        ],
+          // Info icon in top-right corner
+          Positioned(
+            top: -10,
+            right: -10,
+            child: GestureDetector(
+              onTap: () {
+                InfoPopup.show(
+                  context: context,
+                  title: item.name,
+                  description: item.description,
+                );
+              },
+              child: Container(
+                padding: ResponsiveUtils.p(6),
+                decoration: BoxDecoration(
+                  color: AppColors.textGrey.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.info_outline,
+                  color: const Color(0xFF7B94D1),
+                  size: 16.s,
+                ),
+              ),
+            ),
+          ),        ],
       ),
     );
   }

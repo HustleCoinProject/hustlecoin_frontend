@@ -26,6 +26,7 @@ class InfoPopup {
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Stack(
+              clipBehavior: Clip.none,
               children: [
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,10 +70,14 @@ class InfoPopup {
                   child: GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
                     child: Container(
-                      padding: ResponsiveUtils.p(8),
+                      padding: ResponsiveUtils.p(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.textGrey.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
                       child: Icon(
                         Icons.close,
-                        color: AppColors.textGrey,
+                        color: AppColors.textLight,
                         size: 16.s,
                       ),
                     ),
