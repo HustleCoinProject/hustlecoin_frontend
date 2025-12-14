@@ -79,7 +79,6 @@ class DataRepository {
         return cached as T;
       }
     } catch (e) {
-      print('DEBUG: DataRepository - Error reading cache for $cacheKey: $e');
     }
 
     // Cache miss or expired, fetch from API

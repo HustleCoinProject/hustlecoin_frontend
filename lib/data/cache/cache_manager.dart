@@ -12,7 +12,6 @@ class CacheManager {
   Future<void> initialize() async {
     if (_box == null || !_box!.isOpen) {
       _box = await Hive.openBox<dynamic>(_boxName);
-      print('DEBUG: CacheManager - Cache box opened');
     }
   }
 
@@ -25,7 +24,6 @@ class CacheManager {
     try {
       final rawData = _box!.get(key);
       if (rawData == null) {
-        print('DEBUG: CacheManager - Cache miss for key: $key');
         return null;
       }
 
@@ -43,19 +41,16 @@ class CacheManager {
       );
 
       if (cacheEntry.isExpired) {
-        print('DEBUG: CacheManager - Cache expired for key: $key');
         await delete(key); // Clean up expired cache
         return null;
       }
 
-      print('DEBUG: CacheManager - Cache hit for key: $key');
       
       // Decode JSON string back to object
       final jsonData = cacheEntry.data as String;
       final decoded = json.decode(jsonData);
       return decoded as T;
     } catch (e) {
-      print('DEBUG: CacheManager - Error getting cache for key $key: $e');
       return null;
     }
   }
@@ -85,9 +80,7 @@ class CacheManager {
       };
 
       await _box!.put(key, cacheEntry);
-      print('DEBUG: CacheManager - Cached data for key: $key (TTL: ${ttl.inMinutes} minutes)');
     } catch (e) {
-      print('DEBUG: CacheManager - Error setting cache for key $key: $e');
     }
   }
 
@@ -95,14 +88,12 @@ class CacheManager {
   Future<void> delete(String key) async {
     await initialize();
     await _box!.delete(key);
-    print('DEBUG: CacheManager - Deleted cache for key: $key');
   }
 
   /// Clear all cached data
   Future<void> clear() async {
     await initialize();
     await _box!.clear();
-    print('DEBUG: CacheManager - Cleared all cache');
   }
 
   /// Check if cache exists and is valid
@@ -121,7 +112,6 @@ class CacheManager {
   Future<void> close() async {
     if (_box != null && _box!.isOpen) {
       await _box!.close();
-      print('DEBUG: CacheManager - Cache box closed');
     }
   }
 }

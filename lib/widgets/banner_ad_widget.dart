@@ -52,7 +52,6 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
         });
       }
     } catch (e) {
-      print('Error loading banner ad: $e');
       setState(() {
         _isLoading = false;
       });

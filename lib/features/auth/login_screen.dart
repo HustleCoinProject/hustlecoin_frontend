@@ -130,9 +130,7 @@ class LoginScreen extends ConsumerWidget {
                                 usernameController.text.trim(),
                                 passwordController.text.trim(),
                               );
-                          /*print(
-                            "Fetching user with tokens: ${ref.read(authControllerProvider).value != null ? 'TOKENS_AVAILABLE' : 'NO_TOKENS'}",
-                          );*/
+              
                         },
                       ),
                     ),

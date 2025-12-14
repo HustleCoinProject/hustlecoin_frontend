@@ -30,9 +30,6 @@ final apiRepositoryProvider = Provider<ApiRepository>((ref) {
     loading: () => null,
     error: (_, __) => null,
   );
-  print(
-    "DEBUG: apiRepositoryProvider - Setting tokens: ${tokens != null ? 'YES' : 'NO'}",
-  );
   repo.setTokens(tokens?.accessToken, tokens?.refreshToken);
 
   // Set up token refresh callback
@@ -55,9 +52,6 @@ final dataRepositoryProvider = Provider<DataRepository>((ref) {
     data: (tokens) => tokens,
     loading: () => null,
     error: (_, __) => null,
-  );
-  print(
-    "DEBUG: dataRepositoryProvider - Setting tokens: ${tokens != null ? 'YES' : 'NO'}",
   );
   dataRepo.setTokens(tokens?.accessToken, tokens?.refreshToken);
 

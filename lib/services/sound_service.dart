@@ -25,11 +25,7 @@ class SoundService {
     try {
       final prefs = await SharedPreferences.getInstance();
       _soundEnabled = prefs.getBool(_soundEnabledKey) ?? true;
-      print(
-        'DEBUG: SoundService - Initialized with sound enabled: $_soundEnabled',
-      );
     } catch (e) {
-      print('DEBUG: SoundService - Failed to initialize: $e');
     }
   }
 
@@ -42,29 +38,21 @@ class SoundService {
       _soundEnabled = !_soundEnabled;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_soundEnabledKey, _soundEnabled);
-      print('DEBUG: SoundService - Sound toggled to: $_soundEnabled');
     } catch (e) {
-      print('DEBUG: SoundService - Failed to toggle sound: $e');
     }
   }
 
   // Play a sound by type
   Future<void> playSound(SoundType soundType) async {
     if (!_soundEnabled) {
-      print('DEBUG: SoundService - Sound disabled, skipping ${soundType.name}');
       return;
     }
 
     try {
-      print(
-        'DEBUG: SoundService - Playing sound: ${soundType.name} (${soundType.path})',
-      );
       await _audioPlayer.play(
         AssetSource(soundType.path.replaceFirst('assets/', '')),
       );
-      print('DEBUG: SoundService - Successfully played: ${soundType.name}');
     } catch (e) {
-      print('DEBUG: SoundService - Failed to play ${soundType.name}: $e');
     }
   }
 
@@ -77,9 +65,7 @@ class SoundService {
   Future<void> dispose() async {
     try {
       await _audioPlayer.dispose();
-      print('DEBUG: SoundService - Disposed successfully');
     } catch (e) {
-      print('DEBUG: SoundService - Failed to dispose: $e');
     }
   }
 }

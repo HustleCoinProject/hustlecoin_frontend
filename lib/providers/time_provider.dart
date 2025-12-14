@@ -52,11 +52,7 @@ class ServerTimeController extends StateNotifier<AsyncValue<Duration>> {
       final offset = adjustedServerTime.difference(localTimeAfter);
       state = AsyncValue.data(offset);
 
-      debugPrint(
-        "Server time sync completed. Offset: ${offset.inMilliseconds}ms",
-      );
     } catch (e, st) {
-      debugPrint("Failed to sync with server time: $e");
       final hasExistingValue = state.when(
         data: (_) => true,
         loading: () => false,

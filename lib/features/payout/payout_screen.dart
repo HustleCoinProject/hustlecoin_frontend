@@ -201,13 +201,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
   }
 
   Future<void> _requestPayout() async {
-    debugPrint('=== PAYOUT REQUEST DEBUG START ===');
-    debugPrint('DEBUG: _requestPayout called');
-    debugPrint('DEBUG: Selected method: $_selectedMethod');
-    debugPrint('DEBUG: Form key current state: ${_formKey.currentState}');
-    
     if (!_formKey.currentState!.validate()) {
-      debugPrint('DEBUG: Form validation failed');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please fix form errors'),
@@ -218,7 +212,6 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
     }
     
     if (_selectedMethod == null) {
-      debugPrint('DEBUG: No payout method selected');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please select a payout method'),
@@ -264,17 +257,11 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
 
     try {
       final amountHc = int.tryParse(_amountController.text) ?? 0;
-      debugPrint('DEBUG: Amount HC: $amountHc');
+      
       
       final payoutMethod = _selectedMethod == PayoutMethod.multicaixaExpress
           ? 'multicaixa_express'
           : 'bank_transfer';
-      debugPrint('DEBUG: Payout method: $payoutMethod');
-      debugPrint('DEBUG: Phone number: ${_phoneController.text.trim()}');
-      debugPrint('DEBUG: Full name: ${_accountHolderController.text.trim()}');
-      debugPrint('DEBUG: National ID: ${_nationalIdController.text.trim()}');
-      debugPrint('DEBUG: Selected bank: $_selectedBank');
-      debugPrint('DEBUG: IBAN: ${_ibanController.text.trim()}');
 
       final payoutRequest = PayoutRequest(
         amountHc: amountHc,
@@ -294,20 +281,16 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
             : null,
       );
       
-      debugPrint('DEBUG: PayoutRequest created: ${payoutRequest.toJson()}');
-      debugPrint('DEBUG: About to call payoutProvider.requestPayout...');
+ 
       
       // Check if provider is available
       final notifier = ref.read(payoutProvider.notifier);
-      debugPrint('DEBUG: Payout provider notifier: $notifier');
 
       final payout = await notifier.requestPayout(payoutRequest);
       
-      debugPrint('DEBUG: Payout response received: $payout');
-      debugPrint('DEBUG: Payout is null: ${payout == null}');
+    
 
       if (payout != null && mounted) {
-        debugPrint('DEBUG: Showing success message');
         
         // Save form data to backend for future use
         await _saveFormDataToBackend();
@@ -335,7 +318,6 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
         // Refresh payout info to update available balance
         ref.invalidate(payoutInfoProvider);
       } else {
-        debugPrint('DEBUG: Payout was null or widget not mounted');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -346,8 +328,6 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
         }
       }
     } catch (error, stackTrace) {
-      debugPrint('DEBUG: Exception caught in _requestPayout: $error');
-      debugPrint('DEBUG: Stack trace: $stackTrace');
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -362,13 +342,11 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
         );
       }
     } finally {
-      debugPrint('DEBUG: Finally block - setting loading to false');
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
       }
-      debugPrint('=== PAYOUT REQUEST DEBUG END ===');
     }
   }
 

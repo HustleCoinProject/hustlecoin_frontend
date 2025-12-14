@@ -63,7 +63,6 @@ class ApiRepository {
 
       // If we get a 401 and have a refresh token, try to refresh
       if (response.statusCode == 401 && _refreshToken != null) {
-        print("DEBUG: Access token expired, attempting refresh...");
 
         try {
           // Attempt to refresh the token
@@ -78,10 +77,8 @@ class ApiRepository {
           }
 
           // Retry the original request with the new token
-          print("DEBUG: Token refreshed successfully, retrying request...");
           return await requestFunction();
         } catch (refreshError) {
-          print("DEBUG: Token refresh failed: $refreshError");
           // If refresh fails, the token is invalid, so rethrow the original 401
           throw Exception('Authentication failed: ${response.body}');
         }

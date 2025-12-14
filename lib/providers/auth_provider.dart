@@ -36,13 +36,9 @@ class AuthController extends StateNotifier<AsyncValue<AuthTokens?>> {
       try {
         tokens = AuthTokens.fromJson(json.decode(tokensJson));
       } catch (e) {
-        print("DEBUG: Failed to parse stored tokens: $e");
       }
     }
 
-    print(
-      "DEBUG: AuthController _tryAutoLogin - found tokens: ${tokens != null ? 'YES' : 'NO'}",
-    );
     state = AsyncValue.data(tokens);
   }
 
@@ -82,9 +78,7 @@ class AuthController extends StateNotifier<AsyncValue<AuthTokens?>> {
     try {
       await _prefs.setString(_tokensKey, json.encode(newTokens.toJson()));
       state = AsyncValue.data(newTokens);
-      print("DEBUG: Tokens updated successfully");
     } catch (e) {
-      print("DEBUG: Failed to update tokens: $e");
     }
   }
 

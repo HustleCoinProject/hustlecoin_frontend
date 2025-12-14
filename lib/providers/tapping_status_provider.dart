@@ -27,7 +27,6 @@ class TappingStatusNotifier extends AsyncNotifier<TappingStatus> {
     try {
       return await dataRepository.getTappingStatus();
     } catch (e) {
-      print('Failed to fetch tapping status: $e');
       // Return a default status if fetching fails
       return const TappingStatus(
         dailyEarnings: 0,

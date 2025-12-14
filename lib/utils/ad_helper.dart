@@ -8,22 +8,16 @@ class AdHelper {
   static Future<bool> showInterstitialAd({double probability = 0.3}) async {
     // Random chance to show ad (30% by default)
     if (DateTime.now().millisecondsSinceEpoch % 100 >= (probability * 100)) {
-      print('DEBUG: AdHelper - Skipping interstitial ad (probability check)');
       return false;
     }
 
     if (_adMobService.isInterstitialAdLoaded) {
-      print('DEBUG: AdHelper - Showing interstitial ad');
       final shown = await _adMobService.showInterstitialAd();
       if (!shown) {
-        print(
-          'DEBUG: AdHelper - Failed to show interstitial ad, preloading...',
-        );
         _adMobService.loadInterstitialAd(); // Preload for next time
       }
       return shown;
     } else {
-      print('DEBUG: AdHelper - Interstitial ad not loaded, loading now...');
       await _adMobService.loadInterstitialAd();
       return false;
     }

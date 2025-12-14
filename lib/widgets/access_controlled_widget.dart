@@ -104,26 +104,18 @@ class _AccessControlledWidgetState extends ConsumerState<AccessControlledWidget>
   void _handleTap() {
     if (!widget.enabled) return;
 
-    print('DEBUG: AccessControlledWidget tap for feature: ${widget.featureId}');
-    
     // Use watch to get the current state, and refresh if needed
     final inventoryAsync = ref.watch(inventoryProvider);
     
-    print('DEBUG: Inventory state: ${inventoryAsync.runtimeType}');
-    
     inventoryAsync.when(
       data: (inventory) {
-        print('DEBUG: Inventory loaded with ${inventory.length} items, checking access...');
         if (_hasAccess(inventory)) {
-          print('DEBUG: Access granted, calling onTap');
           widget.onTap?.call();
         } else {
-          print('DEBUG: Access denied, showing tooltip');
           _showTooltip();
         }
       },
       loading: () {
-        print('DEBUG: Inventory loading, refreshing and showing tooltip');
         // Try to refresh the inventory provider
         Future.microtask(() {
           ref.invalidate(inventoryProvider);
@@ -131,7 +123,6 @@ class _AccessControlledWidgetState extends ConsumerState<AccessControlledWidget>
         _showTooltip();
       },
       error: (error, stackTrace) {
-        print('DEBUG: Inventory error: $error, refreshing and showing tooltip');
         // Try to refresh the inventory provider on error
         Future.microtask(() {
           ref.invalidate(inventoryProvider);
@@ -145,13 +136,6 @@ class _AccessControlledWidgetState extends ConsumerState<AccessControlledWidget>
   Widget build(BuildContext context) {
     // Watch inventory to trigger rebuilds when it changes
     final inventoryAsync = ref.watch(inventoryProvider);
-    
-    // Debug the current inventory state
-    print('DEBUG: AccessControlledWidget build - Inventory state: ${inventoryAsync.when(
-      data: (inventory) => 'loaded with ${inventory.length} items',
-      loading: () => 'loading',
-      error: (error, _) => 'error: $error',
-    )}');
     
     return GestureDetector(
       key: _buttonKey,

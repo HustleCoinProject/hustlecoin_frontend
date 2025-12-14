@@ -39,13 +39,8 @@ class FirebaseAuthService {
         throw Exception('Failed to get Firebase ID token');
       }
 
-      print('DEBUG: Firebase ID token obtained (length: ${idToken.length})');
-      print('DEBUG: Firebase User: ${userCredential.user?.email}');
-      print('DEBUG: Token preview: ${idToken.substring(0, 50)}...');
-
       return idToken;
     } catch (e) {
-      print('Error during Google sign-in: $e');
       rethrow;
     }
   }

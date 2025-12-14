@@ -110,7 +110,6 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
           final timeSinceLastFetch = DateTime.now().difference(_lastFetchTime!);
           canFetch = timeSinceLastFetch >= _fetchCooldown;
           if (!canFetch) {
-            debugPrint("Fetch cooldown active. Skipping request.");
           }
         } else {
           canFetch = true;
@@ -129,17 +128,14 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
           for (var tile in ownedTilesData) {
             _ownedTilesInView[tile.h3Index] = tile;
           }
-          debugPrint("Loaded ${ownedTilesData.length} owned tiles. Total cached: ${_ownedTilesInView.length}");
           
           // Update last fetch time after successful fetch
           _lastFetchTime = DateTime.now();
         } catch (e) {
-          debugPrint("Failed to fetch owned tiles: $e");
           // Don't clear existing tiles on error, just skip this fetch
         }
       }
     } else {
-      debugPrint("Zoom level too low ($zoom < $MIN_ZOOM_FOR_FETCH). Skipping fetch.");
     }
 
     // --- Rendering Logic (always render all cached tiles) ---
@@ -179,7 +175,6 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
           ),
         );
       } catch (e) {
-        debugPrint("Error rendering tile ${tile.h3Index}: $e");
       }
     }
     

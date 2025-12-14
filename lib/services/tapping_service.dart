@@ -18,7 +18,7 @@ class TappingService {
     // Check if we can tap based on current tapping status
     final tappingStatusNotifier = _ref.read(tappingStatusProvider.notifier);
     if (tappingStatusNotifier.hasReachedDailyLimit) {
-      print('Cannot tap: Daily limit reached');
+
       return;
     }
 
@@ -52,7 +52,6 @@ class TappingService {
     } catch (e) {
       // Add the taps back to pending if submission failed
       _pendingTaps += tapsToSubmit;
-      print('Failed to submit taps: $e');
       
       // Refresh tapping status on error to get current state from server
       _ref.read(tappingStatusProvider.notifier).refreshStatus();

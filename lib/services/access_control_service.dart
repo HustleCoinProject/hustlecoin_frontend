@@ -33,35 +33,23 @@ class ActiveItemRequirement extends AccessRequirement {
 
   @override
   bool checkRequirement(List<InventoryItemOut> inventory) {
-    // Debug: Print all inventory items
-    print('DEBUG: Checking inventory for itemId: $itemId');
-    print('DEBUG: Inventory items:');
-    for (final item in inventory) {
-      print('  - itemId: ${item.itemId}, quantity: ${item.quantity}, expiresAt: ${item.expiresAt}');
-    }
-    
     // Check if user has the item and it's not expired
     try {
       final item = inventory.where((item) => item.itemId == itemId).first;
-      print('DEBUG: Found matching item: ${item.itemId}, quantity: ${item.quantity}');
       
       if (item.quantity <= 0) {
-        print('DEBUG: Item quantity is 0 or negative');
         return false;
       }
       
       // If item has expiration, check if it's still valid
       if (item.expiresAt != null) {
         final isValid = DateTime.now().isBefore(item.expiresAt!);
-        print('DEBUG: Item expires at ${item.expiresAt}, valid: $isValid');
         return isValid;
       }
       
-      print('DEBUG: Item has no expiration, access granted');
       return true;
     } catch (e) {
       // Item not found
-      print('DEBUG: Item not found in inventory: $e');
       return false;
     }
   }
@@ -105,15 +93,12 @@ class AccessControlService {
 
   /// Check if user has access to a specific feature
   static bool hasAccess(String featureId, List<InventoryItemOut> inventory) {
-    print('DEBUG: Checking access for featureId: $featureId');
     final requirement = _featureRequirements[featureId];
     if (requirement == null) {
-      print('DEBUG: No requirement found for $featureId, granting access');
       return true; // No requirement means access is granted
     }
     
     final hasAccess = requirement.checkRequirement(inventory);
-    print('DEBUG: Access check result for $featureId: $hasAccess');
     return hasAccess;
   }
 

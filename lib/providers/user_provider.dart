@@ -31,19 +31,15 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
         next.when(
           data: (tokens) {
             if (tokens != null) {
-              print("DEBUG: UserController saw tokens available...");
               _fetchUser();
             } else {
-              print("DEBUG: UserController saw tokens cleared");
               state = const AsyncValue.data(null);
             }
           },
           loading: () {
-            print("DEBUG: UserController saw auth loading state");
             // Don't do anything while auth is loading
           },
           error: (error, stack) {
-            print("DEBUG: UserController saw auth error: $error");
             state = const AsyncValue.data(null);
           },
         );
@@ -64,14 +60,9 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
       state = const AsyncValue.loading();
     }
     try {
-      print("DEBUG: UserController fetching user data...");
       final user = await _api.getMe();
-      print(
-        "DEBUG: UserController successfully fetched user: ${user.username}",
-      );
       state = AsyncValue.data(user);
     } catch (e, st) {
-      print("DEBUG: UserController failed to fetch user: $e");
       _ref.read(authControllerProvider.notifier).logout();
       state = AsyncValue.error(e, st);
     }
@@ -105,7 +96,6 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
         }
       });
     } catch (e) {
-      debugPrint("Action failed: $e");
       // Only refetch on error as fallback
       await _fetchUser();
     }
@@ -118,7 +108,6 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
       // Invalidate inventory provider to refresh it after purchase
       _ref.invalidate(inventoryProvider);
     } catch (e) {
-      debugPrint("Purchase failed: $e");
       await _fetchUser();
       rethrow;
     }
@@ -129,7 +118,6 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
       await _api.buyLandTile(h3Index);
       await _fetchUser();
     } catch (e) {
-      debugPrint("Land purchase failed: $e");
       await _fetchUser();
       rethrow;
     }
@@ -140,7 +128,6 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
       await _api.sellLandTile(h3Index);
       await _fetchUser();
     } catch (e) {
-      debugPrint("Land sell failed: $e");
       await _fetchUser();
       rethrow;
     }
@@ -151,7 +138,6 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
       await _api.claimLandIncome();
       await _fetchUser(); // Refresh user data to get updated balance
     } catch (e) {
-      debugPrint("Land income claim failed: $e");
       await _fetchUser();
       rethrow;
     }
@@ -174,7 +160,6 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
       );
       await _fetchUser();
     } catch (e) {
-      debugPrint("Profile update failed: $e");
       await _fetchUser();
       rethrow;
     }

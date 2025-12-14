@@ -148,7 +148,6 @@ class TaskController {
       // The UserController handles refetching even on failure.
       // We just need to catch the error here so it doesn't propagate
       // as an unhandled exception in the UI.
-      print('Task completion failed, but user state will be updated: $e');
     } finally {
       // Reset loading state
       if (ref.read(taskLoadingStateProvider(taskId).notifier).mounted) {
@@ -178,7 +177,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     try {
       await userController.updateProfile(language: newLanguage);
     } catch (e) {
-      print('Failed to toggle language: $e');
     }
   }
 
