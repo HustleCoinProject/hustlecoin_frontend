@@ -238,18 +238,18 @@ class StatsContainer extends ConsumerWidget {
                                     final daysRemaining = (status.daysInLevelRequired - status.daysInLevelProgress).clamp(0, double.infinity);
                                     final hcRemaining = (status.hcEarnedInLevelRequired - status.hcEarnedInLevelProgress).clamp(0, double.infinity);
                                     
-                                    String description = 'Current: ${status.hcEarnedInLevelProgress} HC, ${status.daysInLevelProgress.toStringAsFixed(1)} days. '
-                                        'Required: ${status.hcEarnedInLevelRequired} HC, ${status.daysInLevelRequired} days, ${status.upgradeFee} HC fee. '
-                                        'Still need:';
+                                    String description = '${ref.t(LocalizationKeys.current)}: ${status.hcEarnedInLevelProgress} HC, ${status.daysInLevelProgress.toStringAsFixed(1)} ${ref.t(LocalizationKeys.days)}. '
+                                        '${ref.t(LocalizationKeys.required)}: ${status.hcEarnedInLevelRequired} HC, ${status.daysInLevelRequired} ${ref.t(LocalizationKeys.days)}, ${status.upgradeFee} HC ${ref.t(LocalizationKeys.fee)}. '
+                                        '${ref.t(LocalizationKeys.stillNeed)}:';
                                     
                                     if (hcRemaining > 0) description += ' ${hcRemaining.toInt()} HC';
                                     if (hcRemaining > 0 && daysRemaining > 0) description += ',';
-                                    if (daysRemaining > 0) description += ' ${daysRemaining.toStringAsFixed(1)} days';
+                                    if (daysRemaining > 0) description += ' ${daysRemaining.toStringAsFixed(1)} ${ref.t(LocalizationKeys.days)}';
                                     description += '.';
                                     
                                     InfoPopup.show(
                                       context: context,
-                                      title: 'Level ${status.currentLevel + 1} Upgrade',
+                                      title: ref.t(LocalizationKeys.levelUpgrade).replaceAll('{level}', '${status.currentLevel + 1}'),
                                       description: description,
                                     );
                                   },

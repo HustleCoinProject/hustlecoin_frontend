@@ -11,12 +11,16 @@ class BottomNavBar extends ConsumerWidget {
   final int activeIndex;
   final ValueChanged<int> onNavItemTapped;
   final VoidCallback? onGetPaidTapped;
+  final GlobalKey? getPaidKey;
+  final GlobalKey? profileNavKey;
 
   const BottomNavBar({
     super.key,
     required this.activeIndex,
     required this.onNavItemTapped,
     this.onGetPaidTapped,
+    this.getPaidKey,
+    this.profileNavKey,
   });
 
   @override
@@ -48,6 +52,7 @@ class BottomNavBar extends ConsumerWidget {
                 label: ref.t(LocalizationKeys.profile),
                 index: 2,
                 ref: ref,
+                navKey: profileNavKey,
               ),
               _buildNavItem(
                 icon: FontAwesomeIcons.cog,
@@ -67,6 +72,7 @@ class BottomNavBar extends ConsumerWidget {
     required String label,
     required int index,
     required WidgetRef ref,
+    GlobalKey? navKey,
   }) {
     final bool isActive = activeIndex == index;
     final color = isActive ? AppColors.angolaYellow : AppColors.textGrey;
@@ -75,6 +81,7 @@ class BottomNavBar extends ConsumerWidget {
         : <Shadow>[];
 
     return Expanded(
+      key: navKey,
       child: InkWell(
         onTap: () {
           SoundService().playClick();
@@ -109,6 +116,7 @@ class BottomNavBar extends ConsumerWidget {
 
   Widget _buildGetPaidButton(WidgetRef ref) {
     return Expanded(
+      key: getPaidKey,
       child: InkWell(
         onTap: () {
           SoundService().playClick();

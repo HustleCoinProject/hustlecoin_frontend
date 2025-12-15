@@ -11,8 +11,13 @@ import 'package:hustlecoin/providers/user_provider.dart';
 
 class TopBar extends ConsumerWidget {
   final void Function() onToggleLanguage;
+  final GlobalKey? hcBalanceKey;
 
-  const TopBar({super.key, required this.onToggleLanguage});
+  const TopBar({
+    super.key,
+    required this.onToggleLanguage,
+    this.hcBalanceKey,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,6 +34,7 @@ class TopBar extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GlassContainer(
+            key: hcBalanceKey,
             borderRadius: 12,
             child: Padding(
               padding: ResponsiveUtils.p(8.0),

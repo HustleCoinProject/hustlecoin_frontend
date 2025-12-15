@@ -220,6 +220,29 @@ class LocalizationKeys {
   static const String awesome = 'awesome';
   static const String pleaseEnterValidAmount = 'please_enter_valid_amount';
   static const String insufficientBalance = 'insufficient_balance';
+  
+  // Tutorial
+  static const String tutorialHcBalanceTitle = 'tutorial_hc_balance_title';
+  static const String tutorialHcBalanceDesc = 'tutorial_hc_balance_desc';
+  static const String tutorialEarnTasksTitle = 'tutorial_earn_tasks_title';
+  static const String tutorialEarnTasksDesc = 'tutorial_earn_tasks_desc';
+  static const String tutorialPremiumFeaturesTitle = 'tutorial_premium_features_title';
+  static const String tutorialPremiumFeaturesDesc = 'tutorial_premium_features_desc';
+  static const String tutorialGetPaidTitle = 'tutorial_get_paid_title';
+  static const String tutorialGetPaidDesc = 'tutorial_get_paid_desc';
+  static const String tutorialProfileTitle = 'tutorial_profile_title';
+  static const String tutorialProfileDesc = 'tutorial_profile_desc';
+  static const String tutorialWelcomeTitle = 'tutorial_welcome_title';
+  static const String tutorialWelcomeDesc = 'tutorial_welcome_desc';
+  static const String tutorialLetsStart = 'tutorial_lets_start';
+  
+  // Upgrade Popup
+  static const String levelUpgrade = 'level_upgrade';
+  static const String current = 'current';
+  static const String required = 'required';
+  static const String days = 'days';
+  static const String fee = 'fee';
+  static const String stillNeed = 'still_need';
 }
 
 // Translation maps
@@ -366,8 +389,8 @@ class _Translations {
       LocalizationKeys.unlockExcitingFeature: 'unlock this exciting feature',
 
       // Payout
-      LocalizationKeys.getPaid: 'Get Paid',
-      LocalizationKeys.selectPayoutMethod: 'Select Payout Method',
+      LocalizationKeys.getPaid: 'Claim Prize',
+      LocalizationKeys.selectPayoutMethod: 'Select Prize Delivery',
       LocalizationKeys.multicaixaExpressDetails: 'Multicaixa Express Details',
       LocalizationKeys.bankDetails: 'Bank Details',
       LocalizationKeys.phoneNumber: 'Phone Number',
@@ -376,8 +399,8 @@ class _Translations {
       LocalizationKeys.selectBank: 'Select bank',
       LocalizationKeys.enterFullName: 'Enter your full name',
       LocalizationKeys.enterBankName: 'Enter bank name',
-      LocalizationKeys.payoutAmount: 'Payout Amount (HC)',
-      LocalizationKeys.requestPayout: 'Request Payout',
+      LocalizationKeys.payoutAmount: 'Prize Value (HC)',
+      LocalizationKeys.requestPayout: 'Claim Prize',
       LocalizationKeys.phoneNumberRequired: 'Phone number is required',
       LocalizationKeys.accountHolderNameRequired:
           'Account holder name is required',
@@ -446,6 +469,29 @@ class _Translations {
       LocalizationKeys.awesome: 'Awesome!',
       LocalizationKeys.pleaseEnterValidAmount: 'Please enter a valid amount',
       LocalizationKeys.insufficientBalance: 'Insufficient balance',
+      
+      // Tutorial
+      LocalizationKeys.tutorialHcBalanceTitle: 'Your HC Balance',
+      LocalizationKeys.tutorialHcBalanceDesc: 'This shows your HustleCoin (HC) balance and potential prize value in Kwanza. Complete tasks to earn more HC!',
+      LocalizationKeys.tutorialEarnTasksTitle: 'Earn HC Tasks',
+      LocalizationKeys.tutorialEarnTasksDesc: 'Tap these buttons to complete tasks and earn HustleCoins! Daily Tap, Watch Ads, and Play Quiz are great ways to earn.',
+      LocalizationKeys.tutorialPremiumFeaturesTitle: 'Premium Features',
+      LocalizationKeys.tutorialPremiumFeaturesDesc: 'Access premium features here! Explore Land, Safe Lock for storing HC, and Events for special opportunities.',
+      LocalizationKeys.tutorialGetPaidTitle: 'Claim Prizes',
+      LocalizationKeys.tutorialGetPaidDesc: 'Once you\'ve earned enough HC, tap here to claim your prizes!',
+      LocalizationKeys.tutorialProfileTitle: 'Your Profile',
+      LocalizationKeys.tutorialProfileDesc: 'Tap here to update your profile information, check your hustle stats, and view your inventory of items!',
+      LocalizationKeys.tutorialWelcomeTitle: 'You\'re All Set!',
+      LocalizationKeys.tutorialWelcomeDesc: 'Start earning HustleCoins and build your hustle empire!',
+      LocalizationKeys.tutorialLetsStart: 'Let\'s Start.',
+      
+      // Upgrade Popup
+      LocalizationKeys.levelUpgrade: 'Level {level} Upgrade',
+      LocalizationKeys.current: 'Current',
+      LocalizationKeys.required: 'Required',
+      LocalizationKeys.days: 'days',
+      LocalizationKeys.fee: 'fee',
+      LocalizationKeys.stillNeed: 'Still need',
     },
 
     'pt': {
@@ -594,8 +640,8 @@ class _Translations {
           'desbloquear este recurso incrível',
 
       // Payout
-      LocalizationKeys.getPaid: 'Receber Pagamento',
-      LocalizationKeys.selectPayoutMethod: 'Selecionar Método de Pagamento',
+      LocalizationKeys.getPaid: 'Reclamar Prêmio',
+      LocalizationKeys.selectPayoutMethod: 'Selecionar Entrega de Prêmio',
       LocalizationKeys.multicaixaExpressDetails:
           'Detalhes do Multicaixa Express',
       LocalizationKeys.bankDetails: 'Detalhes Bancários',
@@ -605,8 +651,8 @@ class _Translations {
       LocalizationKeys.selectBank: 'Selecionar banco',
       LocalizationKeys.enterFullName: 'Digite seu nome completo',
       LocalizationKeys.enterBankName: 'Digite o nome do banco',
-      LocalizationKeys.payoutAmount: 'Valor do Pagamento (HC)',
-      LocalizationKeys.requestPayout: 'Solicitar Pagamento',
+      LocalizationKeys.payoutAmount: 'Valor do Prêmio (HC)',
+      LocalizationKeys.requestPayout: 'Reclamar Prêmio',
       LocalizationKeys.phoneNumberRequired: 'Número de telefone é obrigatório',
       LocalizationKeys.accountHolderNameRequired:
           'Nome do titular da conta é obrigatório',
@@ -680,9 +726,32 @@ class _Translations {
       LocalizationKeys.pleaseEnterValidAmount:
           'Por favor, insira um valor válido',
       LocalizationKeys.insufficientBalance: 'Saldo insuficiente',
+      
+      // Tutorial
+      LocalizationKeys.tutorialHcBalanceTitle: 'Seu Saldo HC',
+      LocalizationKeys.tutorialHcBalanceDesc: 'Isso mostra seu saldo de HustleCoin (HC) e valor potencial de prêmio em Kwanza. Complete tarefas para ganhar mais HC!',
+      LocalizationKeys.tutorialEarnTasksTitle: 'Tarefas para Ganhar HC',
+      LocalizationKeys.tutorialEarnTasksDesc: 'Toque nesses botões para completar tarefas e ganhar HustleCoins! Toque Diário, Ver Anúncios e Quiz são ótimas formas de ganhar.',
+      LocalizationKeys.tutorialPremiumFeaturesTitle: 'Recursos Premium',
+      LocalizationKeys.tutorialPremiumFeaturesDesc: 'Acesse recursos premium aqui! Explore Terra, Cofre Seguro para armazenar HC e Eventos para oportunidades especiais.',
+      LocalizationKeys.tutorialGetPaidTitle: 'Reclamar Prêmios',
+      LocalizationKeys.tutorialGetPaidDesc: 'Quando você tiver ganhado HC suficiente, toque aqui para reclamar seus prêmios!',
+      LocalizationKeys.tutorialProfileTitle: 'Seu Perfil',
+      LocalizationKeys.tutorialProfileDesc: 'Toque aqui para atualizar suas informações de perfil, verificar suas estatísticas de trabalho e ver seu inventário de itens!',
+      LocalizationKeys.tutorialWelcomeTitle: 'Você Está Pronto!',
+      LocalizationKeys.tutorialWelcomeDesc: 'Comece a ganhar HustleCoins e construa seu império de trabalho!',
+      LocalizationKeys.tutorialLetsStart: 'Vamos Começar.',
+      
+      // Upgrade Popup
+      LocalizationKeys.levelUpgrade: 'Atualização de Nível {level}',
+      LocalizationKeys.current: 'Atual',
+      LocalizationKeys.required: 'Necessário',
+      LocalizationKeys.days: 'dias',
+      LocalizationKeys.fee: 'taxa',
+      LocalizationKeys.stillNeed: 'Ainda precisa',
     },
   };
-}
+  }
 
 // Localization provider that gets the user's language from the server
 final localizationProvider = Provider<String>((ref) {

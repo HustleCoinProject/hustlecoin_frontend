@@ -854,15 +854,15 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
                 return ref.t(LocalizationKeys.enterValidAmount);
               }
               
-              // Enforce payout range (10,000 - 30,000 HC)
+              // Enforce prize range (10,000 - 30,000 HC)
               if (amount < 10000) {
-                return 'Minimum payout amount is 10,000 HC';
+                return 'Minimum prize value is 10,000 HC';
               }
               if (amount > 30000) {
-                return 'Maximum payout amount is 30,000 HC';
+                return 'Maximum prize value is 30,000 HC';
               }
 
-              // Check against minimum payout amount from API
+              // Check against minimum prize value from API
               final payoutInfoAsync = ref.read(payoutInfoProvider);
               return payoutInfoAsync.maybeWhen(
                 data: (payoutInfo) {
@@ -878,7 +878,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
           ),
         ),
         SizedBox(height: 12.s),
-        // Payout restrictions info
+        // Prize restrictions info
         Container(
           padding: ResponsiveUtils.pSymmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
@@ -900,7 +900,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
                   ),
                   SizedBox(width: 8.s),
                   Text(
-                    'Payout Restrictions',
+                    'Restrictions',
                     style: TextStyle(
                       color: AppColors.angolaYellow,
                       fontSize: 13.f,
@@ -999,7 +999,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Minimum Payout:',
+                        'Minimum Prize Value:',
                         style: TextStyle(
                           color: AppColors.textGrey,
                           fontSize: 14.f,

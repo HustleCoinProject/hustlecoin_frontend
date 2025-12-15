@@ -80,15 +80,9 @@ class _ServerTimeInitializerState extends ConsumerState<ServerTimeInitializer>
     // Only show if we haven't shown one yet or if cooldown has passed
     if (adMobService.canShowAppOpenAd && adMobService.isAppOpenAdLoaded) {
       adMobService.showAppOpenAd().then((shown) {
-        if (shown) {
-     
-        } else {
-          
-        }
+        if (shown) {} else {}
       });
-    } else {
-
-    }
+    } else {}
   }
 
   @override
@@ -106,18 +100,15 @@ Future<void> main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-  } catch (e) {
-  }
+  } catch (e) {}
 
   // Initialize Hive for caching
-
   await Hive.initFlutter();
 
   // Initialize Google Mobile Ads SDK
   try {
     await MobileAds.instance.initialize();
-  } catch (e) {
-  }
+  } catch (e) {}
 
   // Validate AdMob configuration
   AdMobService.validateAdConfiguration();
@@ -130,26 +121,15 @@ Future<void> main() async {
 
   try {
     // Load all ad types
- 
     await adMobService.loadRewardedAd();
-   
-   
-
     await adMobService.loadInterstitialAd();
-
-
     await adMobService.loadAppOpenAd();
- 
-  } catch (e) {
-    
-  }
+  } catch (e) {}
 
   // Get SharedPreferences instance
- 
   final prefs = await SharedPreferences.getInstance();
 
   // Initialize sound service
-  
   await SoundService().initialize();
  
 

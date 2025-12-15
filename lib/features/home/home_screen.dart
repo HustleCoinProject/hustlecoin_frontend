@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/data/models/quiz_result.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 import 'package:hustlecoin/data/models/user.dart';
 import 'package:hustlecoin/features/events/events_screen.dart';
@@ -19,6 +20,7 @@ import 'package:hustlecoin/providers/tapping_provider.dart';
 import 'package:hustlecoin/providers/tapping_status_provider.dart';
 import 'package:hustlecoin/services/admob_service.dart';
 import 'package:hustlecoin/services/sound_service.dart';
+import 'package:hustlecoin/services/tutorial_service.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
 import 'package:hustlecoin/widgets/access_controlled_widget.dart';
 import 'package:hustlecoin/utils/ad_helper.dart';
@@ -166,6 +168,270 @@ enum TaskState {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _activeNavIndex = 0;
+  TutorialCoachMark? _tutorialCoachMark;
+
+  // Global keys for tutorial targets
+  final GlobalKey _hcBalanceKey = GlobalKey();
+  final GlobalKey _leftTasksKey = GlobalKey();
+  final GlobalKey _rightFeaturesKey = GlobalKey();
+  final GlobalKey _profileNavKey = GlobalKey();
+  final GlobalKey _getPaidKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    // Show tutorial after first frame if user hasn't seen it
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndShowTutorial();
+    });
+  }
+
+  Future<void> _checkAndShowTutorial() async {
+    // Reset tutorial on every app start (remove this line to show only once)
+    // await TutorialService.resetTutorial();
+    
+    final hasCompleted = await TutorialService.hasCompletedTutorial();
+    if (!hasCompleted && mounted) {
+      _showTutorial();
+    }
+  }
+
+  void _showTutorial() {
+    final targets = _createTutorialTargets();
+    _tutorialCoachMark = TutorialCoachMark(
+      targets: targets,
+      colorShadow: const Color(0xFF1a1a2e),
+      paddingFocus: 10,
+      opacityShadow: 0.85,
+      onFinish: () {
+        TutorialService.markTutorialCompleted();
+      },
+      onSkip: () {
+        TutorialService.markTutorialCompleted();
+        return true;
+      },
+    );
+    _tutorialCoachMark!.show(context: context);
+  }
+
+  List<TargetFocus> _createTutorialTargets() {
+    return [
+      TargetFocus(
+        identify: 'hcBalance',
+        keyTarget: _hcBalanceKey,
+        alignSkip: Alignment.topRight,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    ref.t(LocalizationKeys.tutorialHcBalanceTitle),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    ref.t(LocalizationKeys.tutorialHcBalanceDesc),
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+      TargetFocus(
+        identify: 'leftTasks',
+        keyTarget: _leftTasksKey,
+        alignSkip: Alignment.topRight,
+        contents: [
+          TargetContent(
+            align: ContentAlign.right,
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    ref.t(LocalizationKeys.tutorialEarnTasksTitle),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    ref.t(LocalizationKeys.tutorialEarnTasksDesc),
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+      TargetFocus(
+        identify: 'rightFeatures',
+        keyTarget: _rightFeaturesKey,
+        alignSkip: Alignment.topRight,
+        contents: [
+          TargetContent(
+            align: ContentAlign.left,
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    ref.t(LocalizationKeys.tutorialPremiumFeaturesTitle),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    ref.t(LocalizationKeys.tutorialPremiumFeaturesDesc),
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+      TargetFocus(
+        identify: 'getPaid',
+        keyTarget: _getPaidKey,
+        alignSkip: Alignment.topRight,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    ref.t(LocalizationKeys.tutorialGetPaidTitle),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    ref.t(LocalizationKeys.tutorialGetPaidDesc),
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+      TargetFocus(
+        identify: 'profile',
+        keyTarget: _profileNavKey,
+        alignSkip: Alignment.topRight,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    ref.t(LocalizationKeys.tutorialProfileTitle),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    ref.t(LocalizationKeys.tutorialProfileDesc),
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+      TargetFocus(
+        identify: 'welcome',
+        keyTarget: _hcBalanceKey,
+        alignSkip: Alignment.topRight,
+        enableOverlayTab: true,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: MediaQuery.of(context).size.height * 0.4,
+            ),
+            builder: (context, controller) {
+              return Container(
+                padding: EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.celebration,
+                      color: AppColors.angolaYellow,
+                      size: 60,
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      ref.t(LocalizationKeys.tutorialWelcomeTitle),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 15),
+                    Text(
+                      ref.t(LocalizationKeys.tutorialWelcomeDesc),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                      ),
+                    ),
+                    SizedBox(height: 25),
+                    Text(
+                      ref.t(LocalizationKeys.tutorialLetsStart),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.angolaYellow,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    ];
+  }
 
   // Method to toggle language between EN and PT
   Future<void> _toggleLanguage() async {
@@ -299,7 +565,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     vertical: 5,
                   ),
                 ),
-                TopBar(onToggleLanguage: _toggleLanguage),
+                TopBar(
+                  onToggleLanguage: _toggleLanguage,
+                  hcBalanceKey: _hcBalanceKey,
+                ),
                 Text(
                   ref.t(LocalizationKeys.hustleCoin),
                   style: TextStyle(
@@ -322,6 +591,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           activeIndex: _activeNavIndex,
           onNavItemTapped: _onNavItemTapped,
           onGetPaidTapped: _onGetPaidTapped,
+          getPaidKey: _getPaidKey,
+          profileNavKey: _profileNavKey,
         ),
       );
     }
@@ -468,6 +739,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
           Positioned(
+            key: _leftTasksKey,
             left: 0,
             top: 140.h,
             bottom: 150.h,
@@ -548,6 +820,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
           Positioned(
+            key: _rightFeaturesKey,
             right: 0,
             top: 140.h,
             bottom: 150.h,
