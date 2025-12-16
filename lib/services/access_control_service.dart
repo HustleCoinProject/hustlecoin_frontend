@@ -114,12 +114,7 @@ class AccessControlService {
     
     if (requirement is ActiveItemRequirement) {
       final itemName = ref.t(requirement.itemNameKey);
-      final shopLocation = ref.t(requirement.purchaseLocationKey);
-      final message = ref.t(LocalizationKeys.getBronzeKeyMessage)
-          .replaceAll('Bronze Key', itemName)
-          .replaceAll('shop', shopLocation);
-      final expireMessage = ref.t(LocalizationKeys.keysExpireMessage);
-      return '$message $expireMessage';
+      return ref.t(LocalizationKeys.needItemForFeature).replaceAll('{item}', itemName);
     }
     
     return requirement.description;

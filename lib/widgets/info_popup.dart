@@ -17,13 +17,13 @@ class InfoPopup {
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
         child: GlassContainer(
-          borderRadius: 12,
+          borderRadius: 0,
           child: Container(
-            padding: ResponsiveUtils.p(12),
-            constraints: BoxConstraints(maxWidth: 350.s),
+            padding: ResponsiveUtils.p(20),
+            constraints: BoxConstraints(maxWidth: 380.s),
             decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12.r),
+              color: AppColors.glassBg,
+              borderRadius: BorderRadius.circular(0),
             ),
             child: Stack(
               clipBehavior: Clip.none,
@@ -33,10 +33,10 @@ class InfoPopup {
                   children: [
                     Icon(
                       Icons.info_outline,
-                      color: Colors.blue,
-                      size: 16.s,
+                      color: AppColors.angolaYellow,
+                      size: 20.s,
                     ),
-                    SizedBox(width: 6.s),
+                    SizedBox(width: 12.s),
                     Expanded(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -45,40 +45,41 @@ class InfoPopup {
                           Text(
                             title,
                             style: TextStyle(
-                              fontSize: 12.f,
+                              fontSize: 14.f,
                               fontWeight: FontWeight.bold,
-                              color: Colors.blue,
+                              color: AppColors.angolaYellow,
                             ),
                           ),
-                          SizedBox(height: 4.s),
+                          SizedBox(height: 8.s),
                           Text(
                             description,
                             style: TextStyle(
-                              fontSize: 11.f,
+                              fontSize: 12.f,
                               color: AppColors.textLight,
+                              height: 1.4,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(width: 20.s),
+                    SizedBox(width: 24.s),
                   ],
                 ),
                 Positioned(
-                  top: -8,
-                  right: -8,
+                  top: -10,
+                  right: -10,
                   child: GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
                     child: Container(
-                      padding: ResponsiveUtils.p(6),
+                      padding: ResponsiveUtils.p(8),
                       decoration: BoxDecoration(
-                        color: AppColors.textGrey.withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
+                        color: AppColors.angolaRed.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(0),
                       ),
                       child: Icon(
                         Icons.close,
                         color: AppColors.textLight,
-                        size: 16.s,
+                        size: 18.s,
                       ),
                     ),
                   ),

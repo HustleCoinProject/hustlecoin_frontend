@@ -97,7 +97,7 @@ class StatsContainer extends ConsumerWidget {
               ),
               SizedBox(height: 4.s),
               Text(
-                '🏆 Rank Points: ${user.rankPoints}',
+                '🏆 ${ref.t(LocalizationKeys.rankPoints)}: ${user.rankPoints}',
                 style: TextStyle(
                   fontSize: 12.f,
                   color: AppColors.angolaYellow,

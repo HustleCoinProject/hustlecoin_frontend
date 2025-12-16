@@ -132,6 +132,7 @@ class LocalizationKeys {
 
   // Leaderboard
   static const String you = 'you';
+  static const String rankPoints = 'rank_points';
 
   // Access Control
   static const String unlockFeature = 'unlock_feature';
@@ -140,6 +141,7 @@ class LocalizationKeys {
   static const String keysExpireMessage = 'keys_expire_message';
   static const String getFromShop = 'get_from_shop';
   static const String unlockExcitingFeature = 'unlock_exciting_feature';
+  static const String needItemForFeature = 'need_item_for_feature';
 
   // Payout
   static const String getPaid = 'get_paid';
@@ -378,6 +380,7 @@ class _Translations {
 
       // Leaderboard
       LocalizationKeys.you: 'You',
+      LocalizationKeys.rankPoints: 'Rank Points',
 
       // Access Control
       LocalizationKeys.unlockFeature: 'Unlock Feature',
@@ -387,6 +390,7 @@ class _Translations {
       LocalizationKeys.keysExpireMessage: 'Keys give you 3 hours of access.',
       LocalizationKeys.getFromShop: 'get from shop',
       LocalizationKeys.unlockExcitingFeature: 'unlock this exciting feature',
+      LocalizationKeys.needItemForFeature: 'You need a {item} for this feature.',
 
       // Payout
       LocalizationKeys.getPaid: 'Claim Prize',
@@ -628,6 +632,7 @@ class _Translations {
 
       // Leaderboard
       LocalizationKeys.you: 'Você',
+      LocalizationKeys.rankPoints: 'Pontos de Ranking',
 
       // Access Control
       LocalizationKeys.unlockFeature: 'Desbloquear Recurso',
@@ -638,6 +643,7 @@ class _Translations {
       LocalizationKeys.getFromShop: 'obter na loja',
       LocalizationKeys.unlockExcitingFeature:
           'desbloquear este recurso incrível',
+      LocalizationKeys.needItemForFeature: 'Você precisa de uma {item} para este recurso.',
 
       // Payout
       LocalizationKeys.getPaid: 'Reclamar Prêmio',
