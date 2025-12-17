@@ -236,6 +236,9 @@ class _CooldownTaskButtonState extends ConsumerState<CooldownTaskButton> {
       return ref.t(LocalizationKeys.loading);
     }
     if (taskState == TaskState.cooldown && _remainingTime != null) {
+      if (_remainingTime!.inHours > 0) {
+        return '${_remainingTime!.inHours}h';
+      }
       final minutes = _remainingTime!.inMinutes.remainder(60);
       final seconds = _remainingTime!.inSeconds.remainder(60);
       return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';

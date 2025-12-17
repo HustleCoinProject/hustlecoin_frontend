@@ -282,6 +282,9 @@ class DataRepository {
     // Invalidate related caches
     await _cacheManager.delete('level_status');
     await _cacheManager.delete('user_me');
+    // Invalidate hustle lists as new level unlocks new hustles
+    await _cacheManager.delete('hustles_available');
+    await _cacheManager.delete('hustles_all');
     return result;
   }
 

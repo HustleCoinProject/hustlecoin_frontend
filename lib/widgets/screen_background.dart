@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hustlecoin/widgets/particle_overlay.dart';
 
 class ScreenBackground extends StatelessWidget {
   final String imagePath;
@@ -16,18 +17,32 @@ class ScreenBackground extends StatelessWidget {
       decoration: BoxDecoration(
         image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment.center,
-            radius: 1.0,
-            colors: [
-              const Color(0xFF101010).withValues(alpha: 0.4),
-              const Color(0xFF101010).withValues(alpha: 0.9),
-            ],
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Gradient Overlay
+          Container(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment.center,
+                radius: 1.0,
+                colors: [
+                  const Color(0xFF101010).withValues(alpha: 0.4),
+                  const Color(0xFF101010).withValues(alpha: 0.9),
+                ],
+              ),
+            ),
           ),
-        ),
-        child: child,
+          // Particle Effect
+          const IgnorePointer(
+            child: ParticleOverlay(
+              numberOfParticles: 40,
+              color: Color(0xFFFFFFFF),
+            ),
+          ),
+          // Content
+          child,
+        ],
       ),
     );
   }

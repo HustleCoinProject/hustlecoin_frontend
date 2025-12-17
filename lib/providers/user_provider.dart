@@ -74,18 +74,20 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
   }) async {
     try {
       final response = await _api.completeTask(taskId, payload: payload);
-      
+
       // Update user state with the response data instead of refetching
       state.whenData((currentUser) {
         if (currentUser != null) {
           // Create updated task cooldowns map
-          final updatedCooldowns = Map<String, DateTime>.from(currentUser.taskCooldowns);
-          
+          final updatedCooldowns = Map<String, DateTime>.from(
+            currentUser.taskCooldowns,
+          );
+
           // Update the cooldown for this specific task if provided in response
           if (response.cooldownExpiresAt != null) {
             updatedCooldowns[taskId] = response.cooldownExpiresAt!;
           }
-          
+
           state = AsyncValue.data(
             currentUser.copyWith(
               hcBalance: response.newBalance,
@@ -165,7 +167,10 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
-  void optimisticallyUpdateBalance(int amountGained, {int rankPointsGained = 0}) {
+  void optimisticallyUpdateBalance(
+    int amountGained, {
+    int rankPointsGained = 0,
+  }) {
     // Only update if we have a user object
     final currentUser = state.when(
       data: (user) => user,
