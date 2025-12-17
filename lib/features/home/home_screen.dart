@@ -13,6 +13,7 @@ import 'package:hustlecoin/features/profile/edit_profile.dart';
 import 'package:hustlecoin/features/quiz/quiz_screen.dart';
 import 'package:hustlecoin/features/safe_lock/safe_lock_screen.dart';
 import 'package:hustlecoin/features/settings/settings_screen.dart';
+import 'package:hustlecoin/features/games/game_list_screen.dart';
 
 import 'package:hustlecoin/providers/time_provider.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
@@ -176,6 +177,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final GlobalKey _rightFeaturesKey = GlobalKey();
   final GlobalKey _profileNavKey = GlobalKey();
   final GlobalKey _getPaidKey = GlobalKey();
+  final GlobalKey _playGameKey = GlobalKey();
 
   @override
   void initState() {
@@ -189,7 +191,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _checkAndShowTutorial() async {
     // Reset tutorial on every app start (remove this line to show only once)
     // await TutorialService.resetTutorial();
-    
+
     final hasCompleted = await TutorialService.hasCompletedTutorial();
     if (!hasCompleted && mounted) {
       _showTutorial();
@@ -372,6 +374,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       TargetFocus(
+        identify: 'playGame',
+        keyTarget: _playGameKey,
+        alignSkip: Alignment.topRight,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (context, controller) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    ref.t(LocalizationKeys.tutorialPlayGamesTitle),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    ref.t(LocalizationKeys.tutorialPlayGamesDesc),
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+      TargetFocus(
         identify: 'welcome',
         keyTarget: _hcBalanceKey,
         alignSkip: Alignment.topRight,
@@ -407,10 +440,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Text(
                       ref.t(LocalizationKeys.tutorialWelcomeDesc),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
                     SizedBox(height: 25),
                     Text(
@@ -442,8 +472,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final newLanguage = currentUser.language == 'en' ? 'pt' : 'en';
     try {
       await userController.updateProfile(language: newLanguage);
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   void _onNavItemTapped(int index) {
@@ -878,6 +907,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // NOTE: Main "Tap"/"Tocar" button temporarily disabled for Home screen
           // Uncomment the line below to re-enable the central tap button functionality
           // _buildMainTapButton(),
+          _buildPlayGameButton(),
           Positioned(bottom: 100.h, child: _buildDailyRewardButton()),
         ],
       ),
@@ -889,6 +919,76 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       builder: (context, ref, child) {
         return const _MainTapButton();
       },
+    );
+  }
+
+  Widget _buildPlayGameButton() {
+    return PressableScaleWidget(
+      key: _playGameKey,
+      onTap: () {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const GameListScreen()));
+      },
+      child: GlassContainer(
+        borderRadius: 64.r,
+        child: SizedBox(
+          width: 160.s,
+          height: 160.s,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FaIcon(
+                FontAwesomeIcons.gamepad,
+                size: 50.s,
+                color: AppColors.angolaYellow,
+                shadows: [
+                  const Shadow(color: AppColors.glowYellow, blurRadius: 15),
+                ],
+              ),
+              SizedBox(height: 10.s),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Text(
+                    ref.t(LocalizationKeys.playGames),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18.f,
+                      letterSpacing: 1,
+                      color: AppColors.textLight,
+                    ),
+                  ),
+                  Positioned(
+                    top: -8.s,
+                    right: -20.s,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        FaIcon(
+                          FontAwesomeIcons.coins,
+                          size: 8.s,
+                          color: AppColors.angolaYellow,
+                        ),
+                        SizedBox(width: 2.s),
+                        Text(
+                          '+HC',
+                          style: TextStyle(
+                            color: AppColors.angolaYellow,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 8.f,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

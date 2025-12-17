@@ -30,7 +30,7 @@ import '../models/safe_lock_global_stats.dart';
 
 class ApiRepository {
   final String _baseUrl =
-      "https://hustlecoin-backend.fly.dev"; // "http://10.247.33.41:8000";
+      "http://10.247.33.41:8000"; // "https://hustlecoin-backend.fly.dev";
   String? _accessToken;
   String? _refreshToken;
 
@@ -63,7 +63,6 @@ class ApiRepository {
 
       // If we get a 401 and have a refresh token, try to refresh
       if (response.statusCode == 401 && _refreshToken != null) {
-
         try {
           // Attempt to refresh the token
           final newTokens = await _refreshAccessToken();

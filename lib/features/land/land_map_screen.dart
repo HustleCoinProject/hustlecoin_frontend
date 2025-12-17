@@ -15,6 +15,7 @@ import 'package:hustlecoin/widgets/land_income_claim_panel.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
+import 'package:hustlecoin/services/remote_config_service.dart';
 
 class LandMapScreen extends ConsumerStatefulWidget {
   const LandMapScreen({super.key});
@@ -48,12 +49,16 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
 
   // Zoom level tracking for fetch control
   double _currentZoom = 13.0;
-  static const double MIN_ZOOM_FOR_FETCH = 12.5; // Minimum zoom to fetch tiles from server
+  static const double MIN_ZOOM_FOR_FETCH =
+      12.5; // Minimum zoom to fetch tiles from server
 
   // Constants
-  static const int DATA_RESOLUTION = 8;
-  static const int LAND_PRICE = 500; // Corresponds to backend LAND_PRICE
-  static const int LAND_SELL_PRICE = 400; // 80% of purchase price
+  // Constants
+  // Fetched from Remote Config
+  int get _h3TileIndexResolution =>
+      RemoteConfigService.instance.getLandResolution();
+  int get _landPrice => RemoteConfigService.instance.getLandBuyPrice();
+  int get _landSellPrice => RemoteConfigService.instance.getLandSellPrice();
 
   @override
   void initState() {
@@ -101,7 +106,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
 
     // --- Fetching Logic (only when zoomed in enough) ---
     final shouldFetch = zoom >= MIN_ZOOM_FOR_FETCH;
-    
+
     if (shouldFetch) {
       // Check cooldown period (unless forced)
       bool canFetch = forceFetch;
@@ -109,8 +114,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
         if (_lastFetchTime != null) {
           final timeSinceLastFetch = DateTime.now().difference(_lastFetchTime!);
           canFetch = timeSinceLastFetch >= _fetchCooldown;
-          if (!canFetch) {
-          }
+          if (!canFetch) {}
         } else {
           canFetch = true;
         }
@@ -128,19 +132,18 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
           for (var tile in ownedTilesData) {
             _ownedTilesInView[tile.h3Index] = tile;
           }
-          
+
           // Update last fetch time after successful fetch
           _lastFetchTime = DateTime.now();
         } catch (e) {
           // Don't clear existing tiles on error, just skip this fetch
         }
       }
-    } else {
-    }
+    } else {}
 
     // --- Rendering Logic (always render all cached tiles) ---
     final List<Polygon> newHexes = [];
-    
+
     // Render all cached tiles regardless of current viewport
     for (final tile in _ownedTilesInView.values) {
       try {
@@ -174,10 +177,9 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
             color: fillColor.withValues(alpha: fillOpacity),
           ),
         );
-      } catch (e) {
-      }
+      } catch (e) {}
     }
-    
+
     if (mounted) {
       setState(() => _visibleHexagons = newHexes);
     }
@@ -185,7 +187,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
 
   void _onMapTap(TapPosition pos, LatLng latlng) {
     final geoCoord = GeoCoord(lat: latlng.latitude, lon: latlng.longitude);
-    final h3IndexInt = h3.geoToCell(geoCoord, DATA_RESOLUTION);
+    final h3IndexInt = h3.geoToCell(geoCoord, _h3TileIndexResolution);
     final h3IndexStr = h3IndexInt.toRadixString(16).toLowerCase();
     final currentUser = ref.read(userControllerProvider).value;
 
@@ -510,10 +512,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
                 children: [
                   Text(
                     ref.t(LocalizationKeys.yourLand),
-                    style: TextStyle(
-                      color: AppColors.textGrey,
-                      fontSize: 12.f,
-                    ),
+                    style: TextStyle(color: AppColors.textGrey, fontSize: 12.f),
                   ),
                   Text(
                     _selectedH3Index ?? '',
@@ -569,7 +568,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
                           ),
                           SizedBox(width: 8.s),
                           Text(
-                            '${ref.t(LocalizationKeys.sell)} $LAND_SELL_PRICE HC',
+                            '${ref.t(LocalizationKeys.sell)} $_landSellPrice HC',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
@@ -585,7 +584,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
       );
     } else {
       // Show purchase panel for unowned land
-      final canAfford = user != null && user.hcBalance >= LAND_PRICE;
+      final canAfford = user != null && user.hcBalance >= _landPrice;
 
       return GlassContainer(
         key: const ValueKey('purchase_panel'),
@@ -599,10 +598,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
                 children: [
                   Text(
                     ref.t(LocalizationKeys.selectedLand),
-                    style: TextStyle(
-                      color: AppColors.textGrey,
-                      fontSize: 12.f,
-                    ),
+                    style: TextStyle(color: AppColors.textGrey, fontSize: 12.f),
                   ),
                   Text(
                     _selectedH3Index ?? '',
@@ -660,7 +656,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
                           ),
                           SizedBox(width: 8.s),
                           Text(
-                            '${LAND_PRICE} HC',
+                            '${_landPrice} HC',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
@@ -698,9 +694,9 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
     Color textColor = Colors.white;
 
     if (_isOwnedLand) {
-      priceText = '${LAND_SELL_PRICE} HC';
+      priceText = '${_landSellPrice} HC';
     } else {
-      priceText = '${LAND_PRICE} HC';
+      priceText = '${_landPrice} HC';
     }
 
     return MarkerLayer(
@@ -753,10 +749,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
 
     return GlassContainer(
       borderRadius: 12.r,
-      padding: ResponsiveUtils.pSymmetric(
-        horizontal: 10,
-        vertical: 8,
-      ),
+      padding: ResponsiveUtils.pSymmetric(horizontal: 10, vertical: 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -764,11 +757,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                statusIcon,
-                size: 14.s,
-                color: statusColor,
-              ),
+              Icon(statusIcon, size: 14.s, color: statusColor),
               SizedBox(width: 5.s),
               Text(
                 statusText,

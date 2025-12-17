@@ -31,22 +31,52 @@ class DataRepository {
   final CacheManager _cacheManager;
 
   // Cache TTL configurations (in minutes)
-  static const Duration _defaultTTL = Duration(minutes: 5); // Payout methods, payout system status
-  static const Duration _userTTL = Duration(minutes: 5); // /api/users/me - User profile data
-  static const Duration _inventoryTTL = Duration(minutes: 5); // /api/users/inventory - User items
-  static const Duration _hustlesTTL = Duration(days: 7); // /api/hustles/all, /api/hustles/available - Hustle lists
-  static const Duration _levelStatusTTL = Duration(minutes: 30); // /api/hustles/level-status - Level progress
-  static const Duration _tasksTTL = Duration(days: 7); // /api/tasks/all - Task list
-  static const Duration _shopTTL = Duration(days: 7); // /api/shop/items - Shop items
-  static const Duration _leaderboardTTL = Duration(minutes: 8); // /api/leaderboard - Rankings
+  static const Duration _defaultTTL = Duration(
+    minutes: 5,
+  ); // Payout methods, payout system status
+  static const Duration _userTTL = Duration(
+    minutes: 5,
+  ); // /api/users/me - User profile data
+  static const Duration _inventoryTTL = Duration(
+    minutes: 5,
+  ); // /api/users/inventory - User items
+  static const Duration _hustlesTTL = Duration(
+    days: 7,
+  ); // /api/hustles/all, /api/hustles/available - Hustle lists
+  static const Duration _levelStatusTTL = Duration(
+    minutes: 30,
+  ); // /api/hustles/level-status - Level progress
+  static const Duration _tasksTTL = Duration(
+    days: 7,
+  ); // /api/tasks/all - Task list
+  static const Duration _shopTTL = Duration(
+    days: 7,
+  ); // /api/shop/items - Shop items
+  static const Duration _leaderboardTTL = Duration(
+    minutes: 8,
+  ); // /api/leaderboard - Rankings
   // Note: Land tiles (/api/land/tiles) are NOT cached - UI implements 3-second rate limiting
-  static const Duration _myLandsTTL = Duration(minutes: 5); // /api/land/my-lands - Owned lands
-  static const Duration _landClaimStatusTTL = Duration(minutes: 5); // /api/land/claim-status - Land income status
-  static const Duration _tappingStatusTTL = Duration(seconds: 30); // /api/tapping/status - Tap limits & earnings
-  static const Duration _payoutInfoTTL = Duration(minutes: 10); // /api/payouts/info - Payout account info
-  static const Duration _payoutHistoryTTL = Duration(minutes: 10); // /api/payouts/history - Past payouts
-  static const Duration _safeLockStatusTTL = Duration(minutes: 10); // /api/safe-lock/status - Safe lock balance & timer
-  static const Duration _safeLockGlobalStatsTTL = Duration(minutes: 10); // /api/safe-lock/global-stats - Global safe lock stats
+  static const Duration _myLandsTTL = Duration(
+    minutes: 5,
+  ); // /api/land/my-lands - Owned lands
+  static const Duration _landClaimStatusTTL = Duration(
+    minutes: 5,
+  ); // /api/land/claim-status - Land income status
+  static const Duration _tappingStatusTTL = Duration(
+    seconds: 30,
+  ); // /api/tapping/status - Tap limits & earnings
+  static const Duration _payoutInfoTTL = Duration(
+    minutes: 10,
+  ); // /api/payouts/info - Payout account info
+  static const Duration _payoutHistoryTTL = Duration(
+    minutes: 10,
+  ); // /api/payouts/history - Past payouts
+  static const Duration _safeLockStatusTTL = Duration(
+    minutes: 10,
+  ); // /api/safe-lock/status - Safe lock balance & timer
+  static const Duration _safeLockGlobalStatsTTL = Duration(
+    minutes: 10,
+  ); // /api/safe-lock/global-stats - Global safe lock stats
 
   DataRepository(this._apiRepository, this._cacheManager);
 
@@ -78,15 +108,14 @@ class DataRepository {
         // Otherwise, cast directly
         return cached as T;
       }
-    } catch (e) {
-    }
+    } catch (e) {}
 
     // Cache miss or expired, fetch from API
     final data = await fetchFunction();
 
     // Convert to JSON-serializable format before caching if converter provided
     final cacheData = toJson != null ? toJson(data) : data;
-    
+
     // Store in cache (will be JSON encoded by CacheManager)
     await _cacheManager.set(cacheKey, cacheData, ttl);
 
@@ -185,15 +214,23 @@ class DataRepository {
       _inventoryTTL,
       fromJson: (json) {
         final list = json as List<dynamic>;
-        return list.map((item) => InventoryItemOut.fromJson(item as Map<String, dynamic>)).toList();
+        return list
+            .map(
+              (item) => InventoryItemOut.fromJson(item as Map<String, dynamic>),
+            )
+            .toList();
       },
-      toJson: (items) => items.map((item) => {
-        'item_id': item.itemId,
-        'quantity': item.quantity,
-        'name': item.name,
-        'description': item.description,
-        'item_type': item.itemType,
-      }).toList(),
+      toJson: (items) => items
+          .map(
+            (item) => {
+              'item_id': item.itemId,
+              'quantity': item.quantity,
+              'name': item.name,
+              'description': item.description,
+              'item_type': item.itemType,
+            },
+          )
+          .toList(),
     );
   }
 
@@ -205,7 +242,9 @@ class DataRepository {
       _hustlesTTL,
       fromJson: (json) {
         final map = json as Map<String, dynamic>;
-        return map.map((key, value) => MapEntry(key, Map<String, String>.from(value as Map)));
+        return map.map(
+          (key, value) => MapEntry(key, Map<String, String>.from(value as Map)),
+        );
       },
     );
   }
@@ -261,16 +300,22 @@ class DataRepository {
       _tasksTTL,
       fromJson: (json) {
         final list = json as List<dynamic>;
-        return list.map((item) => Task.fromJson(item as Map<String, dynamic>)).toList();
+        return list
+            .map((item) => Task.fromJson(item as Map<String, dynamic>))
+            .toList();
       },
-      toJson: (tasks) => tasks.map((task) => {
-        'task_id': task.taskId,
-        'description': task.description,
-        'reward': task.reward,
-        'rank_points': task.rankPoints,
-        'type': task.type,
-        'cooldown_seconds': task.cooldownSeconds,
-      }).toList(),
+      toJson: (tasks) => tasks
+          .map(
+            (task) => {
+              'task_id': task.taskId,
+              'description': task.description,
+              'reward': task.reward,
+              'rank_points': task.rankPoints,
+              'type': task.type,
+              'cooldown_seconds': task.cooldownSeconds,
+            },
+          )
+          .toList(),
     );
   }
 
@@ -280,7 +325,7 @@ class DataRepository {
   }) async {
     final result = await _apiRepository.completeTask(taskId, payload: payload);
     // Invalidate related caches
-    await _cacheManager.delete('tasks_all');
+    // await _cacheManager.delete('tasks_all'); // THIS IS NOT RELATED IGUESS
     await _cacheManager.delete('user_me');
     return result;
   }
@@ -292,16 +337,22 @@ class DataRepository {
       _shopTTL,
       fromJson: (json) {
         final list = json as List<dynamic>;
-        return list.map((item) => ShopItem.fromJson(item as Map<String, dynamic>)).toList();
+        return list
+            .map((item) => ShopItem.fromJson(item as Map<String, dynamic>))
+            .toList();
       },
-      toJson: (items) => items.map((item) => {
-        'item_id': item.itemId,
-        'name': item.name,
-        'description': item.description,
-        'price': item.price,
-        'item_type': item.itemType,
-        'metadata': item.metadata,
-      }).toList(),
+      toJson: (items) => items
+          .map(
+            (item) => {
+              'item_id': item.itemId,
+              'name': item.name,
+              'description': item.description,
+              'price': item.price,
+              'item_type': item.itemType,
+              'metadata': item.metadata,
+            },
+          )
+          .toList(),
     );
   }
 
@@ -327,14 +378,22 @@ class DataRepository {
       _leaderboardTTL,
       fromJson: (json) {
         final list = json as List<dynamic>;
-        return list.map((item) => LeaderboardEntry.fromJson(item as Map<String, dynamic>)).toList();
+        return list
+            .map(
+              (item) => LeaderboardEntry.fromJson(item as Map<String, dynamic>),
+            )
+            .toList();
       },
-      toJson: (entries) => entries.map((entry) => {
-        'username': entry.username,
-        'rank_points': entry.rankPoints,
-        'level': entry.level,
-        'hc_balance': entry.hcBalance,
-      }).toList(),
+      toJson: (entries) => entries
+          .map(
+            (entry) => {
+              'username': entry.username,
+              'rank_points': entry.rankPoints,
+              'level': entry.level,
+              'hc_balance': entry.hcBalance,
+            },
+          )
+          .toList(),
     );
   }
 
@@ -357,13 +416,19 @@ class DataRepository {
       _myLandsTTL,
       fromJson: (json) {
         final list = json as List<dynamic>;
-        return list.map((item) => MyLandTile.fromJson(item as Map<String, dynamic>)).toList();
+        return list
+            .map((item) => MyLandTile.fromJson(item as Map<String, dynamic>))
+            .toList();
       },
-      toJson: (tiles) => tiles.map((tile) => {
-        'h3_index': tile.h3Index,
-        'purchased_at': tile.purchasedAt.toIso8601String(),
-        'purchase_price': tile.purchasePrice,
-      }).toList(),
+      toJson: (tiles) => tiles
+          .map(
+            (tile) => {
+              'h3_index': tile.h3Index,
+              'purchased_at': tile.purchasedAt.toIso8601String(),
+              'purchase_price': tile.purchasePrice,
+            },
+          )
+          .toList(),
     );
   }
 
@@ -390,7 +455,8 @@ class DataRepository {
       'land_claim_status',
       () => _apiRepository.getLandClaimStatus(),
       _landClaimStatusTTL,
-      fromJson: (json) => LandClaimStatus.fromJson(json as Map<String, dynamic>),
+      fromJson: (json) =>
+          LandClaimStatus.fromJson(json as Map<String, dynamic>),
       toJson: (status) => status.toJson(),
     );
   }
@@ -500,7 +566,9 @@ class DataRepository {
       _payoutHistoryTTL,
       fromJson: (json) {
         final list = json as List<dynamic>;
-        return list.map((item) => Payout.fromJson(item as Map<String, dynamic>)).toList();
+        return list
+            .map((item) => Payout.fromJson(item as Map<String, dynamic>))
+            .toList();
       },
       toJson: (payouts) => payouts.map((payout) => payout.toJson()).toList(),
     );
@@ -558,7 +626,8 @@ class DataRepository {
       'safe_lock_global_stats',
       () => _apiRepository.getSafeLockGlobalStats(),
       _safeLockGlobalStatsTTL,
-      fromJson: (json) => SafeLockGlobalStats.fromJson(json as Map<String, dynamic>),
+      fromJson: (json) =>
+          SafeLockGlobalStats.fromJson(json as Map<String, dynamic>),
       toJson: (stats) => stats.toJson(),
     );
   }

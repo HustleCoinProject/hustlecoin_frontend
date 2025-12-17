@@ -19,6 +19,7 @@ import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/theme/responsive_theme.dart';
 import 'package:hustlecoin/utils/admob_debug_helper.dart';
+import 'package:hustlecoin/services/remote_config_service.dart';
 
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -80,7 +81,8 @@ class _ServerTimeInitializerState extends ConsumerState<ServerTimeInitializer>
     // Only show if we haven't shown one yet or if cooldown has passed
     if (adMobService.canShowAppOpenAd && adMobService.isAppOpenAdLoaded) {
       adMobService.showAppOpenAd().then((shown) {
-        if (shown) {} else {}
+        if (shown) {
+        } else {}
       });
     } else {}
   }
@@ -112,7 +114,7 @@ Future<void> main() async {
 
   // Validate AdMob configuration
   AdMobService.validateAdConfiguration();
-  
+
   // Print AdMob diagnostics
   AdMobDebugHelper.printAdMobDiagnostics();
 
@@ -131,7 +133,9 @@ Future<void> main() async {
 
   // Initialize sound service
   await SoundService().initialize();
- 
+
+  // Initialize Remote Config Service
+  await RemoteConfigService.instance.initialize();
 
   // Start the app with a single ProviderScope
   runApp(
@@ -177,12 +181,10 @@ class AuthWrapper extends ConsumerWidget {
       error: (_, __) => false,
     );
 
-
     return userState.when(
       data: (user) {
         // If user object is not null, they are logged in.
         if (user != null) {
-         
           return const HomeScreen();
         }
         // Otherwise, show the start/login screen.
