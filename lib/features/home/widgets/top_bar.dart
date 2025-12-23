@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:hustlecoin/data/models/user.dart';
 import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/widgets/glass_container.dart';
 import 'package:hustlecoin/widgets/pressable_scale_widget.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
+import 'package:hustlecoin/services/remote_config_service.dart';
 
 class TopBar extends ConsumerWidget {
   final void Function() onToggleLanguage;
   final GlobalKey? hcBalanceKey;
 
-  const TopBar({
-    super.key,
-    required this.onToggleLanguage,
-    this.hcBalanceKey,
-  });
+  const TopBar({super.key, required this.onToggleLanguage, this.hcBalanceKey});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -71,12 +67,22 @@ class TopBar extends ConsumerWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      Text(
-                        '≈ Kz ${user.kzBalance}',
-                        style: TextStyle(
-                          fontSize: 12.f,
-                          color: AppColors.textGrey,
-                        ),
+
+                      Builder(
+                        builder: (context) {
+                          final rate = RemoteConfigService.instance
+                              .getHcToKzRate();
+                          // Calculate Kz - user.hcBalance (int) / rate (double)
+                          // floor() used to match previous behavior
+                          final kzBalance = (user.hcBalance / rate).floor();
+                          return Text(
+                            '≈ Kz $kzBalance', // Using calculated local value
+                            style: TextStyle(
+                              fontSize: 12.f,
+                              color: AppColors.textGrey,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),

@@ -18,6 +18,7 @@ import 'package:hustlecoin/widgets/glass_container.dart';
 import 'package:hustlecoin/widgets/primary_action_button.dart';
 import 'package:hustlecoin/widgets/screen_background.dart';
 import 'package:hustlecoin/widgets/screen_header.dart';
+import 'package:hustlecoin/services/remote_config_service.dart';
 
 class QuizScreen extends ConsumerWidget {
   const QuizScreen({super.key});
@@ -64,12 +65,20 @@ class QuizScreen extends ConsumerWidget {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          Text(
-                            '≈ Kz ${user?.kzBalance ?? 0}',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: AppColors.textGrey,
-                            ),
+                          Builder(
+                            builder: (context) {
+                              if (user == null) return const SizedBox.shrink();
+                              final rate = RemoteConfigService.instance
+                                  .getHcToKzRate();
+                              final kzBalance = (user.hcBalance / rate).floor();
+                              return Text(
+                                '≈ Kz $kzBalance',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textGrey,
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),

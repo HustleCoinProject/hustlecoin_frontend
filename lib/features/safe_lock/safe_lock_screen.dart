@@ -8,6 +8,7 @@ import 'package:hustlecoin/providers/user_provider.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
 import 'package:hustlecoin/utils/localization.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
+import 'package:hustlecoin/utils/hustle_utils.dart';
 import 'package:hustlecoin/widgets/glass_container.dart';
 import 'package:hustlecoin/widgets/primary_action_button.dart';
 import 'package:hustlecoin/widgets/screen_background.dart';
@@ -252,9 +253,12 @@ class _SafeLockScreenState extends ConsumerState<SafeLockScreen> {
     final safeLockAsync = ref.watch(safeLockStatusProvider);
     final timeRemainingAsync = ref.watch(safeLockTimeRemainingProvider);
 
+    final user = userAsync.value;
+
     return Scaffold(
       body: ScreenBackground(
-        imagePath: 'assets/images/default.jpg',
+        imagePath:
+            'assets/images/${user != null ? HustleUtils.getCurrentHustleKey(user.currentHustle) : "Hustle Legend"}.jpg',
         child: SafeArea(
           child: Column(
             children: [

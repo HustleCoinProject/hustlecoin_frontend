@@ -11,8 +11,10 @@ import 'package:hustlecoin/widgets/screen_background.dart';
 import 'package:hustlecoin/providers/payout_provider.dart';
 import 'package:hustlecoin/data/models/payout_request.dart';
 import 'package:hustlecoin/data/models/payout_info.dart';
-import 'package:hustlecoin/features/payout/payout_history_screen.dart' show PayoutHistoryScreen;
+import 'package:hustlecoin/features/payout/payout_history_screen.dart'
+    show PayoutHistoryScreen;
 import 'package:hustlecoin/providers/time_provider.dart';
+import 'package:hustlecoin/services/remote_config_service.dart';
 
 enum PayoutMethod { multicaixaExpress, bank }
 
@@ -32,82 +34,82 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
   final _ibanController = TextEditingController();
   final _amountController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  
+
   bool _isLoading = false;
 
   String? _validateAngolanPhoneNumber(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Phone number is required';
     }
-    
+
     final cleanPhone = value.trim().replaceAll(' ', '').replaceAll('-', '');
-    
+
     if (cleanPhone.length != 9) {
       return 'Phone number must be 9 digits';
     }
-    
+
     if (!cleanPhone.startsWith('9')) {
       return 'Angolan mobile numbers must start with 9';
     }
-    
+
     if (!RegExp(r'^9[0-9]{8}$').hasMatch(cleanPhone)) {
       return 'Invalid phone number format';
     }
-    
+
     return null;
   }
-  
+
   String? _validateAngolanNationalId(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'National ID is required';
     }
-    
+
     // Angolan BI format: XXXXXXXXLA0XX (9 digits + LA + 0 + 2 digits)
     final cleanId = value.trim().toUpperCase();
-    
+
     if (cleanId.length < 12 || cleanId.length > 14) {
       return 'National ID must be 12-14 characters';
     }
-    
+
     if (!RegExp(r'^[0-9]{9}LA0[0-9]{2}$').hasMatch(cleanId)) {
       return 'Invalid National ID format (XXXXXXXXXLA0XX)';
     }
-    
+
     return null;
   }
-  
+
   String? _validateFullName(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Full name is required';
     }
-    
+
     if (value.trim().length < 2) {
       return 'Name must be at least 2 characters';
     }
-    
+
     if (value.trim().length > 100) {
       return 'Name must be less than 100 characters';
     }
-    
+
     return null;
   }
-  
+
   String? _validateIban(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'IBAN is required';
     }
-    
+
     final cleanIban = value.replaceAll(' ', '').toUpperCase();
-    
+
     if (cleanIban.length < 15 || cleanIban.length > 34) {
       return 'IBAN must be 15-34 characters';
     }
-    
+
     // Angolan IBAN starts with AO
     if (!cleanIban.startsWith('AO')) {
       return 'Angolan IBAN must start with AO';
     }
-    
+
     return null;
   }
 
@@ -146,33 +148,43 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
 
   void _populateFormFields(PayoutInfo payoutInfo) {
     bool shouldRebuild = false;
-    
+
     // Only populate if field is empty to avoid overwriting user input
-    if (_phoneController.text.isEmpty && payoutInfo.phoneNumber != null && payoutInfo.phoneNumber!.isNotEmpty) {
+    if (_phoneController.text.isEmpty &&
+        payoutInfo.phoneNumber != null &&
+        payoutInfo.phoneNumber!.isNotEmpty) {
       _phoneController.text = payoutInfo.phoneNumber!;
       shouldRebuild = true;
     }
-    
-    if (_accountHolderController.text.isEmpty && payoutInfo.fullName != null && payoutInfo.fullName!.isNotEmpty) {
+
+    if (_accountHolderController.text.isEmpty &&
+        payoutInfo.fullName != null &&
+        payoutInfo.fullName!.isNotEmpty) {
       _accountHolderController.text = payoutInfo.fullName!;
       shouldRebuild = true;
     }
-    
-    if (_nationalIdController.text.isEmpty && payoutInfo.nationalId != null && payoutInfo.nationalId!.isNotEmpty) {
+
+    if (_nationalIdController.text.isEmpty &&
+        payoutInfo.nationalId != null &&
+        payoutInfo.nationalId!.isNotEmpty) {
       _nationalIdController.text = payoutInfo.nationalId!;
       shouldRebuild = true;
     }
-    
-    if (_ibanController.text.isEmpty && payoutInfo.bankIban != null && payoutInfo.bankIban!.isNotEmpty) {
+
+    if (_ibanController.text.isEmpty &&
+        payoutInfo.bankIban != null &&
+        payoutInfo.bankIban!.isNotEmpty) {
       _ibanController.text = payoutInfo.bankIban!;
       shouldRebuild = true;
     }
-    
-    if (_selectedBank == null && payoutInfo.bankName != null && payoutInfo.bankName!.isNotEmpty) {
+
+    if (_selectedBank == null &&
+        payoutInfo.bankName != null &&
+        payoutInfo.bankName!.isNotEmpty) {
       _selectedBank = payoutInfo.bankName!;
       shouldRebuild = true;
     }
-    
+
     // Trigger rebuild if any fields were populated
     if (shouldRebuild && mounted) {
       setState(() {});
@@ -188,13 +200,23 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
 
   Future<void> _saveFormDataToBackend() async {
     try {
-      await ref.read(payoutProvider.notifier).updatePayoutInfo(
-        phoneNumber: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
-        fullName: _accountHolderController.text.trim().isNotEmpty ? _accountHolderController.text.trim() : null,
-        nationalId: _nationalIdController.text.trim().isNotEmpty ? _nationalIdController.text.trim() : null,
-        bankIban: _ibanController.text.trim().isNotEmpty ? _ibanController.text.trim() : null,
-        bankName: _selectedBank,
-      );
+      await ref
+          .read(payoutProvider.notifier)
+          .updatePayoutInfo(
+            phoneNumber: _phoneController.text.trim().isNotEmpty
+                ? _phoneController.text.trim()
+                : null,
+            fullName: _accountHolderController.text.trim().isNotEmpty
+                ? _accountHolderController.text.trim()
+                : null,
+            nationalId: _nationalIdController.text.trim().isNotEmpty
+                ? _nationalIdController.text.trim()
+                : null,
+            bankIban: _ibanController.text.trim().isNotEmpty
+                ? _ibanController.text.trim()
+                : null,
+            bankName: _selectedBank,
+          );
     } catch (e) {
       // Don't show error to user as this is a background operation
     }
@@ -210,7 +232,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
       );
       return;
     }
-    
+
     if (_selectedMethod == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -220,35 +242,41 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
       );
       return;
     }
-    
+
     // Validate amount is within allowed range (10,000 - 30,000 HC)
     final amountHc = int.tryParse(_amountController.text) ?? 0;
     if (amountHc < 10000 || amountHc > 30000) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Payout amount must be between 10,000 HC and 30,000 HC'),
+          content: const Text(
+            'Payout amount must be between 10,000 HC and 30,000 HC',
+          ),
           backgroundColor: Colors.red.withValues(alpha: 0.9),
         ),
       );
       return;
     }
-    
+
     // Validate that today is Sunday in Angola time (UTC+1)
     final serverTime = ref.read(serverTimeProvider.notifier).currentServerTime;
-    final angolaTime = serverTime.add(const Duration(hours: 1)); // Angola is UTC+1
+    final angolaTime = serverTime.add(
+      const Duration(hours: 1),
+    ); // Angola is UTC+1
     if (angolaTime.weekday != DateTime.sunday) {
       final daysUntilSunday = (DateTime.sunday - angolaTime.weekday) % 7;
       final nextSunday = daysUntilSunday == 0 ? 7 : daysUntilSunday;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Payouts are only allowed on Sundays (Angola time).\nNext available payout: in $nextSunday day${nextSunday > 1 ? "s" : ""}'),
+          content: Text(
+            'Payouts are only allowed on Sundays (Angola time).\nNext available payout: in $nextSunday day${nextSunday > 1 ? "s" : ""}',
+          ),
           backgroundColor: Colors.red.withValues(alpha: 0.9),
           duration: const Duration(seconds: 5),
         ),
       );
       return;
     }
-    
+
     SoundService().playClick();
 
     setState(() {
@@ -257,8 +285,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
 
     try {
       final amountHc = int.tryParse(_amountController.text) ?? 0;
-      
-      
+
       final payoutMethod = _selectedMethod == PayoutMethod.multicaixaExpress
           ? 'multicaixa_express'
           : 'bank_transfer';
@@ -270,31 +297,24 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
             ? _phoneController.text.trim()
             : null,
         fullName: _accountHolderController.text.trim(),
-        nationalId: _nationalIdController.text.trim().isNotEmpty 
-            ? _nationalIdController.text.trim() 
+        nationalId: _nationalIdController.text.trim().isNotEmpty
+            ? _nationalIdController.text.trim()
             : null,
         bankIban: _selectedMethod == PayoutMethod.bank
             ? _ibanController.text.trim()
             : null,
-        bankName: _selectedMethod == PayoutMethod.bank
-            ? _selectedBank
-            : null,
+        bankName: _selectedMethod == PayoutMethod.bank ? _selectedBank : null,
       );
-      
- 
-      
+
       // Check if provider is available
       final notifier = ref.read(payoutProvider.notifier);
 
       final payout = await notifier.requestPayout(payoutRequest);
-      
-    
 
       if (payout != null && mounted) {
-        
         // Save form data to backend for future use
         await _saveFormDataToBackend();
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -321,14 +341,15 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Payout request failed - no response from server'),
+              content: const Text(
+                'Payout request failed - no response from server',
+              ),
               backgroundColor: Colors.red.withValues(alpha: 0.9),
             ),
           );
         }
       }
     } catch (error, stackTrace) {
-      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -440,7 +461,9 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
                   FontAwesomeIcons.history,
                   color: AppColors.angolaYellow,
                   size: 20.s,
-                  shadows: [Shadow(color: AppColors.glowYellow, blurRadius: 10)],
+                  shadows: [
+                    Shadow(color: AppColors.glowYellow, blurRadius: 10),
+                  ],
                 ),
               ),
             ),
@@ -853,7 +876,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
               if (amount == null || amount <= 0) {
                 return ref.t(LocalizationKeys.enterValidAmount);
               }
-              
+
               // Enforce prize range (10,000 - 30,000 HC)
               if (amount < 10000) {
                 return 'Minimum prize value is 10,000 HC';
@@ -914,16 +937,19 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
               SizedBox(height: 4.s),
               Consumer(
                 builder: (context, ref, child) {
-                  final serverTime = ref.watch(serverTimeProvider.notifier).currentServerTime;
+                  final serverTime = ref
+                      .watch(serverTimeProvider.notifier)
+                      .currentServerTime;
                   final angolaTime = serverTime.add(const Duration(hours: 1));
                   final isSunday = angolaTime.weekday == DateTime.sunday;
-                  final daysUntilSunday = (DateTime.sunday - angolaTime.weekday) % 7;
+                  final daysUntilSunday =
+                      (DateTime.sunday - angolaTime.weekday) % 7;
                   final nextSunday = daysUntilSunday == 0 ? 7 : daysUntilSunday;
-                  
+
                   return _buildRestrictionRow(
-                    isSunday 
-                      ? 'Day: Sundays only (Today ✓)'
-                      : 'Day: Sundays only (Next: in $nextSunday day${nextSunday > 1 ? "s" : ""})',
+                    isSunday
+                        ? 'Day: Sundays only (Today ✓)'
+                        : 'Day: Sundays only (Next: in $nextSunday day${nextSunday > 1 ? "s" : ""})',
                     isActive: isSunday,
                   );
                 },
@@ -939,147 +965,165 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
     return Consumer(
       builder: (context, ref, child) {
         final payoutInfoAsync = ref.watch(payoutInfoProvider);
-        
+
         return payoutInfoAsync.when(
           data: (payoutInfo) {
             // Populate form fields when data is available
             WidgetsBinding.instance.addPostFrameCallback((_) {
               _populateFormFields(payoutInfo);
             });
-            
+
+            final rate = RemoteConfigService.instance.getHcToKzRate();
+            final availableKz = payoutInfo.availableHc / rate;
+            final minPayoutKz = payoutInfo.minimumPayoutHc / rate;
+
             return GlassContainer(
-            child: Padding(
-              padding: ResponsiveUtils.pSymmetric(horizontal: 20, vertical: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Available Balance',
-                    style: TextStyle(
-                      color: AppColors.textLight,
-                      fontSize: 16.f,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
+              child: Padding(
+                padding: ResponsiveUtils.pSymmetric(
+                  horizontal: 20,
+                  vertical: 20,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Available Balance',
+                      style: TextStyle(
+                        color: AppColors.textLight,
+                        fontSize: 16.f,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 10.s),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          FaIcon(
-                            FontAwesomeIcons.coins,
-                            color: AppColors.angolaYellow,
-                            size: 20.s,
-                          ),
-                          SizedBox(width: 8.s),
-                          Text(
-                            '${payoutInfo.availableHc} HC',
-                            style: TextStyle(
+                    SizedBox(height: 10.s),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            FaIcon(
+                              FontAwesomeIcons.coins,
                               color: AppColors.angolaYellow,
-                              fontSize: 18.f,
-                              fontWeight: FontWeight.w700,
+                              size: 20.s,
                             ),
+                            SizedBox(width: 8.s),
+                            Text(
+                              '${payoutInfo.availableHc} HC',
+                              style: TextStyle(
+                                color: AppColors.angolaYellow,
+                                fontSize: 18.f,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          '≈ ${availableKz.toStringAsFixed(2)} AOA',
+                          style: TextStyle(
+                            color: AppColors.textGrey,
+                            fontSize: 14.f,
+                            fontWeight: FontWeight.w500,
                           ),
-                        ],
-                      ),
-                      Text(
-                        '≈ ${payoutInfo.availableKwanza.toStringAsFixed(2)} AOA',
-                        style: TextStyle(
-                          color: AppColors.textGrey,
-                          fontSize: 14.f,
-                          fontWeight: FontWeight.w500,
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 15.s),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Minimum Prize Value:',
+                          style: TextStyle(
+                            color: AppColors.textGrey,
+                            fontSize: 14.f,
+                          ),
+                        ),
+                        Text(
+                          '${payoutInfo.minimumPayoutHc} HC (${minPayoutKz.toStringAsFixed(2)} AOA)',
+                          style: TextStyle(
+                            color: AppColors.textLight,
+                            fontSize: 14.f,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (payoutInfo.hasPendingPayout) ...[
+                      SizedBox(height: 10.s),
+                      Container(
+                        padding: ResponsiveUtils.pSymmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8.r),
+                          border: Border.all(
+                            color: Colors.orange.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            FaIcon(
+                              FontAwesomeIcons.clock,
+                              color: Colors.orange,
+                              size: 14.s,
+                            ),
+                            SizedBox(width: 8.s),
+                            Expanded(
+                              child: Text(
+                                'You have a pending payout request',
+                                style: TextStyle(
+                                  color: Colors.orange,
+                                  fontSize: 12.f,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
-                  ),
-                  SizedBox(height: 15.s),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Minimum Prize Value:',
-                        style: TextStyle(
-                          color: AppColors.textGrey,
-                          fontSize: 14.f,
+                    if (!payoutInfo.canPayout &&
+                        !payoutInfo.hasPendingPayout) ...[
+                      SizedBox(height: 10.s),
+                      Container(
+                        padding: ResponsiveUtils.pSymmetric(
+                          horizontal: 12,
+                          vertical: 8,
                         ),
-                      ),
-                      Text(
-                        '${payoutInfo.minimumPayoutHc} HC (${payoutInfo.minimumPayoutKwanza.toStringAsFixed(2)} AOA)',
-                        style: TextStyle(
-                          color: AppColors.textLight,
-                          fontSize: 14.f,
-                          fontWeight: FontWeight.w500,
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8.r),
+                          border: Border.all(
+                            color: Colors.red.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            FaIcon(
+                              FontAwesomeIcons.exclamationTriangle,
+                              color: Colors.red,
+                              size: 14.s,
+                            ),
+                            SizedBox(width: 8.s),
+                            Expanded(
+                              child: Text(
+                                'Insufficient balance for payout',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 12.f,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
-                  ),
-                  if (payoutInfo.hasPendingPayout) ...[
-                    SizedBox(height: 10.s),
-                    Container(
-                      padding: ResponsiveUtils.pSymmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8.r),
-                        border: Border.all(color: Colors.orange.withValues(alpha: 0.5)),
-                      ),
-                      child: Row(
-                        children: [
-                          FaIcon(
-                            FontAwesomeIcons.clock,
-                            color: Colors.orange,
-                            size: 14.s,
-                          ),
-                          SizedBox(width: 8.s),
-                          Expanded(
-                            child: Text(
-                              'You have a pending payout request',
-                              style: TextStyle(
-                                color: Colors.orange,
-                                fontSize: 12.f,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ],
-                  if (!payoutInfo.canPayout && !payoutInfo.hasPendingPayout) ...[
-                    SizedBox(height: 10.s),
-                    Container(
-                      padding: ResponsiveUtils.pSymmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8.r),
-                        border: Border.all(color: Colors.red.withValues(alpha: 0.5)),
-                      ),
-                      child: Row(
-                        children: [
-                          FaIcon(
-                            FontAwesomeIcons.exclamationTriangle,
-                            color: Colors.red,
-                            size: 14.s,
-                          ),
-                          SizedBox(width: 8.s),
-                          Expanded(
-                            child: Text(
-                              'Insufficient balance for payout',
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontSize: 12.f,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
+                ),
               ),
-            ),
             );
           },
           loading: () => GlassContainer(
@@ -1087,7 +1131,9 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
               padding: ResponsiveUtils.pSymmetric(horizontal: 20, vertical: 30),
               child: Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.angolaYellow),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.angolaYellow,
+                  ),
                 ),
               ),
             ),
@@ -1106,10 +1152,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
                   Expanded(
                     child: Text(
                       'Failed to load balance info',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontSize: 14.f,
-                      ),
+                      style: TextStyle(color: Colors.red, fontSize: 14.f),
                     ),
                   ),
                 ],
@@ -1124,30 +1167,36 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
   Widget _buildRequestButton() {
     // Check if form is valid based on selected method and required fields
     bool isFormValid = false;
-    
-    if (_selectedMethod != null && _amountController.text.isNotEmpty && !_isLoading) {
+
+    if (_selectedMethod != null &&
+        _amountController.text.isNotEmpty &&
+        !_isLoading) {
       if (_selectedMethod == PayoutMethod.multicaixaExpress) {
         // For Multicaixa Express: need phone, name, and national ID
-        isFormValid = _phoneController.text.isNotEmpty &&
-                     _accountHolderController.text.isNotEmpty &&
-                     _nationalIdController.text.isNotEmpty;
+        isFormValid =
+            _phoneController.text.isNotEmpty &&
+            _accountHolderController.text.isNotEmpty &&
+            _nationalIdController.text.isNotEmpty;
       } else if (_selectedMethod == PayoutMethod.bank) {
         // For Bank Transfer: need IBAN, bank name, and account holder name
-        isFormValid = _ibanController.text.isNotEmpty &&
-                     _selectedBank != null &&
-                     _accountHolderController.text.isNotEmpty;
+        isFormValid =
+            _ibanController.text.isNotEmpty &&
+            _selectedBank != null &&
+            _accountHolderController.text.isNotEmpty;
       }
     }
 
     return Consumer(
       builder: (context, ref, child) {
         final payoutInfoAsync = ref.watch(payoutInfoProvider);
-        
+
         return payoutInfoAsync.maybeWhen(
           data: (payoutInfo) => SizedBox(
             width: double.infinity,
             child: PressableScaleWidget(
-              onTap: (isFormValid && payoutInfo.canPayout) ? _requestPayout : null,
+              onTap: (isFormValid && payoutInfo.canPayout)
+                  ? _requestPayout
+                  : null,
               child: Container(
                 padding: ResponsiveUtils.pSymmetric(vertical: 18),
                 decoration: BoxDecoration(
@@ -1179,7 +1228,9 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
                           width: 20.s,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.s,
-                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.textLight),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.textLight,
+                            ),
                           ),
                         ),
                       )

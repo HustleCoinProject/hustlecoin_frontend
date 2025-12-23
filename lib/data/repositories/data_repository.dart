@@ -168,7 +168,7 @@ class DataRepository {
         'username': user.username,
         'email': user.email,
         'hc_balance': user.hcBalance,
-        'kz_balance': user.kzBalance,
+        // 'kz_balance': user.kzBalance, // Removed
         'rank_points': user.rankPoints,
         'level': user.level,
         'current_hustle': user.currentHustle,

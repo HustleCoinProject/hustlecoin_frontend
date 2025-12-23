@@ -54,9 +54,6 @@ class SafeLockController extends StateNotifier<AsyncValue<SafeLockStatus>> {
       // Refresh user data to update balance
       await _ref.read(userControllerProvider.notifier).refresh();
 
-      // Refresh safe lock status
-      await fetchStatus();
-
       return response;
     } catch (e) {
       rethrow;
@@ -70,9 +67,6 @@ class SafeLockController extends StateNotifier<AsyncValue<SafeLockStatus>> {
 
       // Refresh user data to update balance
       await _ref.read(userControllerProvider.notifier).refresh();
-
-      // Refresh safe lock status
-      await fetchStatus();
 
       return response;
     } catch (e) {

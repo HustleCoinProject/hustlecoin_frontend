@@ -18,7 +18,7 @@ class User {
   final DateTime createdAt;
   final int dailyTapEarnings;
   final DateTime? lastTapResetDate;
-  
+
   // Payout-related fields
   final String? phoneNumber;
   final String? fullName;
@@ -126,6 +126,6 @@ class User {
     );
   }
 
-  // Visual-only Kwanza balance
-  int get kzBalance => (hcBalance / 8).floor();
+  // Visual-only Kwanza balance - DEPRECATED/REMOVED to use RemoteConfig rate
+  // int get kzBalance => (hcBalance / 8).floor();
 }

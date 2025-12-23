@@ -18,7 +18,7 @@ class LeaderboardEntry {
     return LeaderboardEntry(
       username: json['username'],
       rankPoints: json['rank_points'] ?? 0,
-      level: json['level'],
+      level: json['level'] ?? 0,
       hcBalance: json['hc_balance'] ?? 0,
     );
   }

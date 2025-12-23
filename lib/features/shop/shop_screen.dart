@@ -14,6 +14,7 @@ import 'package:hustlecoin/widgets/primary_action_button.dart';
 import 'package:hustlecoin/widgets/screen_background.dart';
 import 'package:hustlecoin/widgets/screen_header.dart';
 import 'package:hustlecoin/widgets/info_popup.dart';
+import 'package:hustlecoin/services/remote_config_service.dart';
 
 // Provider to track loading state for each shop item
 final itemPurchasingProvider = StateProvider.autoDispose.family<bool, String>(
@@ -84,12 +85,22 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
-                            Text(
-                              '≈ Kz ${user?.kzBalance ?? 0}',
-                              style: TextStyle(
-                                fontSize: 11.f,
-                                color: AppColors.textGrey,
-                              ),
+                            Builder(
+                              builder: (context) {
+                                if (user == null)
+                                  return const SizedBox.shrink();
+                                final rate = RemoteConfigService.instance
+                                    .getHcToKzRate();
+                                final kzBalance = (user.hcBalance / rate)
+                                    .floor();
+                                return Text(
+                                  '≈ Kz $kzBalance',
+                                  style: TextStyle(
+                                    fontSize: 11.f,
+                                    color: AppColors.textGrey,
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -99,7 +110,10 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 ),
                 // Banner ad
                 BannerAdWidget(
-                  margin: ResponsiveUtils.pSymmetric(horizontal: 15, vertical: 5),
+                  margin: ResponsiveUtils.pSymmetric(
+                    horizontal: 15,
+                    vertical: 5,
+                  ),
                 ),
                 // Show loading indicator or shop items
                 shopItemsAsync.when(
@@ -232,102 +246,105 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 width: 80.s,
                 height: 80.s,
                 margin: EdgeInsets.only(bottom: 10.s),
-            decoration: BoxDecoration(
-              color: const Color.fromRGBO(16, 16, 16, 0.5),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(
-              _getIconForItemType(item.itemType, item.itemId),
-              size: 40.s,
-              color: AppColors.angolaYellow,
-            ),
-          ),
-          Text(
-            item.name,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16.f,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textLight,
-            ),
-          ),
-          SizedBox(height: 5.s),
-          Expanded(
-            child: Text(
-              item.description,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12.f, color: AppColors.textGrey),
-            ),
-          ),
-          SizedBox(height: 15.s),
+                decoration: BoxDecoration(
+                  color: const Color.fromRGBO(16, 16, 16, 0.5),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(
+                  _getIconForItemType(item.itemType, item.itemId),
+                  size: 40.s,
+                  color: AppColors.angolaYellow,
+                ),
+              ),
+              Text(
+                item.name,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16.f,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textLight,
+                ),
+              ),
+              SizedBox(height: 5.s),
+              Expanded(
+                child: Text(
+                  item.description,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12.f, color: AppColors.textGrey),
+                ),
+              ),
+              SizedBox(height: 15.s),
 
-          SizedBox(
-            width: double.infinity,
-            child: PrimaryActionButton(
-              text: '${item.price} HC',
-              isLoading: isPurchasing,
-              padding: ResponsiveUtils.pSymmetric(
-                vertical: 12,
-              ), // Override padding to match original
-              onTap: (isPurchasing || !canAfford)
-                  ? null
-                  : () {
-                      // Set purchase in progress state IMMEDIATELY
-                      ref
-                              .read(
-                                itemPurchasingProvider(item.itemId).notifier,
-                              )
-                              .state =
-                          true;
+              SizedBox(
+                width: double.infinity,
+                child: PrimaryActionButton(
+                  text: '${item.price} HC',
+                  isLoading: isPurchasing,
+                  padding: ResponsiveUtils.pSymmetric(
+                    vertical: 12,
+                  ), // Override padding to match original
+                  onTap: (isPurchasing || !canAfford)
+                      ? null
+                      : () {
+                          // Set purchase in progress state IMMEDIATELY
+                          ref
+                                  .read(
+                                    itemPurchasingProvider(
+                                      item.itemId,
+                                    ).notifier,
+                                  )
+                                  .state =
+                              true;
 
-                      // Use Future.microtask to ensure UI updates before starting API call
-                      Future.microtask(() async {
-                        try {
-                          // Purchase the item with quantity = 1
-                          await ref
-                              .read(userControllerProvider.notifier)
-                              .purchaseItem(item.itemId);
+                          // Use Future.microtask to ensure UI updates before starting API call
+                          Future.microtask(() async {
+                            try {
+                              // Purchase the item with quantity = 1
+                              await ref
+                                  .read(userControllerProvider.notifier)
+                                  .purchaseItem(item.itemId);
 
-                          // Show success message
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Successfully purchased ${item.name}!',
-                                ),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          // Show error message
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Failed to purchase: ${e.toString()}',
-                                ),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        } finally {
-                          // Reset purchase in progress state
-                          if (context.mounted) {
-                            ref
-                                    .read(
-                                      itemPurchasingProvider(
-                                        item.itemId,
-                                      ).notifier,
-                                    )
-                                    .state =
-                                false;
-                          }
-                        }
-                      });
-                    },
-            ),
-          ),            ],
+                              // Show success message
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Successfully purchased ${item.name}!',
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              // Show error message
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Failed to purchase: ${e.toString()}',
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            } finally {
+                              // Reset purchase in progress state
+                              if (context.mounted) {
+                                ref
+                                        .read(
+                                          itemPurchasingProvider(
+                                            item.itemId,
+                                          ).notifier,
+                                        )
+                                        .state =
+                                    false;
+                              }
+                            }
+                          });
+                        },
+                ),
+              ),
+            ],
           ),
           // Info icon in top-right corner
           Positioned(
@@ -354,7 +371,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 ),
               ),
             ),
-          ),        ],
+          ),
+        ],
       ),
     );
   }
