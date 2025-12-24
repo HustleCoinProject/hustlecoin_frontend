@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hustlecoin/app_config.dart';
+import 'package:hustlecoin/features/update/update_dialog.dart';
+import 'package:hustlecoin/features/update/update_screen.dart';
+import 'package:hustlecoin/services/version_check_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hustlecoin/features/auth/start_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -54,9 +58,37 @@ class _ServerTimeInitializerState extends ConsumerState<ServerTimeInitializer>
       // Initialize tapping status - this will fetch from /tapping/status endpoint
       ref.read(tappingStatusProvider);
 
+      // Check for updates
+      _checkVersion();
+
       // Show app open ad on first launch
       _showAppOpenAdIfAvailable();
     });
+  }
+
+  void _checkVersion() {
+    final remoteConfig = RemoteConfigService.instance;
+    final remoteVersion = remoteConfig.getRemoteAppVersion();
+    final localVersion = AppConfig.localAppVersion;
+
+    final status = VersionCheckService.checkVersion(
+      localVersion,
+      remoteVersion,
+    );
+
+    if (status == VersionStatus.forcedUpdate) {
+      // Navigate to UpdateRequiredScreen and remove all other routes
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const UpdateRequiredScreen()),
+        (route) => false,
+      );
+    } else if (status == VersionStatus.optionalUpdate) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const UpdateDialog(),
+      );
+    }
   }
 
   @override
@@ -70,8 +102,18 @@ class _ServerTimeInitializerState extends ConsumerState<ServerTimeInitializer>
     super.didChangeAppLifecycleState(state);
 
     if (state == AppLifecycleState.resumed) {
+      // Fetch latest remote config and check for updates
+      _fetchConfigAndCheckVersion();
+
       // Show app open ad when app comes to foreground
       _showAppOpenAdIfAvailable();
+    }
+  }
+
+  Future<void> _fetchConfigAndCheckVersion() async {
+    await RemoteConfigService.instance.fetchAndActivate();
+    if (mounted) {
+      _checkVersion();
     }
   }
 
@@ -144,7 +186,7 @@ Future<void> main() async {
         // Override the unimplemented provider with the actual instance
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
-      child: const ServerTimeInitializer(child: MyApp()),
+      child: const MyApp(),
     ),
   );
 }
@@ -158,7 +200,7 @@ class MyApp extends StatelessWidget {
       builder: (context) => MaterialApp(
         title: 'Hustle Coin',
         theme: ResponsiveTheme.buildTheme(context),
-        home: const AuthWrapper(),
+        home: const ServerTimeInitializer(child: AuthWrapper()),
         debugShowCheckedModeBanner: false,
       ),
     );

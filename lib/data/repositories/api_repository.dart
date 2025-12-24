@@ -25,6 +25,7 @@ import '../models/safe_lock_status.dart';
 import '../models/safe_lock_deposit_response.dart';
 import '../models/safe_lock_claim_response.dart';
 import '../models/safe_lock_global_stats.dart';
+import '../models/notification.dart';
 
 // This class handles all communication with your backend API.
 
@@ -701,6 +702,81 @@ class ApiRepository {
     } else {
       throw Exception(
         'Failed to fetch safe lock global stats: ${response.body}',
+      );
+    }
+  }
+
+  // --- Notification System ---
+
+  Future<List<NotificationModel>> getNotifications({
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(
+        Uri.parse('$_baseUrl/api/notifications?limit=$limit&offset=$offset'),
+        headers: _headers,
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      try {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((item) => NotificationModel.fromJson(item)).toList();
+      } catch (e) {
+        print('Error parsing notifications: $e');
+        print('Response body: ${response.body}');
+        rethrow;
+      }
+    } else {
+      throw Exception('Failed to fetch notifications: ${response.body}');
+    }
+  }
+
+  Future<int> getUnreadNotificationCount() async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(
+        Uri.parse('$_baseUrl/api/notifications/unread-count'),
+        headers: _headers,
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['unread_count'];
+    } else {
+      throw Exception('Failed to fetch unread count: ${response.body}');
+    }
+  }
+
+  Future<NotificationModel> markNotificationAsRead(
+    String notificationId,
+  ) async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.patch(
+        Uri.parse('$_baseUrl/api/notifications/$notificationId/read'),
+        headers: _headers,
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      return NotificationModel.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to mark notification as read: ${response.body}');
+    }
+  }
+
+  Future<void> markAllNotificationsAsRead() async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.patch(
+        Uri.parse('$_baseUrl/api/notifications/read-all'),
+        headers: _headers,
+      ),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Failed to mark all notifications as read: ${response.body}',
       );
     }
   }

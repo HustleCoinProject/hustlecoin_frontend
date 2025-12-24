@@ -426,7 +426,8 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
                 Navigator.of(context).pop();
               },
               child: Container(
-                padding: ResponsiveUtils.p(8),
+                color: Colors.transparent,
+                padding: ResponsiveUtils.p(14),
                 child: FaIcon(
                   FontAwesomeIcons.arrowLeft,
                   color: AppColors.textLight,
@@ -456,7 +457,8 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
                 );
               },
               child: Container(
-                padding: ResponsiveUtils.p(8),
+                color: Colors.transparent,
+                padding: ResponsiveUtils.p(14),
                 child: FaIcon(
                   FontAwesomeIcons.history,
                   color: AppColors.angolaYellow,

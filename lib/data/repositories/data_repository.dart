@@ -21,6 +21,7 @@ import '../models/safe_lock_status.dart';
 import '../models/safe_lock_deposit_response.dart';
 import '../models/safe_lock_claim_response.dart';
 import '../models/safe_lock_global_stats.dart';
+import '../models/notification.dart';
 import '../cache/cache_manager.dart';
 import 'api_repository.dart';
 
@@ -77,6 +78,12 @@ class DataRepository {
   static const Duration _safeLockGlobalStatsTTL = Duration(
     minutes: 10,
   ); // /api/safe-lock/global-stats - Global safe lock stats
+  static const Duration _notificationsTTL = Duration(
+    minutes: 10,
+  ); // /api/notifications - User notifications
+  static const Duration _unreadCountTTL = Duration(
+    minutes: 10,
+  ); // /api/notifications/unread-count - Unread count
 
   DataRepository(this._apiRepository, this._cacheManager);
 
@@ -633,5 +640,56 @@ class DataRepository {
           SafeLockGlobalStats.fromJson(json as Map<String, dynamic>),
       toJson: (stats) => stats.toJson(),
     );
+  }
+
+  // --- Notification System ---
+
+  Future<List<NotificationModel>> getNotifications({
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    return await _getOrFetch(
+      'notifications_${limit}_$offset',
+      () => _apiRepository.getNotifications(limit: limit, offset: offset),
+      _notificationsTTL,
+      fromJson: (json) {
+        final list = json as List<dynamic>;
+        return list.map((item) => NotificationModel.fromJson(item)).toList();
+      },
+      toJson: (notifications) => notifications.map((n) => n.toJson()).toList(),
+    );
+  }
+
+  Future<int> getUnreadNotificationCount() async {
+    return await _getOrFetch(
+      'unread_notification_count',
+      () => _apiRepository.getUnreadNotificationCount(),
+      _unreadCountTTL,
+    );
+  }
+
+  Future<NotificationModel> markNotificationAsRead(
+    String notificationId,
+  ) async {
+    final result = await _apiRepository.markNotificationAsRead(notificationId);
+    // Invalidate notification caches
+    // We try to invalidate the first page which is most likely what's viewed
+    await _cacheManager.delete('notifications_20_0');
+    // Invalidate unread count
+    await _cacheManager.delete('unread_notification_count');
+    return result;
+  }
+
+  Future<void> markAllNotificationsAsRead() async {
+    await _apiRepository.markAllNotificationsAsRead();
+    // Invalidate all notification related caches
+    final allKeys = await _cacheManager.getAllKeys();
+    for (final key in allKeys) {
+      if (key.startsWith('notifications_')) {
+        await _cacheManager.delete(key);
+      }
+    }
+    // Invalidate unread count
+    await _cacheManager.delete('unread_notification_count');
   }
 }

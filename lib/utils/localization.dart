@@ -278,6 +278,16 @@ class LocalizationKeys {
   static const String goal = 'goal';
   static const String winMatch = 'winMatch';
   static const String playGames = 'playGames';
+
+  // Level Benefits
+  static const String levelBenefits = 'level_benefits';
+  static const String multiplierTitle = 'multiplier_title';
+  static const String multiplierDesc = 'multiplier_desc';
+  static const String landTitle = 'land_title';
+  static const String landDesc = 'land_desc';
+  static const String legacyTitle = 'legacy_title';
+  static const String legacyDesc = 'legacy_desc';
+  static const String closeDialog = 'close_dialog';
 }
 
 // Translation maps
@@ -573,6 +583,16 @@ class _Translations {
       LocalizationKeys.goal: 'Goal',
       LocalizationKeys.winMatch: 'Win Match',
       LocalizationKeys.playGames: 'PLAY GAMES',
+
+      // Level Benefits
+      LocalizationKeys.levelBenefits: 'LEVEL BENEFITS',
+      LocalizationKeys.multiplierTitle: 'MULTIPLIER',
+      LocalizationKeys.multiplierDesc: 'Boosts HC earnings from all tasks.',
+      LocalizationKeys.landTitle: 'LAND',
+      LocalizationKeys.landDesc: 'Unlocks more plots for your empire.',
+      LocalizationKeys.legacyTitle: 'LEGACY',
+      LocalizationKeys.legacyDesc: 'Access exclusive high-tier hustles.',
+      LocalizationKeys.closeDialog: '[ CLOSE ]',
     },
 
     'pt': {
@@ -877,6 +897,16 @@ class _Translations {
       LocalizationKeys.goal: 'Objetivo',
       LocalizationKeys.winMatch: 'Vencer Partida',
       LocalizationKeys.playGames: 'JOGAR',
+
+      // Level Benefits
+      LocalizationKeys.levelBenefits: 'BENEFÍCIOS DE NÍVEL',
+      LocalizationKeys.multiplierTitle: 'MULTIPLICADOR',
+      LocalizationKeys.multiplierDesc: 'Aumenta ganhos de HC em todas tarefas.',
+      LocalizationKeys.landTitle: 'TERRA',
+      LocalizationKeys.landDesc: 'Desbloqueia mais lotes para seu império.',
+      LocalizationKeys.legacyTitle: 'LEGADO',
+      LocalizationKeys.legacyDesc: 'Acesse trabalhos exclusivos de alto nível.',
+      LocalizationKeys.closeDialog: '[ FECHAR ]',
     },
   };
 }

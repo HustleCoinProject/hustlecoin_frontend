@@ -22,9 +22,7 @@ class PayoutHistoryScreen extends ConsumerWidget {
           child: Column(
             children: [
               _buildHeader(context, ref),
-              Expanded(
-                child: _buildHistoryList(context, ref),
-              ),
+              Expanded(child: _buildHistoryList(context, ref)),
             ],
           ),
         ),
@@ -45,7 +43,8 @@ class PayoutHistoryScreen extends ConsumerWidget {
                 Navigator.of(context).pop();
               },
               child: Container(
-                padding: ResponsiveUtils.p(8),
+                color: Colors.transparent,
+                padding: ResponsiveUtils.p(14),
                 child: FaIcon(
                   FontAwesomeIcons.arrowLeft,
                   color: AppColors.textLight,
@@ -78,10 +77,10 @@ class PayoutHistoryScreen extends ConsumerWidget {
   }
 
   Widget _buildHistoryList(BuildContext context, WidgetRef ref) {
-    final historyAsync = ref.watch(payoutHistoryProvider(
-      const PayoutHistoryParams(limit: 50, offset: 0)
-    ));
-    
+    final historyAsync = ref.watch(
+      payoutHistoryProvider(const PayoutHistoryParams(limit: 50, offset: 0)),
+    );
+
     return historyAsync.when(
       data: (payouts) => payouts.isEmpty
           ? _buildEmptyState(context, ref)
@@ -91,9 +90,13 @@ class PayoutHistoryScreen extends ConsumerWidget {
               },
               color: AppColors.angolaYellow,
               child: ListView.builder(
-                padding: ResponsiveUtils.pSymmetric(horizontal: 20, vertical: 20),
+                padding: ResponsiveUtils.pSymmetric(
+                  horizontal: 20,
+                  vertical: 20,
+                ),
                 itemCount: payouts.length,
-                itemBuilder: (context, index) => _buildPayoutCard(payouts[index]),
+                itemBuilder: (context, index) =>
+                    _buildPayoutCard(payouts[index]),
               ),
             ),
       loading: () => const Center(
@@ -101,7 +104,8 @@ class PayoutHistoryScreen extends ConsumerWidget {
           valueColor: AlwaysStoppedAnimation<Color>(AppColors.angolaYellow),
         ),
       ),
-      error: (error, stackTrace) => _buildErrorState(context, ref, error.toString()),
+      error: (error, stackTrace) =>
+          _buildErrorState(context, ref, error.toString()),
     );
   }
 
@@ -130,10 +134,7 @@ class PayoutHistoryScreen extends ConsumerWidget {
             child: Text(
               'You haven\'t made any payout requests yet.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textGrey,
-                fontSize: 14.f,
-              ),
+              style: TextStyle(color: AppColors.textGrey, fontSize: 14.f),
             ),
           ),
         ],
@@ -204,7 +205,8 @@ class PayoutHistoryScreen extends ConsumerWidget {
                   Row(
                     children: [
                       FaIcon(
-                        payout.payoutMethod == PayoutMethodType.multicaixaExpress
+                        payout.payoutMethod ==
+                                PayoutMethodType.multicaixaExpress
                             ? FontAwesomeIcons.mobileAlt
                             : FontAwesomeIcons.university,
                         color: AppColors.angolaYellow,
@@ -282,14 +284,20 @@ class PayoutHistoryScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              if (payout.status == PayoutStatus.rejected && payout.rejectionReason != null) ...[
+              if (payout.status == PayoutStatus.rejected &&
+                  payout.rejectionReason != null) ...[
                 SizedBox(height: 12.s),
                 Container(
-                  padding: ResponsiveUtils.pSymmetric(horizontal: 12, vertical: 8),
+                  padding: ResponsiveUtils.pSymmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: Colors.red.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -302,10 +310,7 @@ class PayoutHistoryScreen extends ConsumerWidget {
                       Expanded(
                         child: Text(
                           'Reason: ${payout.rejectionReason}',
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 12.f,
-                          ),
+                          style: TextStyle(color: Colors.red, fontSize: 12.f),
                         ),
                       ),
                     ],
@@ -322,7 +327,7 @@ class PayoutHistoryScreen extends ConsumerWidget {
   Widget _buildStatusChip(PayoutStatus status) {
     Color chipColor;
     IconData iconData;
-    
+
     switch (status) {
       case PayoutStatus.pending:
         chipColor = Colors.orange;
@@ -352,11 +357,7 @@ class PayoutHistoryScreen extends ConsumerWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          FaIcon(
-            iconData,
-            color: chipColor,
-            size: 10.s,
-          ),
+          FaIcon(iconData, color: chipColor, size: 10.s),
           SizedBox(width: 4.s),
           Text(
             status.name.toUpperCase(),

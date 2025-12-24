@@ -24,7 +24,8 @@ class RemoteConfigService {
       await _remoteConfig.setConfigSettings(
         RemoteConfigSettings(
           fetchTimeout: const Duration(minutes: 1),
-          minimumFetchInterval: const Duration(hours: 12),
+          // Set to 0 for development/testing so updates are instant
+          minimumFetchInterval: const Duration(seconds: 0),
         ),
       );
 
@@ -35,13 +36,13 @@ class RemoteConfigService {
         _keyHcToKzRate: _defaultHcToKzRate,
       });
 
-      await _fetchAndActivate();
+      await fetchAndActivate();
     } catch (e) {
       debugPrint('Remote Config initialization failed: $e');
     }
   }
 
-  Future<void> _fetchAndActivate() async {
+  Future<void> fetchAndActivate() async {
     try {
       await _remoteConfig.fetchAndActivate();
       debugPrint('Remote Config fetched and activated');
@@ -67,5 +68,15 @@ class RemoteConfigService {
     // Return default if key doesn't exist or is 0 (to prevent division by zero)
     final val = _remoteConfig.getDouble(_keyHcToKzRate);
     return val > 0 ? val : _defaultHcToKzRate.toDouble();
+  }
+
+  // Versioning
+  static const String _keyAppVersion = 'APP_VERSION';
+  // Default to what we have locally so no update is triggered by default
+  static const String _defaultAppVersion = '1.0.0';
+
+  String getRemoteAppVersion() {
+    final val = _remoteConfig.getString(_keyAppVersion);
+    return val.isNotEmpty ? val : _defaultAppVersion;
   }
 }

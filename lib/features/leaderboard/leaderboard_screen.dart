@@ -18,6 +18,7 @@ class LeaderboardEntryUI {
   final String username;
   final int score;
   final int level;
+  final String currentHustle;
   final IconData avatarIcon;
 
   LeaderboardEntryUI({
@@ -25,6 +26,7 @@ class LeaderboardEntryUI {
     required this.username,
     required this.score,
     required this.level,
+    required this.currentHustle,
     this.avatarIcon = FontAwesomeIcons.user,
   });
 }
@@ -66,6 +68,9 @@ class LeaderboardScreen extends ConsumerWidget {
         username: 'You',
         score: user.rankPoints,
         level: user.level,
+        currentHustle: HustleUtils.getCurrentHustleDisplayName(
+          user.currentHustle,
+        ),
       );
     } else {
       // User data isn't available yet, show a complete placeholder
@@ -74,6 +79,7 @@ class LeaderboardScreen extends ConsumerWidget {
         username: 'You',
         score: 0,
         level: 0,
+        currentHustle: 'Unknown',
       );
     }
 
@@ -150,6 +156,7 @@ class LeaderboardScreen extends ConsumerWidget {
               username: entry.value.username,
               score: entry.value.rankPoints,
               level: entry.value.level,
+              currentHustle: entry.value.currentHustle,
             );
           }).toList();
 
@@ -323,7 +330,7 @@ class LeaderboardScreen extends ConsumerWidget {
                   ),
                 ),
                 Text(
-                  'Level ${entry.level}',
+                  'Level ${entry.level} • ${entry.currentHustle}',
                   style: TextStyle(
                     fontSize: 11.f,
                     color: Colors.white.withOpacity(0.6),
