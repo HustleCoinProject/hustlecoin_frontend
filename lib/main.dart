@@ -179,6 +179,9 @@ Future<void> main() async {
   // Initialize Remote Config Service
   await RemoteConfigService.instance.initialize();
 
+  // Initialize App Config (Load Version)
+  await AppConfig.init();
+
   // Start the app with a single ProviderScope
   runApp(
     ProviderScope(

@@ -1,7 +1,6 @@
+import 'package:hustlecoin/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:hustlecoin/data/models/user.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
 import 'package:hustlecoin/theme/app_colors.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
@@ -89,7 +88,9 @@ class _CreditsScreenState extends ConsumerState<CreditsScreen> {
                               SizedBox(height: 20.s),
                               _buildCreditLine('Ailton Walter', large: true),
                               SizedBox(height: 8.s),
-                              _buildCreditLine(ref.t(LocalizationKeys.founderVisionary)),
+                              _buildCreditLine(
+                                ref.t(LocalizationKeys.founderVisionary),
+                              ),
                               SizedBox(height: 40.s),
                               _buildCreditLine('⭐'),
                               SizedBox(height: 40.s),
@@ -97,7 +98,9 @@ class _CreditsScreenState extends ConsumerState<CreditsScreen> {
                               SizedBox(height: 20.s),
                               _buildCreditLine('Mujtaba', large: true),
                               SizedBox(height: 8.s),
-                              _buildCreditLine(ref.t(LocalizationKeys.leadDeveloper)),
+                              _buildCreditLine(
+                                ref.t(LocalizationKeys.leadDeveloper),
+                              ),
                               SizedBox(height: 40.s),
                               _buildCreditLine('✨'),
                               SizedBox(height: 40.s),
@@ -115,7 +118,11 @@ class _CreditsScreenState extends ConsumerState<CreditsScreen> {
                               SizedBox(height: 60.s),
                               _buildCreditLine('❤️', large: true),
                               SizedBox(height: 20.s),
-                              _buildCreditLine(ref.t(LocalizationKeys.madeWithLove)),
+                              _buildCreditLine(
+                                ref.t(LocalizationKeys.madeWithLove),
+                              ),
+                              SizedBox(height: 40.s),
+                              _buildCreditLine('v${AppConfig.localAppVersion}'),
                               SizedBox(height: 100.s),
                             ],
                           ),
