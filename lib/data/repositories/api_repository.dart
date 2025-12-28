@@ -30,8 +30,11 @@ import '../models/notification.dart';
 // This class handles all communication with your backend API.
 
 class ApiRepository {
+  static const String _clientKeyHeader = 'x-hustle-coin-client-key';
+  static const String _clientKeyValue = 'scooby doo';
+
   final String _baseUrl =
-      "https://hustlecoin-backend.fly.dev"; // "http://10.247.33.41:8000";
+      "http://10.247.33.41:8000"; // "https://hustlecoin-backend.fly.dev";
   String? _accessToken;
   String? _refreshToken;
 
@@ -47,8 +50,11 @@ class ApiRepository {
     _onTokensRefreshed = callback;
   }
 
+  Map<String, String> get _baseHeaders => {_clientKeyHeader: _clientKeyValue};
+
   Map<String, String> get _headers {
     final headers = {'Content-Type': 'application/json'};
+    headers.addAll(_baseHeaders);
     if (_accessToken != null) {
       headers['Authorization'] = 'Bearer $_accessToken';
     }
@@ -94,7 +100,10 @@ class ApiRepository {
   Future<AuthTokens> login(String username, String password) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/api/users/login'),
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        ..._baseHeaders,
+      },
       body: {'username': username, 'password': password},
     );
     if (response.statusCode == 200) {
@@ -108,7 +117,7 @@ class ApiRepository {
   Future<AuthTokens> loginWithFirebase(String firebaseIdToken) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/api/users/firebase-login'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', ..._baseHeaders},
       body: json.encode({'firebase_token': firebaseIdToken}),
     );
     if (response.statusCode == 200) {
@@ -126,7 +135,7 @@ class ApiRepository {
 
     final response = await http.post(
       Uri.parse('$_baseUrl/api/users/refresh'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', ..._baseHeaders},
       body: json.encode({'refresh_token': _refreshToken}),
     );
 
@@ -221,7 +230,10 @@ class ApiRepository {
 
   // --- Hustles & Levels ---
   Future<Map<String, Map<String, String>>> getAllHustles() async {
-    final response = await http.get(Uri.parse('$_baseUrl/api/hustles/all'));
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/hustles/all'),
+      headers: _baseHeaders,
+    );
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
       return data.map(
@@ -532,7 +544,7 @@ class ApiRepository {
   Future<Map<String, dynamic>> getPayoutMethods() async {
     final response = await http.get(
       Uri.parse('$_baseUrl/api/payouts/methods'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', ..._baseHeaders},
     );
     if (response.statusCode == 200) {
       return json.decode(response.body);
@@ -632,7 +644,7 @@ class ApiRepository {
   Future<Map<String, dynamic>> getPayoutSystemStatus() async {
     final response = await http.get(
       Uri.parse('$_baseUrl/api/payouts/system/status'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', ..._baseHeaders},
     );
     if (response.statusCode == 200) {
       return json.decode(response.body);
@@ -695,7 +707,7 @@ class ApiRepository {
   Future<SafeLockGlobalStats> getSafeLockGlobalStats() async {
     final response = await http.get(
       Uri.parse('$_baseUrl/api/safe-lock/global-stats'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', ..._baseHeaders},
     );
     if (response.statusCode == 200) {
       return SafeLockGlobalStats.fromJson(json.decode(response.body));
