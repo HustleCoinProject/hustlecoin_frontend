@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hustlecoin/utils/localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hustlecoin/services/sound_service.dart';
@@ -55,7 +56,7 @@ class PayoutHistoryScreen extends ConsumerWidget {
             SizedBox(width: 15.s),
             Expanded(
               child: Text(
-                'Payout History',
+                ref.t(LocalizationKeys.rewardsHistory),
                 style: TextStyle(
                   color: AppColors.textLight,
                   fontSize: 20.f,
@@ -121,7 +122,7 @@ class PayoutHistoryScreen extends ConsumerWidget {
           ),
           SizedBox(height: 20.s),
           Text(
-            'No Payout History',
+            ref.t(LocalizationKeys.noRewardsHistory),
             style: TextStyle(
               color: AppColors.textLight,
               fontSize: 20.f,
@@ -132,7 +133,7 @@ class PayoutHistoryScreen extends ConsumerWidget {
           Padding(
             padding: ResponsiveUtils.pSymmetric(horizontal: 40),
             child: Text(
-              'You haven\'t made any payout requests yet.',
+              ref.t(LocalizationKeys.noPayoutRequests),
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.textGrey, fontSize: 14.f),
             ),

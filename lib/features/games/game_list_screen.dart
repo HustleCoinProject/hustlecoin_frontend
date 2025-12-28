@@ -15,8 +15,8 @@ import 'package:hustlecoin/widgets/screen_background.dart';
 import 'package:hustlecoin/features/games/snake_game_screen.dart';
 import 'package:hustlecoin/features/games/seagull_game_screen.dart';
 import 'package:hustlecoin/features/games/pong_game_screen.dart';
+import 'package:hustlecoin/features/games/balloon_pop_game_screen.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
-import 'package:hustlecoin/utils/ad_helper.dart';
 
 class GameListScreen extends ConsumerStatefulWidget {
   const GameListScreen({super.key});
@@ -125,7 +125,6 @@ class _GameListScreenState extends ConsumerState<GameListScreen> {
                       icon: FontAwesomeIcons.personRunning,
                       color: AppColors.angolaYellow,
                       onTap: () async {
-                        await AdHelper.showInterstitialOnNavigation();
                         if (context.mounted) {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -150,7 +149,6 @@ class _GameListScreenState extends ConsumerState<GameListScreen> {
                       icon: FontAwesomeIcons.staffSnake,
                       color: Colors.greenAccent,
                       onTap: () async {
-                        await AdHelper.showInterstitialOnNavigation();
                         if (context.mounted) {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -175,7 +173,6 @@ class _GameListScreenState extends ConsumerState<GameListScreen> {
                       icon: FontAwesomeIcons.dove,
                       color: Colors.lightBlueAccent,
                       onTap: () async {
-                        await AdHelper.showInterstitialOnNavigation();
                         if (context.mounted) {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -200,11 +197,35 @@ class _GameListScreenState extends ConsumerState<GameListScreen> {
                       icon: FontAwesomeIcons.tableTennisPaddleBall,
                       color: Colors.pinkAccent,
                       onTap: () async {
-                        await AdHelper.showInterstitialOnNavigation();
                         if (context.mounted) {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) => PongGameScreen(
+                                rewardTask: _miniGameTask,
+                                dataRepository: dataRepo,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    SizedBox(height: 15.s),
+                    _buildGameCard(
+                      context,
+                      title: ref.t(LocalizationKeys.gameBalloonPopTitle),
+                      description: ref.t(
+                        LocalizationKeys.balloonPopInstruction,
+                      ),
+                      goal:
+                          '${ref.t(LocalizationKeys.goal)}: ${ref.t(LocalizationKeys.score)} 50',
+                      reward: rewardText,
+                      icon: FontAwesomeIcons.fly,
+                      color: Colors.purpleAccent,
+                      onTap: () async {
+                        if (context.mounted) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => BalloonPopGameScreen(
                                 rewardTask: _miniGameTask,
                                 dataRepository: dataRepo,
                               ),

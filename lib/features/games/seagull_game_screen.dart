@@ -10,6 +10,7 @@ import 'package:hustlecoin/utils/localization.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/widgets/glass_container.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
+import 'package:hustlecoin/utils/ad_helper.dart';
 
 // --- Models ---
 
@@ -460,7 +461,12 @@ class _SeagullGameScreenState extends ConsumerState<SeagullGameScreen>
                                     Icons.arrow_back_ios_new,
                                     color: Colors.black54,
                                   ),
-                                  onPressed: () => Navigator.of(context).pop(),
+                                  onPressed: () {
+                                    AdHelper.showInterstitialAd(
+                                      probability: 1.0,
+                                    );
+                                    Navigator.of(context).pop();
+                                  },
                                 ),
                                 GlassContainer(
                                   borderRadius: 20.r,
@@ -478,7 +484,18 @@ class _SeagullGameScreenState extends ConsumerState<SeagullGameScreen>
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 48),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.arrow_back,
+                                    color: Colors.white,
+                                  ),
+                                  onPressed: () {
+                                    AdHelper.showInterstitialAd(
+                                      probability: 1.0,
+                                    );
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
                               ],
                             ),
                           ),

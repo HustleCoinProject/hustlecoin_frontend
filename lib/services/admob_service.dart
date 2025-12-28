@@ -61,16 +61,28 @@ class AdMobService {
   bool _isInterstitialAdLoaded = false;
   bool _isAppOpenAdLoaded = false;
 
+  // Singleton pattern
+  static final AdMobService _instance = AdMobService._internal();
+  factory AdMobService() => _instance;
+  AdMobService._internal() {
+    _appStartTime = DateTime.now();
+  }
+
   // App lifecycle management for app open ads
   DateTime? _appOpenAdLastShown;
   static const Duration _appOpenAdCooldown = Duration(
     hours: 4,
   ); // Show app open ad max once every 4 hours
 
-  // Singleton pattern
-  static final AdMobService _instance = AdMobService._internal();
-  factory AdMobService() => _instance;
-  AdMobService._internal();
+  // Interstitial Ad Management
+  DateTime? _interstitialLastShown;
+  late final DateTime _appStartTime;
+
+  // OPTIMIZED SETTINGS:
+  // 1. Session Start Grace Period: No ads for first 90 seconds
+  static const Duration _sessionStartGracePeriod = Duration(seconds: 90);
+  // 2. Frequency Cap: Minimum 4 minutes between interstitial ads
+  static const Duration _interstitialCooldown = Duration(minutes: 4);
 
   // Getters for ad states
   bool get isRewardedAdLoaded {
@@ -99,10 +111,10 @@ class AdMobService {
           onAdFailedToLoad: (LoadAdError error) {
             // Common error codes and their meanings:
             // 0 = ERROR_CODE_INTERNAL_ERROR
-            // 1 = ERROR_CODE_INVALID_REQUEST  
+            // 1 = ERROR_CODE_INVALID_REQUEST
             // 2 = ERROR_CODE_NETWORK_ERROR
             // 3 = ERROR_CODE_NO_FILL
-            
+
             _isRewardedAdLoaded = false;
             _rewardedAd = null;
           },
@@ -124,8 +136,7 @@ class AdMobService {
     bool adWatched = false;
 
     _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
-      onAdShowedFullScreenContent: (RewardedAd ad) {
-      },
+      onAdShowedFullScreenContent: (RewardedAd ad) {},
       onAdDismissedFullScreenContent: (RewardedAd ad) {
         ad.dispose();
         _rewardedAd = null;
@@ -152,8 +163,7 @@ class AdMobService {
         // Preload the next ad
         loadRewardedAd();
       },
-      onAdClicked: (RewardedAd ad) {
-      },
+      onAdClicked: (RewardedAd ad) {},
     );
 
     try {
@@ -192,10 +202,8 @@ class AdMobService {
             _isBannerAdLoaded = false;
             _bannerAd = null;
           },
-          onAdOpened: (ad) {
-          },
-          onAdClosed: (ad) {
-          },
+          onAdOpened: (ad) {},
+          onAdClosed: (ad) {},
         ),
       );
 
@@ -226,25 +234,27 @@ class AdMobService {
             _isInterstitialAdLoaded = true;
 
             // Set up full screen content callback
-            _interstitialAd!
-                .fullScreenContentCallback = FullScreenContentCallback(
-              onAdShowedFullScreenContent: (ad) {
-              },
-              onAdDismissedFullScreenContent: (ad) {
-                ad.dispose();
-                _interstitialAd = null;
-                _isInterstitialAdLoaded = false;
-                // Preload next interstitial ad
-                loadInterstitialAd();
-              },
-              onAdFailedToShowFullScreenContent: (ad, error) {
-                ad.dispose();
-                _interstitialAd = null;
-                _isInterstitialAdLoaded = false;
-                // Preload next interstitial ad
-                loadInterstitialAd();
-              },
-            );
+            _interstitialAd!.fullScreenContentCallback =
+                FullScreenContentCallback(
+                  onAdShowedFullScreenContent: (ad) {
+                    // Mark time when ad is shown
+                    _interstitialLastShown = DateTime.now();
+                  },
+                  onAdDismissedFullScreenContent: (ad) {
+                    ad.dispose();
+                    _interstitialAd = null;
+                    _isInterstitialAdLoaded = false;
+                    // Preload next interstitial ad
+                    loadInterstitialAd();
+                  },
+                  onAdFailedToShowFullScreenContent: (ad, error) {
+                    ad.dispose();
+                    _interstitialAd = null;
+                    _isInterstitialAdLoaded = false;
+                    // Preload next interstitial ad
+                    loadInterstitialAd();
+                  },
+                );
           },
           onAdFailedToLoad: (error) {
             _isInterstitialAdLoaded = false;
@@ -259,7 +269,26 @@ class AdMobService {
   }
 
   Future<bool> showInterstitialAd() async {
+    // 1. Check Grace Period
+    if (DateTime.now().difference(_appStartTime) < _sessionStartGracePeriod) {
+      debugPrint('Ad skipped: Still in session grace period');
+      return false;
+    }
+
+    // 2. Check Cooldown
+    if (_interstitialLastShown != null) {
+      final difference = DateTime.now().difference(_interstitialLastShown!);
+      if (difference < _interstitialCooldown) {
+        debugPrint(
+          'Ad skipped: In cooldown (${difference.inMinutes} mins since last)',
+        );
+        return false;
+      }
+    }
+
     if (!_isInterstitialAdLoaded || _interstitialAd == null) {
+      // Try to load for next time if it wasn't loaded
+      loadInterstitialAd();
       return false;
     }
 
@@ -346,8 +375,7 @@ class AdMobService {
   }
 
   /// Test method to validate ad unit IDs and configuration
-  static void validateAdConfiguration() {
-  }
+  static void validateAdConfiguration() {}
 
   void dispose() {
     // Dispose all ads

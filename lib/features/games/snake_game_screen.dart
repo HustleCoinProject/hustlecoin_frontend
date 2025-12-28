@@ -12,6 +12,8 @@ import 'package:hustlecoin/widgets/pressable_scale_widget.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 
+import 'package:hustlecoin/utils/ad_helper.dart';
+
 class SnakeGameScreen extends ConsumerStatefulWidget {
   final Task? rewardTask;
   final int targetScore;
@@ -85,6 +87,7 @@ class _SnakeGameScreenState extends ConsumerState<SnakeGameScreen> {
       _isPlaying = false;
       _isGameOver = true;
     });
+    AdHelper.showInterstitialAd(probability: 1.0);
   }
 
   void _generateFood() {

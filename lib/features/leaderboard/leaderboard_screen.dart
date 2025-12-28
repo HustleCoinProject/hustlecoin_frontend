@@ -91,7 +91,7 @@ class LeaderboardScreen extends ConsumerWidget {
           child: Column(
             children: [
               ScreenHeader(title: ref.t(LocalizationKeys.leaderboard)),
-              _buildDisclaimer(ref),
+              _buildInfoTicker(ref),
               _buildContent(leaderboardAsync, ref),
               _buildPlayerHighlight(playerEntryUI),
             ],
@@ -101,35 +101,10 @@ class LeaderboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDisclaimer(WidgetRef ref) {
-    return Container(
-      margin: ResponsiveUtils.pSymmetric(horizontal: 15.0),
-      padding: ResponsiveUtils.pSymmetric(vertical: 8.0, horizontal: 12.0),
-      decoration: BoxDecoration(
-        color: AppColors.angolaYellow.withOpacity(0.15),
-        border: Border.all(color: AppColors.angolaYellow.withOpacity(0.3)),
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          FaIcon(
-            FontAwesomeIcons.clock,
-            size: 12.s,
-            color: AppColors.angolaYellow,
-          ),
-          SizedBox(width: 8.s),
-          Text(
-            'Weekly Challenge • Resets Monday (AO Time)',
-            style: TextStyle(
-              color: AppColors.angolaYellow,
-              fontWeight: FontWeight.w600,
-              fontSize: 12.f,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
-      ),
+  Widget _buildInfoTicker(WidgetRef ref) {
+    return _InfoTicker(
+      resetText: ref.t(LocalizationKeys.leaderboardDisclaimer),
+      rewardsText: ref.t(LocalizationKeys.top3Rewards),
     );
   }
 
@@ -372,6 +347,102 @@ class LeaderboardScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _InfoTicker extends StatefulWidget {
+  final String resetText;
+  final String rewardsText;
+
+  const _InfoTicker({required this.resetText, required this.rewardsText});
+
+  @override
+  State<_InfoTicker> createState() => _InfoTickerState();
+}
+
+class _InfoTickerState extends State<_InfoTicker> {
+  bool _showResetInfo = true;
+  // late final java.util.Timer _timer; // Avoiding Timer naming conflict if dart:async is imported - removed unused
+
+  @override
+  void initState() {
+    super.initState();
+    // Start flipping every 4 seconds
+    Future.delayed(Duration.zero, () {
+      // Using a periodic timer from Dart's async library
+      // Since we didn't import dart:async with prefix, and Timer is a common name
+      // We will assume standard Timer import or use Future.delayed loop if preferred.
+      // But standard Timer.periodic is best.
+      // Let's rely on standard Timer usage, assuming imports are clean.
+      _startTimer();
+    });
+  }
+
+  void _startTimer() {
+    // Simple recursive future delay to avoid import issues if any
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted) {
+        setState(() {
+          _showResetInfo = !_showResetInfo;
+        });
+        _startTimer();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Determine current text and icon based on state
+    final text = _showResetInfo ? widget.resetText : widget.rewardsText;
+    final icon = _showResetInfo
+        ? FontAwesomeIcons.clock
+        : FontAwesomeIcons.trophy;
+    // Highlight rewards text more
+    // Make text white with glow for "calming" look against background, or keep yellow but remove box
+    // User requested "calming and not like a panel".
+    // Let's use use text with shadow for legibility without the box.
+    final color = _showResetInfo ? AppColors.angolaYellow : AppColors.gold;
+
+    return Container(
+      margin: ResponsiveUtils.pSymmetric(horizontal: 15.0),
+      padding: ResponsiveUtils.pSymmetric(vertical: 8.0, horizontal: 12.0),
+      // Removed BoxDecoration for cleaner look
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 500),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        child: Row(
+          key: ValueKey<bool>(_showResetInfo),
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FaIcon(
+              icon,
+              size: 14.s, // Slightly larger icon
+              color: color,
+            ),
+            SizedBox(width: 8.s),
+            Text(
+              text,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w600,
+                fontSize: 13.f, // Slightly larger text
+                letterSpacing: 0.5,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withOpacity(0.5),
+                    offset: const Offset(1, 1),
+                    blurRadius: 2,
+                  ),
+                  Shadow(color: color.withOpacity(0.5), blurRadius: 10),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -11,6 +11,8 @@ import 'package:hustlecoin/theme/app_colors.dart';
 import 'package:hustlecoin/widgets/pressable_scale_widget.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 
+import 'package:hustlecoin/utils/ad_helper.dart';
+
 class RunnerGameScreen extends ConsumerStatefulWidget {
   final Task? rewardTask;
   final int targetScore;
@@ -88,6 +90,7 @@ class _RunnerGameScreenState extends ConsumerState<RunnerGameScreen>
       _isPlaying = false;
       _isGameOver = true;
     });
+    AdHelper.showInterstitialAd(probability: 1.0);
   }
 
   void _jump() {

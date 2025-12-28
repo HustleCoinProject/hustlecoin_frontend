@@ -34,7 +34,7 @@ class ApiRepository {
   static const String _clientKeyValue = 'scooby doo';
 
   final String _baseUrl =
-      "http://10.247.33.41:8000"; // "https://hustlecoin-backend.fly.dev";
+      "https://hustlecoin-backend.fly.dev"; // "http://10.247.33.41:8000";
   String? _accessToken;
   String? _refreshToken;
 

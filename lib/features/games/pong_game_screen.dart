@@ -10,6 +10,8 @@ import 'package:hustlecoin/utils/localization.dart';
 import 'package:hustlecoin/utils/responsive_utils.dart';
 import 'package:hustlecoin/widgets/banner_ad_widget.dart';
 
+import 'package:hustlecoin/utils/ad_helper.dart';
+
 class PongGameScreen extends ConsumerStatefulWidget {
   final Task? rewardTask;
   final DataRepository? dataRepository;
@@ -101,6 +103,9 @@ class _PongGameScreenState extends ConsumerState<PongGameScreen>
           ? ref.t(LocalizationKeys.youWin)
           : ref.t(LocalizationKeys.aiWins);
     });
+
+    // Show interstitial ad after game
+    AdHelper.showInterstitialAd(probability: 1.0);
 
     if (playerWon) {
       _checkReward();

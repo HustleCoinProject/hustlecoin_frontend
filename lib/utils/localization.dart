@@ -133,6 +133,8 @@ class LocalizationKeys {
   // Leaderboard
   static const String you = 'you';
   static const String rankPoints = 'rank_points';
+  static const String leaderboardDisclaimer = 'leaderboard_disclaimer';
+  static const String top3Rewards = 'top_3_rewards';
 
   // Access Control
   static const String unlockFeature = 'unlock_feature';
@@ -163,6 +165,9 @@ class LocalizationKeys {
   static const String ibanRequired = 'iban_required';
   static const String amountRequired = 'amount_required';
   static const String enterValidAmount = 'enter_valid_amount';
+  static const String rewardsHistory = 'rewards_history';
+  static const String noRewardsHistory = 'no_rewards_history';
+  static const String noPayoutRequests = 'no_payout_requests';
 
   // Settings
   static const String credits = 'credits';
@@ -260,6 +265,8 @@ class LocalizationKeys {
   static const String snakeInstruction = 'snake_instruction';
   static const String seagullInstruction = 'seagull_instruction';
   static const String pongInstruction = 'pong_instruction';
+  static const String gameBalloonPopTitle = 'game_balloon_pop_title';
+  static const String balloonPopInstruction = 'balloon_pop_instruction';
   static const String play = 'play';
   static const String playAgain = 'play_again';
   static const String tapToJump = 'tap_to_jump';
@@ -427,6 +434,9 @@ class _Translations {
       // Leaderboard
       LocalizationKeys.you: 'You',
       LocalizationKeys.rankPoints: 'Rank Points',
+      LocalizationKeys.leaderboardDisclaimer:
+          'Weekly Challenge • Resets Monday (AO Time)',
+      LocalizationKeys.top3Rewards: '🏆 Top 3 Players Win Rewards!',
 
       // Access Control
       LocalizationKeys.unlockFeature: 'Unlock Feature',
@@ -459,6 +469,10 @@ class _Translations {
       LocalizationKeys.ibanRequired: 'IBAN is required',
       LocalizationKeys.amountRequired: 'Amount is required',
       LocalizationKeys.enterValidAmount: 'Enter a valid amount',
+      LocalizationKeys.rewardsHistory: 'Rewards History',
+      LocalizationKeys.noRewardsHistory: 'No Rewards History',
+      LocalizationKeys.noPayoutRequests:
+          'You haven\'t made any payout requests yet.',
 
       // Settings
       LocalizationKeys.credits: 'Credits',
@@ -565,6 +579,9 @@ class _Translations {
       LocalizationKeys.seagullInstruction: 'Tap to fly and avoid collisions',
       LocalizationKeys.pongInstruction:
           'Beat the AI in this classic tennis game',
+      LocalizationKeys.gameBalloonPopTitle: 'Balloon Pop',
+      LocalizationKeys.balloonPopInstruction:
+          'Pop balloons to score points! Don\'t let them fly away.',
       LocalizationKeys.play: 'PLAY',
       LocalizationKeys.playAgain: 'PLAY AGAIN',
       LocalizationKeys.tapToJump: 'Tap to Jump',
@@ -733,6 +750,9 @@ class _Translations {
       // Leaderboard
       LocalizationKeys.you: 'Você',
       LocalizationKeys.rankPoints: 'Pontos de Ranking',
+      LocalizationKeys.leaderboardDisclaimer:
+          'Desafio Semanal • Reinicia Segunda (Horário AO)',
+      LocalizationKeys.top3Rewards: '🏆 Top 3 Ganham Prêmios!',
 
       // Access Control
       LocalizationKeys.unlockFeature: 'Desbloquear Recurso',
@@ -767,6 +787,10 @@ class _Translations {
       LocalizationKeys.ibanRequired: 'IBAN é obrigatório',
       LocalizationKeys.amountRequired: 'Valor é obrigatório',
       LocalizationKeys.enterValidAmount: 'Digite um valor válido',
+      LocalizationKeys.rewardsHistory: 'Histórico de Recompensas',
+      LocalizationKeys.noRewardsHistory: 'Sem Histórico de Recompensas',
+      LocalizationKeys.noPayoutRequests:
+          'Você ainda não fez nenhum pedido de pagamento.',
 
       // Settings
       LocalizationKeys.credits: 'Créditos',
@@ -879,6 +903,9 @@ class _Translations {
       LocalizationKeys.seagullInstruction: 'Toque para voar e evite colisões',
       LocalizationKeys.pongInstruction:
           'Vença a IA neste clássico jogo de tênis',
+      LocalizationKeys.gameBalloonPopTitle: 'Estourar Balões',
+      LocalizationKeys.balloonPopInstruction:
+          'Estoure balões para pontuar! Não deixe eles voarem.',
       LocalizationKeys.play: 'JOGAR',
       LocalizationKeys.playAgain: 'JOGAR NOVAMENTE',
       LocalizationKeys.tapToJump: 'Toque para Pular',
