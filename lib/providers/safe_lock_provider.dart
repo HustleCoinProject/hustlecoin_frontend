@@ -6,6 +6,7 @@ import '../data/models/safe_lock_global_stats.dart';
 import '../data/repositories/data_repository.dart';
 import 'foundational_providers.dart';
 import 'user_provider.dart';
+import 'time_provider.dart';
 
 // Provider for Safe Lock status
 final safeLockStatusProvider =
@@ -88,7 +89,11 @@ final safeLockTimeRemainingProvider = StreamProvider<Duration>((ref) {
     return statusAsync.when(
       data: (status) {
         if (status.lockedUntil != null) {
-          final remaining = status.lockedUntil!.difference(DateTime.now());
+          // Use server time instead of local time
+          final serverTime = ref
+              .read(serverTimeProvider.notifier)
+              .currentServerTime;
+          final remaining = status.lockedUntil!.difference(serverTime);
           return remaining.isNegative ? Duration.zero : remaining;
         }
         return Duration.zero;
