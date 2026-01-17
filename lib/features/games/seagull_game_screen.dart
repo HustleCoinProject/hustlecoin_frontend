@@ -54,12 +54,16 @@ class SeagullGameScreen extends ConsumerStatefulWidget {
   final Task? rewardTask;
   final int targetScore;
   final DataRepository? dataRepository;
+  final bool isMissionMode;
+  final VoidCallback? onMissionCompleted;
 
   const SeagullGameScreen({
     super.key,
     this.rewardTask,
     this.targetScore = 50,
     this.dataRepository,
+    this.isMissionMode = false,
+    this.onMissionCompleted,
   });
 
   @override
@@ -317,7 +321,20 @@ class _SeagullGameScreenState extends ConsumerState<SeagullGameScreen>
           food.state = FoodState.eaten; // Mark for removal
           if (entity.isPlayer) {
             _score += 10;
-            _checkReward();
+            if (widget.isMissionMode && _score >= widget.targetScore) {
+              _isPlaying = false; // Stop updates
+              // Trigger success overlay (Seagull uses overlay logic based on isMissionMode)
+              // Wait, Seagull uses _isPlaying to toggle HUD. But it doesn't auto-stop in original logic?
+              // Original logic doesn't stop. We should force stop or show overlay.
+              // Re-using _stopGame is tricky because it stops ticker.
+              // Let's call _stopGame(won: true) but wait... this file doesn't have _stopGame(won) signature like BalloonPop.
+              // It has no-arg _stopGame().
+              // And overlay logic is "if (!_isPlaying)".
+              // So stopping game will show overlay.
+              _stopGame();
+            } else {
+              _checkReward();
+            }
           }
         }
       }
@@ -327,6 +344,9 @@ class _SeagullGameScreenState extends ConsumerState<SeagullGameScreen>
   bool _rewardClaimed = false;
 
   Future<void> _checkReward() async {
+    // Only verify reward in normal mode
+    if (widget.isMissionMode) return;
+
     if (!_rewardClaimed &&
         widget.rewardTask != null &&
         widget.dataRepository != null &&
@@ -505,7 +525,14 @@ class _SeagullGameScreenState extends ConsumerState<SeagullGameScreen>
                           if (!_isPlaying)
                             Center(
                               child: GestureDetector(
-                                onTap: _startGame,
+                                onTap: () {
+                                  if (widget.isMissionMode &&
+                                      _score >= widget.targetScore) {
+                                    widget.onMissionCompleted?.call();
+                                  } else {
+                                    _startGame();
+                                  }
+                                },
                                 child: Container(
                                   padding: EdgeInsets.symmetric(
                                     horizontal: 40.w,
@@ -523,9 +550,17 @@ class _SeagullGameScreenState extends ConsumerState<SeagullGameScreen>
                                     ],
                                   ),
                                   child: Text(
-                                    ref
-                                        .t(LocalizationKeys.startGame)
-                                        .toUpperCase(),
+                                    _isPlaying
+                                        ? ""
+                                        : (widget.isMissionMode &&
+                                                  _score >= widget.targetScore
+                                              ? "NEXT TASK"
+                                              : ref
+                                                    .t(
+                                                      LocalizationKeys
+                                                          .startGame,
+                                                    )
+                                                    .toUpperCase()),
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontSize: 24.f,

@@ -14,8 +14,16 @@ import 'package:hustlecoin/utils/ad_helper.dart';
 class BalloonPopGameScreen extends ConsumerStatefulWidget {
   final Task? rewardTask;
   final DataRepository? dataRepository;
+  final bool isMissionMode;
+  final VoidCallback? onMissionCompleted;
 
-  const BalloonPopGameScreen({super.key, this.rewardTask, this.dataRepository});
+  const BalloonPopGameScreen({
+    super.key,
+    this.rewardTask,
+    this.dataRepository,
+    this.isMissionMode = false,
+    this.onMissionCompleted,
+  });
 
   @override
   ConsumerState<BalloonPopGameScreen> createState() =>
@@ -72,14 +80,16 @@ class _BalloonPopGameScreenState extends ConsumerState<BalloonPopGameScreen>
       _isPlaying = false;
       _isGameOver = true;
       _endGameMessage = won
-          ? ref.t(LocalizationKeys.youWin)
+          ? (widget.isMissionMode
+                ? "Mission Task Complete!"
+                : ref.t(LocalizationKeys.youWin))
           : ref.t(LocalizationKeys.gameOver);
     });
 
     // Show interstitial ad after game ends (win or lose)
     AdHelper.showInterstitialAd(probability: 1.0);
 
-    if (won) {
+    if (won && !widget.isMissionMode) {
       _checkReward();
     }
   }
@@ -318,7 +328,15 @@ class _BalloonPopGameScreenState extends ConsumerState<BalloonPopGameScreen>
                       ),
                       SizedBox(height: 30.s),
                       ElevatedButton(
-                        onPressed: _startGame,
+                        onPressed: () {
+                          if (widget.isMissionMode &&
+                              _isGameOver &&
+                              _endGameMessage.contains("Complete")) {
+                            widget.onMissionCompleted?.call();
+                          } else {
+                            _startGame();
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.angolaYellow,
                           foregroundColor: Colors.white,
@@ -332,7 +350,10 @@ class _BalloonPopGameScreenState extends ConsumerState<BalloonPopGameScreen>
                         ),
                         child: Text(
                           _isGameOver
-                              ? ref.t(LocalizationKeys.playAgain)
+                              ? (widget.isMissionMode &&
+                                        _endGameMessage.contains("Complete")
+                                    ? "Next Task"
+                                    : ref.t(LocalizationKeys.playAgain))
                               : ref.t(LocalizationKeys.play),
                           style: TextStyle(
                             fontSize: 18.f,

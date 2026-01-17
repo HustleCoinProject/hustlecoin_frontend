@@ -26,6 +26,7 @@ import '../models/safe_lock_deposit_response.dart';
 import '../models/safe_lock_claim_response.dart';
 import '../models/safe_lock_global_stats.dart';
 import '../models/notification.dart';
+import '../models/event.dart';
 
 // This class handles all communication with your backend API.
 
@@ -34,7 +35,7 @@ class ApiRepository {
   static const String _clientKeyValue = 'scooby doo';
 
   final String _baseUrl =
-      "https://hustlecoin-backend.fly.dev"; // "http://10.247.33.41:8000";
+      "http://10.247.33.41:8000"; // "https://hustlecoin-backend.fly.dev";
   String? _accessToken;
   String? _refreshToken;
 
@@ -790,6 +791,51 @@ class ApiRepository {
       throw Exception(
         'Failed to mark all notifications as read: ${response.body}',
       );
+    }
+  }
+
+  // --- Events System ---
+
+  Future<List<Event>> getEvents() async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(Uri.parse('$_baseUrl/api/events/list'), headers: _headers),
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((e) => Event.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to fetch events: ${response.body}');
+    }
+  }
+
+  Future<Map<String, dynamic>> joinEvent(String eventId) async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/api/events/join/$eventId'),
+        headers: _headers,
+      ),
+    );
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to join event: ${response.body}');
+    }
+  }
+
+  Future<List<EventLeaderboardEntry>> getEventLeaderboard(
+    String eventId,
+  ) async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.get(
+        Uri.parse('$_baseUrl/api/events/leaderboard/$eventId'),
+        headers: _headers,
+      ),
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((e) => EventLeaderboardEntry.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to fetch event leaderboard: ${response.body}');
     }
   }
 }

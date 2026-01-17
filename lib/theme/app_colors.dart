@@ -21,4 +21,8 @@ class AppColors {
   static const Color gold = Color(0xFFFFD700);
   static const Color silver = Color(0xFFC0C0C0);
   static const Color bronze = Color(0xFFCD7F32);
+
+  static const Color error = Color(0xFFE57373); // Light red
+  static const Color success = Color(0xFF81C784); // Light green
+  static const Color backgroundDark = Color(0xFF121212); // Very dark grey
 }

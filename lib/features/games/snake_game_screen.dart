@@ -24,7 +24,12 @@ class SnakeGameScreen extends ConsumerStatefulWidget {
     this.rewardTask,
     this.targetScore = 50,
     this.dataRepository,
+    this.isMissionMode = false,
+    this.onMissionCompleted,
   });
+
+  final bool isMissionMode;
+  final VoidCallback? onMissionCompleted;
 
   @override
   ConsumerState<SnakeGameScreen> createState() => _SnakeGameScreenState();
@@ -145,7 +150,12 @@ class _SnakeGameScreenState extends ConsumerState<SnakeGameScreen> {
       if (newHead == _food) {
         _score += 10;
         _generateFood();
-        _checkReward(); // Check if threshold met
+
+        if (widget.isMissionMode && _score >= widget.targetScore) {
+          _stopGame();
+        } else {
+          _checkReward(); // Check if threshold met
+        }
         // Just grow (don't remove tail)
       } else {
         _snake.removeLast();
@@ -158,6 +168,9 @@ class _SnakeGameScreenState extends ConsumerState<SnakeGameScreen> {
   bool _rewardClaimed = false;
 
   Future<void> _checkReward() async {
+    // Only verify reward in normal mode
+    if (widget.isMissionMode) return;
+
     if (!_rewardClaimed &&
         widget.rewardTask != null &&
         widget.dataRepository != null &&
@@ -365,7 +378,20 @@ class _SnakeGameScreenState extends ConsumerState<SnakeGameScreen> {
                                           ),
                                         SizedBox(height: 24.s),
                                         PressableScaleWidget(
-                                          onTap: _startGame,
+                                          onTap: () {
+                                            if (widget.isMissionMode &&
+                                                _isGameOver) {
+                                              if (_score >=
+                                                  widget.targetScore) {
+                                                widget.onMissionCompleted
+                                                    ?.call();
+                                              } else {
+                                                _startGame();
+                                              }
+                                            } else {
+                                              _startGame();
+                                            }
+                                          },
                                           child: Container(
                                             padding: EdgeInsets.symmetric(
                                               horizontal: 32.w,
@@ -378,10 +404,16 @@ class _SnakeGameScreenState extends ConsumerState<SnakeGameScreen> {
                                             ),
                                             child: Text(
                                               _isGameOver
-                                                  ? ref.t(
-                                                      LocalizationKeys
-                                                          .playAgain,
-                                                    )
+                                                  ? (widget.isMissionMode
+                                                        ? (_score >=
+                                                                  widget
+                                                                      .targetScore
+                                                              ? "Next Task"
+                                                              : "Try Again")
+                                                        : ref.t(
+                                                            LocalizationKeys
+                                                                .playAgain,
+                                                          ))
                                                   : ref.t(
                                                       LocalizationKeys.play,
                                                     ),

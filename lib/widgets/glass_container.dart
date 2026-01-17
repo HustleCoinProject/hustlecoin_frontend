@@ -10,6 +10,10 @@ class GlassContainer extends StatelessWidget {
   final BoxShape shape;
   final Border? border;
   final List<BoxShadow>? boxShadow;
+  final Color? color;
+  final Gradient? gradient;
+  final Color? borderColor;
+  final EdgeInsetsGeometry? margin;
 
   const GlassContainer({
     super.key,
@@ -19,19 +23,27 @@ class GlassContainer extends StatelessWidget {
     this.shape = BoxShape.rectangle,
     this.border,
     this.boxShadow,
+    this.color,
+    this.gradient,
+    this.borderColor,
+    this.margin,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: margin,
       padding: padding,
       decoration: BoxDecoration(
-        color: AppColors.glassBg,
+        color: color ?? AppColors.glassBg,
+        gradient: gradient,
         shape: shape,
         borderRadius: shape == BoxShape.rectangle
             ? BorderRadius.circular(borderRadius.r)
             : null,
-        border: border ?? Border.all(color: AppColors.glassBorder, width: 1),
+        border:
+            border ??
+            Border.all(color: borderColor ?? AppColors.glassBorder, width: 1),
         boxShadow:
             boxShadow ??
             [

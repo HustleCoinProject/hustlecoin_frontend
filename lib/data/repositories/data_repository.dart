@@ -22,6 +22,7 @@ import '../models/safe_lock_deposit_response.dart';
 import '../models/safe_lock_claim_response.dart';
 import '../models/safe_lock_global_stats.dart';
 import '../models/notification.dart';
+import '../models/event.dart';
 import '../cache/cache_manager.dart';
 import 'api_repository.dart';
 
@@ -691,5 +692,48 @@ class DataRepository {
     }
     // Invalidate unread count
     await _cacheManager.delete('unread_notification_count');
+  }
+
+  // --- Events System ---
+
+  // Cache configs for events
+  static const Duration _eventsListTTL = Duration(minutes: 5);
+  static const Duration _eventLeaderboardTTL = Duration(minutes: 1);
+
+  Future<List<Event>> getEvents() async {
+    return await _getOrFetch(
+      'events_list',
+      () => _apiRepository.getEvents(),
+      _eventsListTTL,
+      fromJson: (json) {
+        final list = json as List<dynamic>;
+        return list.map((e) => Event.fromJson(e)).toList();
+      },
+      toJson: (events) => events.map((e) => e.toJson()).toList(),
+    );
+  }
+
+  Future<void> joinEvent(String eventId) async {
+    await _apiRepository.joinEvent(eventId);
+    // Invalidate caches
+    await _cacheManager.delete('events_list');
+    await _cacheManager.delete('user_me'); // Balance decreases
+    // Invalidate the specific event's leaderboard cache since user just joined
+    await _cacheManager.delete('event_leaderboard_$eventId');
+  }
+
+  Future<List<EventLeaderboardEntry>> getEventLeaderboard(
+    String eventId,
+  ) async {
+    return await _getOrFetch(
+      'event_leaderboard_$eventId',
+      () => _apiRepository.getEventLeaderboard(eventId),
+      _eventLeaderboardTTL,
+      fromJson: (json) {
+        final list = json as List<dynamic>;
+        return list.map((e) => EventLeaderboardEntry.fromJson(e)).toList();
+      },
+      toJson: (entries) => entries.map((e) => e.toJson()).toList(),
+    );
   }
 }

@@ -23,7 +23,12 @@ class RunnerGameScreen extends ConsumerStatefulWidget {
     this.rewardTask,
     this.targetScore = 600,
     this.dataRepository,
+    this.isMissionMode = false,
+    this.onMissionCompleted,
   });
+
+  final bool isMissionMode;
+  final VoidCallback? onMissionCompleted;
 
   @override
   ConsumerState<RunnerGameScreen> createState() => _RunnerGameScreenState();
@@ -105,6 +110,9 @@ class _RunnerGameScreenState extends ConsumerState<RunnerGameScreen>
   }
 
   Future<void> _checkReward() async {
+    // Only verify reward in normal mode
+    if (widget.isMissionMode) return;
+
     if (!_rewardClaimed &&
         widget.rewardTask != null &&
         widget.dataRepository != null &&
@@ -181,7 +189,12 @@ class _RunnerGameScreenState extends ConsumerState<RunnerGameScreen>
 
       // Score
       _score += 0.1;
-      _checkReward(); // Check if threshold met
+
+      if (widget.isMissionMode && _score >= widget.targetScore) {
+        _stopGame(); // Stop cleanly at win condition
+      } else {
+        _checkReward(); // Check if threshold met
+      }
 
       // Progressive Speed Increase
       // Base speed 5.0, adds +1 speed for every 300 points
@@ -339,7 +352,17 @@ class _RunnerGameScreenState extends ConsumerState<RunnerGameScreen>
                                 SizedBox(height: 30.s),
                               ],
                               PressableScaleWidget(
-                                onTap: _startGame,
+                                onTap: () {
+                                  if (widget.isMissionMode && _isGameOver) {
+                                    if (_score >= widget.targetScore) {
+                                      widget.onMissionCompleted?.call();
+                                    } else {
+                                      _startGame();
+                                    }
+                                  } else {
+                                    _startGame();
+                                  }
+                                },
                                 child: Container(
                                   padding: EdgeInsets.symmetric(
                                     horizontal: 30.w,
@@ -350,7 +373,13 @@ class _RunnerGameScreenState extends ConsumerState<RunnerGameScreen>
                                   ),
                                   child: Text(
                                     _isGameOver
-                                        ? ref.t(LocalizationKeys.playAgain)
+                                        ? (widget.isMissionMode
+                                              ? (_score >= widget.targetScore
+                                                    ? "Next Task"
+                                                    : "Try Again")
+                                              : ref.t(
+                                                  LocalizationKeys.playAgain,
+                                                ))
                                         : ref.t(LocalizationKeys.play),
                                     style: TextStyle(
                                       color: Colors.white,

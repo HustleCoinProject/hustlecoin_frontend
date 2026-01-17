@@ -14,6 +14,8 @@ import 'package:hustlecoin/features/quiz/quiz_screen.dart';
 import 'package:hustlecoin/features/safe_lock/safe_lock_screen.dart';
 import 'package:hustlecoin/features/settings/settings_screen.dart';
 import 'package:hustlecoin/features/games/game_list_screen.dart';
+import 'package:hustlecoin/features/missions/widgets/mission_card.dart';
+import 'package:hustlecoin/providers/mission_provider.dart';
 
 import 'package:hustlecoin/providers/time_provider.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
@@ -610,7 +612,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ],
                   ),
                 ),
-                Expanded(child: _buildGameArea(user)),
+                Expanded(child: _buildGameArea(user, ref)),
+
+                // Show mission card just above upgrades/inventory
                 const UpgradesSection(),
               ],
             ),
@@ -754,7 +758,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildGameArea(User user) {
+  Widget _buildGameArea(User user, WidgetRef ref) {
+    // Get missions from provider
+    final missions = ref.watch(missionsProvider);
+    // Just pick the first one for now as "Next Available"
+    final nextMission = missions.isNotEmpty ? missions.first : null;
+
     return Padding(
       padding: ResponsiveUtils.pSymmetric(horizontal: 15.0),
       child: Stack(
@@ -764,7 +773,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             alignment: Alignment.topCenter,
             child: Padding(
               padding: EdgeInsets.only(top: 20.s),
-              child: StatsContainer(user: user),
+              child: Column(children: [StatsContainer(user: user)]),
             ),
           ),
           Positioned(
@@ -909,6 +918,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // _buildMainTapButton(),
           _buildPlayGameButton(),
           Positioned(bottom: 100.h, child: _buildDailyRewardButton()),
+          if (nextMission != null)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 5.0),
+                child: MissionCard(mission: nextMission),
+              ),
+            ),
         ],
       ),
     );
