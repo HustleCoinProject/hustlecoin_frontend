@@ -184,10 +184,11 @@ class MissionGamesWrapper extends ConsumerWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pop(); // Go back to details/home
-                      // Ideally we should also reset the mission state or just navigate home
-                      // Navigating to Home clears everything since mission state is ephemeral in this flow
-                      // unless we persist it.
-                      // Wrapper is pushed on top of Home. Pop goes back to Home.
+                      // Fetch new mission AFTER navigating back to ensure smooth transition
+                      // and prevent "black screen" or state conflict in the wrapper.
+                      ref
+                          .read(activeMissionProvider.notifier)
+                          .fetchActiveMission();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,

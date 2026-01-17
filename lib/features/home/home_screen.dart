@@ -187,6 +187,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // Show tutorial after first frame if user hasn't seen it
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndShowTutorial();
+      ref.read(activeMissionProvider.notifier).fetchActiveMission();
     });
   }
 
@@ -760,9 +761,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildGameArea(User user, WidgetRef ref) {
     // Get missions from provider
-    final missions = ref.watch(missionsProvider);
+    final missionState = ref.watch(activeMissionProvider);
     // Just pick the first one for now as "Next Available"
-    final nextMission = missions.isNotEmpty ? missions.first : null;
+    final nextMission = missionState.currentMission;
 
     return Padding(
       padding: ResponsiveUtils.pSymmetric(horizontal: 15.0),

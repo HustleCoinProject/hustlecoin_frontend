@@ -21,8 +21,7 @@ class EventLeaderboardScreen extends ConsumerWidget {
 
     return Scaffold(
       body: ScreenBackground(
-        imagePath:
-            'assets/images/Hustle Legend.jpg',
+        imagePath: 'assets/images/Hustle Legend.jpg',
         child: SafeArea(
           child: Column(
             children: [

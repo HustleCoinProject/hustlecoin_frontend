@@ -167,7 +167,9 @@ class EventsScreen extends ConsumerWidget {
               // Compact countdown/timer
               Consumer(
                 builder: (context, ref, child) {
-                  final serverTime = ref.watch(serverTimeProvider.notifier).currentServerTime;
+                  final serverTime = ref
+                      .watch(serverTimeProvider.notifier)
+                      .currentServerTime;
                   if (serverTime.isBefore(event.endTime)) {
                     return _buildCompactTimer(
                       targetDate: serverTime.isBefore(event.startTime)
@@ -197,7 +199,9 @@ class EventsScreen extends ConsumerWidget {
                     SizedBox(width: 4.s),
                     Flexible(
                       child: Text(
-                        DateFormat('MMM d, h:mm a').format(event.startTime.toLocal()),
+                        DateFormat(
+                          'MMM d, h:mm a',
+                        ).format(event.startTime.toLocal()),
                         style: TextStyle(
                           color: AppColors.textGrey,
                           fontSize: 11.f,
@@ -220,7 +224,9 @@ class EventsScreen extends ConsumerWidget {
                     SizedBox(width: 4.s),
                     Flexible(
                       child: Text(
-                        DateFormat('MMM d, h:mm a').format(event.endTime.toLocal()),
+                        DateFormat(
+                          'MMM d, h:mm a',
+                        ).format(event.endTime.toLocal()),
                         style: TextStyle(
                           color: AppColors.textGrey,
                           fontSize: 11.f,
@@ -367,7 +373,7 @@ class EventsScreen extends ConsumerWidget {
       builder: (context, snapshot) {
         final now = ref.read(serverTimeProvider.notifier).currentServerTime;
         final difference = targetDate.difference(now);
-        
+
         if (difference.isNegative) {
           return SizedBox.shrink();
         }
@@ -401,15 +407,21 @@ class EventsScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               FaIcon(
-                isStarting ? FontAwesomeIcons.clock : FontAwesomeIcons.hourglass,
+                isStarting
+                    ? FontAwesomeIcons.clock
+                    : FontAwesomeIcons.hourglass,
                 size: 10.s,
-                color: isStarting ? AppColors.angolaYellow : AppColors.angolaRed,
+                color: isStarting
+                    ? AppColors.angolaYellow
+                    : AppColors.angolaRed,
               ),
               SizedBox(width: 4.s),
               Text(
                 timeText,
                 style: TextStyle(
-                  color: isStarting ? AppColors.angolaYellow : AppColors.angolaRed,
+                  color: isStarting
+                      ? AppColors.angolaYellow
+                      : AppColors.angolaRed,
                   fontSize: 11.f,
                   fontWeight: FontWeight.bold,
                 ),

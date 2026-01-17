@@ -7,6 +7,7 @@ import '../models/user.dart';
 import '../models/level_status.dart';
 import '../models/inventory_item_out.dart';
 import '../models/task.dart';
+import '../models/task_status.dart';
 import '../models/shop_item.dart';
 import '../models/leaderboard_entry.dart';
 import '../models/quiz_question.dart';
@@ -318,6 +319,19 @@ class ApiRepository {
       return data.map((item) => Task.fromJson(item)).toList();
     } else {
       throw Exception('Failed to fetch tasks');
+    }
+  }
+
+  Future<List<TaskStatus>> getTaskStatuses() async {
+    final response = await _makeAuthenticatedRequest(
+      () =>
+          http.get(Uri.parse('$_baseUrl/api/tasks/status'), headers: _headers),
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((item) => TaskStatus.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to fetch task statuses');
     }
   }
 

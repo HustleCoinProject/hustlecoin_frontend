@@ -17,11 +17,9 @@ class MissionCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return PressableScaleWidget(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => MissionDetailScreen(mission: mission),
-          ),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const MissionDetailScreen()));
       },
       child: GlassContainer(
         margin: ResponsiveUtils.pSymmetric(horizontal: 0, vertical: 0),
