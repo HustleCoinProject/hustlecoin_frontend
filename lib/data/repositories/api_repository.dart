@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
-
+import '../models/history_week.dart';
 import '../models/auth_tokens.dart';
 import '../models/user.dart';
 import '../models/level_status.dart';
@@ -403,6 +403,34 @@ class ApiRepository {
       return data.map((item) => LeaderboardEntry.fromJson(item)).toList();
     } else {
       throw Exception('Failed to fetch leaderboard');
+    }
+  }
+
+  Future<List<HistoryWeek>> getLeaderboardHistoryList() async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/leaderboard/history-list'),
+      headers: {'Content-Type': 'application/json', ..._baseHeaders},
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((item) => HistoryWeek.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to fetch leaderboard history list');
+    }
+  }
+
+  Future<List<LeaderboardEntry>> getLeaderboardHistoryDetail(
+    String historyId,
+  ) async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/leaderboard/history/$historyId'),
+      headers: {'Content-Type': 'application/json', ..._baseHeaders},
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((item) => LeaderboardEntry.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to fetch leaderboard history detail');
     }
   }
 

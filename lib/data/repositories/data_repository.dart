@@ -25,6 +25,7 @@ import '../models/notification.dart';
 import '../models/event.dart';
 import '../cache/cache_manager.dart';
 import 'api_repository.dart';
+import '../models/history_week.dart';
 
 /// DataRepository acts as an intermediary between the UI and ApiRepository
 /// It manages caching with TTL to reduce unnecessary API calls
@@ -57,6 +58,9 @@ class DataRepository {
   static const Duration _leaderboardTTL = Duration(
     minutes: 8,
   ); // /api/leaderboard - Rankings
+  static const Duration _leaderboardHistoryTTL = Duration(
+    hours: 24,
+  ); // /api/leaderboard/history - History data
   // Note: Land tiles (/api/land/tiles) are NOT cached - UI implements 3-second rate limiting
   static const Duration _myLandsTTL = Duration(
     minutes: 5,
@@ -402,6 +406,54 @@ class DataRepository {
               'rank_points': entry.rankPoints,
               'level': entry.level,
               'hc_balance': entry.hcBalance,
+              'current_hustle': entry.currentHustle,
+            },
+          )
+          .toList(),
+    );
+  }
+
+  Future<List<HistoryWeek>> getLeaderboardHistoryList() async {
+    return await _getOrFetch(
+      'leaderboard_history_list',
+      () => _apiRepository.getLeaderboardHistoryList(),
+      _leaderboardHistoryTTL,
+      fromJson: (json) {
+        final list = json as List<dynamic>;
+        return list.map((item) => HistoryWeek.fromJson(item)).toList();
+      },
+      toJson: (list) => list
+          .map(
+            (h) => {
+              'id': h.id,
+              'week_start': h.weekStart.toIso8601String(),
+              'week_end': h.weekEnd.toIso8601String(),
+              'entry_count': h.entryCount,
+            },
+          )
+          .toList(),
+    );
+  }
+
+  Future<List<LeaderboardEntry>> getLeaderboardHistoryDetail(
+    String historyId,
+  ) async {
+    return await _getOrFetch(
+      'leaderboard_history_$historyId',
+      () => _apiRepository.getLeaderboardHistoryDetail(historyId),
+      _leaderboardHistoryTTL,
+      fromJson: (json) {
+        final list = json as List<dynamic>;
+        return list.map((item) => LeaderboardEntry.fromJson(item)).toList();
+      },
+      toJson: (entries) => entries
+          .map(
+            (entry) => {
+              'username': entry.username,
+              'rank_points': entry.rankPoints,
+              'level': entry.level,
+              'hc_balance': entry.hcBalance,
+              'current_hustle': entry.currentHustle,
             },
           )
           .toList(),

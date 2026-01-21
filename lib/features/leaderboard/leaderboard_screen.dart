@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hustlecoin/data/models/leaderboard_entry.dart';
 import 'package:hustlecoin/providers/leaderboard_provider.dart';
 import 'package:hustlecoin/providers/user_provider.dart';
 import 'package:hustlecoin/utils/hustle_utils.dart';
@@ -38,8 +37,8 @@ class LeaderboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Get leaderboard and user data from providers
-    final leaderboardAsync = ref.watch(leaderboardProvider);
+    // Get leaderboard state state
+    final leaderboardStateAsync = ref.watch(leaderboardProvider);
     final userState = ref.watch(userControllerProvider);
     final user = userState.when(
       data: (user) => user,
@@ -47,41 +46,71 @@ class LeaderboardScreen extends ConsumerWidget {
       error: (_, __) => null,
     );
 
-    // Determine the player's entry for the highlight bar at the bottom
-    final LeaderboardEntryUI playerEntryUI;
+    LeaderboardEntryUI? playerEntryUI;
+    bool isHistory = false;
 
-    if (user != null) {
-      // We have user data, so we can show their real score
-      int rank = 0; // Default to 0 (unknown rank)
-      // If the leaderboard data has loaded, try to find the user's rank
-      if (leaderboardAsync.hasValue) {
-        final entries = leaderboardAsync.value!;
+    // Logic to determine player's bottom bar display
+    if (leaderboardStateAsync.hasValue) {
+      final state = leaderboardStateAsync.value!;
+      isHistory = state.selectedHistoryId != null;
+      final entries = state.entries;
+
+      if (user != null) {
+        // Find user in the loaded entries
         final userIndex = entries.indexWhere(
           (e) => e.username == user.username,
         );
-        if (userIndex != -1) {
-          rank = userIndex + 1;
+
+        if (isHistory) {
+          // HISTORY MODE
+          if (userIndex != -1) {
+            // User found in history
+            final entry = entries[userIndex];
+            playerEntryUI = LeaderboardEntryUI(
+              rank: userIndex + 1,
+              username: 'You',
+              score: entry.rankPoints,
+              level: entry.level,
+              currentHustle: entry.currentHustle,
+            );
+          } else {
+            // User not in top list for that week
+            playerEntryUI = LeaderboardEntryUI(
+              rank: 0,
+              username: 'You',
+              score: 0,
+              level: user.level, // Show current level as fallback? Or 0?
+              currentHustle: "Not Ranked",
+            );
+          }
+        } else {
+          // CURRENT MODE
+          // Show live user data even if not in top list
+          int rank = 0;
+          if (userIndex != -1) {
+            rank = userIndex + 1;
+          }
+          playerEntryUI = LeaderboardEntryUI(
+            rank: rank,
+            username: 'You',
+            score: user.rankPoints,
+            level: user.level,
+            currentHustle: HustleUtils.getCurrentHustleDisplayName(
+              user.currentHustle,
+            ),
+          );
         }
       }
-      playerEntryUI = LeaderboardEntryUI(
-        rank: rank,
-        username: 'You',
-        score: user.rankPoints,
-        level: user.level,
-        currentHustle: HustleUtils.getCurrentHustleDisplayName(
-          user.currentHustle,
-        ),
-      );
-    } else {
-      // User data isn't available yet, show a complete placeholder
-      playerEntryUI = LeaderboardEntryUI(
-        rank: 0,
-        username: 'You',
-        score: 0,
-        level: 0,
-        currentHustle: 'Unknown',
-      );
     }
+
+    // Fallback if data not loaded
+    playerEntryUI ??= LeaderboardEntryUI(
+      rank: 0,
+      username: 'You',
+      score: 0,
+      level: 0,
+      currentHustle: 'Loading...',
+    );
 
     return Scaffold(
       body: ScreenBackground(
@@ -91,10 +120,85 @@ class LeaderboardScreen extends ConsumerWidget {
           child: Column(
             children: [
               ScreenHeader(title: ref.t(LocalizationKeys.leaderboard)),
+              _buildWeekSelector(ref, leaderboardStateAsync),
               _buildInfoTicker(ref),
-              _buildContent(leaderboardAsync, ref),
-              _buildPlayerHighlight(playerEntryUI),
+              _buildContent(leaderboardStateAsync, ref),
+              // Only show highlight if current week OR if user found in history
+              if (!isHistory || (playerEntryUI.currentHustle != "Not Ranked"))
+                _buildPlayerHighlight(playerEntryUI),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWeekSelector(
+    WidgetRef ref,
+    AsyncValue<LeaderboardState> stateAsync,
+  ) {
+    if (!stateAsync.hasValue) return const SizedBox.shrink();
+    final state = stateAsync.value!;
+    final historyList = state.historyList;
+
+    if (historyList.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      height: 40.s,
+      margin: EdgeInsets.only(bottom: 5.s),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: 15.s),
+        children: [
+          _buildWeekChip(ref, "Current Week", null, state.selectedHistoryId),
+          ...historyList.map(
+            (h) => _buildWeekChip(
+              ref,
+              h.displayName,
+              h.id,
+              state.selectedHistoryId,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeekChip(
+    WidgetRef ref,
+    String label,
+    String? id,
+    String? selectedId,
+  ) {
+    final isSelected = id == selectedId;
+    return GestureDetector(
+      onTap: () {
+        if (id != selectedId) {
+          ref.read(leaderboardProvider.notifier).selectWeek(id);
+        }
+      },
+      child: Container(
+        margin: EdgeInsets.only(right: 10.s),
+        padding: EdgeInsets.symmetric(horizontal: 16.s, vertical: 8.s),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.angolaYellow
+              : Colors.black.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.angolaYellow
+                : Colors.white.withOpacity(0.2),
+            width: 1.s,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.black : Colors.white,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            fontSize: 12.f,
           ),
         ),
       ),
@@ -109,11 +213,11 @@ class LeaderboardScreen extends ConsumerWidget {
   }
 
   Widget _buildContent(
-    AsyncValue<List<LeaderboardEntry>> leaderboardAsync,
+    AsyncValue<LeaderboardState> leaderboardStateAsync,
     WidgetRef ref,
   ) {
     return Expanded(
-      child: leaderboardAsync.when(
+      child: leaderboardStateAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
           child: Text(
@@ -121,7 +225,18 @@ class LeaderboardScreen extends ConsumerWidget {
             style: const TextStyle(color: Colors.red),
           ),
         ),
-        data: (leaderboardEntries) {
+        data: (state) {
+          final leaderboardEntries = state.entries;
+
+          if (leaderboardEntries.isEmpty) {
+            return Center(
+              child: Text(
+                "No entries found",
+                style: TextStyle(color: Colors.white, fontSize: 16.f),
+              ),
+            );
+          }
+
           final leaderboardData = leaderboardEntries.asMap().entries.map((
             entry,
           ) {
@@ -255,7 +370,7 @@ class LeaderboardScreen extends ConsumerWidget {
           ),
           SizedBox(width: 12.s),
 
-          // Avatar Placeholder (Optional, keeps generic if no avatar system yet)
+          // Avatar Placeholder
           Container(
             width: 35.s,
             height: 35.s,
@@ -335,8 +450,7 @@ class LeaderboardScreen extends ConsumerWidget {
                 ),
                 SizedBox(width: 6.s),
                 Text(
-                  entry.score
-                      .toString(), // formatNumber removed as it doesn't exist
+                  entry.score.toString(),
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 14.f,
@@ -364,24 +478,17 @@ class _InfoTicker extends StatefulWidget {
 
 class _InfoTickerState extends State<_InfoTicker> {
   bool _showResetInfo = true;
-  // late final java.util.Timer _timer; // Avoiding Timer naming conflict if dart:async is imported - removed unused
 
   @override
   void initState() {
     super.initState();
     // Start flipping every 4 seconds
     Future.delayed(Duration.zero, () {
-      // Using a periodic timer from Dart's async library
-      // Since we didn't import dart:async with prefix, and Timer is a common name
-      // We will assume standard Timer import or use Future.delayed loop if preferred.
-      // But standard Timer.periodic is best.
-      // Let's rely on standard Timer usage, assuming imports are clean.
       _startTimer();
     });
   }
 
   void _startTimer() {
-    // Simple recursive future delay to avoid import issues if any
     Future.delayed(const Duration(seconds: 4), () {
       if (mounted) {
         setState(() {
@@ -399,10 +506,6 @@ class _InfoTickerState extends State<_InfoTicker> {
     final icon = _showResetInfo
         ? FontAwesomeIcons.clock
         : FontAwesomeIcons.trophy;
-    // Highlight rewards text more
-    // Make text white with glow for "calming" look against background, or keep yellow but remove box
-    // User requested "calming and not like a panel".
-    // Let's use use text with shadow for legibility without the box.
     final color = _showResetInfo ? AppColors.angolaYellow : AppColors.gold;
 
     return Container(
