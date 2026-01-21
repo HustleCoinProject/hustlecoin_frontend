@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 enum PayoutStatus { pending, processing, completed, rejected }
 
-enum PayoutMethodType { multicaixaExpress, bankTransfer }
+enum PayoutMethodType { multicaixaExpress, cryptoTransfer }
 
 @immutable
 class Payout {
@@ -16,8 +16,8 @@ class Payout {
   final String? phoneNumber;
   final String? fullName;
   final String? nationalId;
-  final String? bankIban;
-  final String? bankName;
+  final String? cryptoWalletAddress;
+  final String? cryptoNetwork;
   final String? rejectionReason;
   final DateTime createdAt;
   final DateTime? processedAt;
@@ -34,8 +34,8 @@ class Payout {
     this.phoneNumber,
     this.fullName,
     this.nationalId,
-    this.bankIban,
-    this.bankName,
+    this.cryptoWalletAddress,
+    this.cryptoNetwork,
     this.rejectionReason,
     required this.createdAt,
     this.processedAt,
@@ -48,12 +48,14 @@ class Payout {
       userId: json['user_id']?.toString() ?? '', // Backend may not include this
       amountHc: json['amount_hc'] ?? 0,
       amountKwanza: (json['amount_kwanza'] as num?)?.toDouble() ?? 0.0,
-      conversionRate: (json['conversion_rate'] as num?)?.toDouble() ?? 10.0, // Default fallback
+      conversionRate:
+          (json['conversion_rate'] as num?)?.toDouble() ??
+          10.0, // Default fallback
       payoutMethod: PayoutMethodType.values.firstWhere(
         (e) => e.name == json['payout_method']?.replaceAll('_', ''),
         orElse: () => json['payout_method'] == 'multicaixa_express'
             ? PayoutMethodType.multicaixaExpress
-            : PayoutMethodType.bankTransfer,
+            : PayoutMethodType.cryptoTransfer,
       ),
       status: PayoutStatus.values.firstWhere(
         (e) => e.name == json['status'],
@@ -62,11 +64,11 @@ class Payout {
       phoneNumber: json['phone_number'],
       fullName: json['full_name'],
       nationalId: json['national_id'],
-      bankIban: json['bank_iban'],
-      bankName: json['bank_name'],
+      cryptoWalletAddress: json['crypto_wallet_address'],
+      cryptoNetwork: json['crypto_network'],
       rejectionReason: json['rejection_reason'],
-      createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at']) 
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
           : DateTime.now(),
       processedAt: json['processed_at'] != null
           ? DateTime.parse(json['processed_at'])
@@ -86,13 +88,13 @@ class Payout {
       'conversion_rate': conversionRate,
       'payout_method': payoutMethod == PayoutMethodType.multicaixaExpress
           ? 'multicaixa_express'
-          : 'bank_transfer',
+          : 'crypto_transfer',
       'status': status.name,
       'phone_number': phoneNumber,
       'full_name': fullName,
       'national_id': nationalId,
-      'bank_iban': bankIban,
-      'bank_name': bankName,
+      'crypto_wallet_address': cryptoWalletAddress,
+      'crypto_network': cryptoNetwork,
       'rejection_reason': rejectionReason,
       'created_at': createdAt.toIso8601String(),
       'processed_at': processedAt?.toIso8601String(),
@@ -117,8 +119,8 @@ class Payout {
     switch (payoutMethod) {
       case PayoutMethodType.multicaixaExpress:
         return 'Multicaixa Express';
-      case PayoutMethodType.bankTransfer:
-        return 'Bank Transfer';
+      case PayoutMethodType.cryptoTransfer:
+        return 'Crypto Transfer';
     }
   }
 }

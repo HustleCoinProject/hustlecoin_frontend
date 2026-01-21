@@ -209,7 +209,7 @@ class PayoutHistoryScreen extends ConsumerWidget {
                         payout.payoutMethod ==
                                 PayoutMethodType.multicaixaExpress
                             ? FontAwesomeIcons.mobileAlt
-                            : FontAwesomeIcons.university,
+                            : FontAwesomeIcons.bitcoin,
                         color: AppColors.angolaYellow,
                         size: 16.s,
                       ),

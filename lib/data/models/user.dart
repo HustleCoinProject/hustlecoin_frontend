@@ -23,8 +23,8 @@ class User {
   final String? phoneNumber;
   final String? fullName;
   final String? nationalId;
-  final String? bankIban;
-  final String? bankName;
+  final String? cryptoWalletAddress;
+  final String? cryptoNetwork;
 
   const User({
     required this.id,
@@ -45,8 +45,8 @@ class User {
     this.phoneNumber,
     this.fullName,
     this.nationalId,
-    this.bankIban,
-    this.bankName,
+    this.cryptoWalletAddress,
+    this.cryptoNetwork,
   });
 
   // A factory constructor for creating a new User instance from a map.
@@ -74,8 +74,8 @@ class User {
       phoneNumber: json['phone_number'],
       fullName: json['full_name'],
       nationalId: json['national_id'],
-      bankIban: json['bank_iban'],
-      bankName: json['bank_name'],
+      cryptoWalletAddress: json['crypto_wallet_address'],
+      cryptoNetwork: json['crypto_network'],
     );
   }
 
@@ -99,8 +99,8 @@ class User {
     String? phoneNumber,
     String? fullName,
     String? nationalId,
-    String? bankIban,
-    String? bankName,
+    String? cryptoWalletAddress,
+    String? cryptoNetwork,
   }) {
     return User(
       id: id ?? this.id,
@@ -121,8 +121,8 @@ class User {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       fullName: fullName ?? this.fullName,
       nationalId: nationalId ?? this.nationalId,
-      bankIban: bankIban ?? this.bankIban,
-      bankName: bankName ?? this.bankName,
+      cryptoWalletAddress: cryptoWalletAddress ?? this.cryptoWalletAddress,
+      cryptoNetwork: cryptoNetwork ?? this.cryptoNetwork,
     );
   }
 

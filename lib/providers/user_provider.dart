@@ -200,8 +200,8 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
         phoneNumber: currentUser.phoneNumber,
         fullName: currentUser.fullName,
         nationalId: currentUser.nationalId,
-        bankIban: currentUser.bankIban,
-        bankName: currentUser.bankName,
+        cryptoWalletAddress: currentUser.cryptoWalletAddress,
+        cryptoNetwork: currentUser.cryptoNetwork,
       );
       // Update the state with the new user object without a server call
       state = AsyncValue.data(updatedUser);

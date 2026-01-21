@@ -7,8 +7,8 @@ class PayoutRequest {
   final String? phoneNumber;
   final String? fullName;
   final String? nationalId;
-  final String? bankIban;
-  final String? bankName;
+  final String? cryptoWalletAddress;
+  final String? cryptoNetwork;
 
   const PayoutRequest({
     required this.amountHc,
@@ -16,8 +16,8 @@ class PayoutRequest {
     this.phoneNumber,
     this.fullName,
     this.nationalId,
-    this.bankIban,
-    this.bankName,
+    this.cryptoWalletAddress,
+    this.cryptoNetwork,
   });
 
   Map<String, dynamic> toJson() {
@@ -29,8 +29,9 @@ class PayoutRequest {
     if (phoneNumber != null) json['phone_number'] = phoneNumber;
     if (fullName != null) json['full_name'] = fullName;
     if (nationalId != null) json['national_id'] = nationalId;
-    if (bankIban != null) json['bank_iban'] = bankIban;
-    if (bankName != null) json['bank_name'] = bankName;
+    if (cryptoWalletAddress != null)
+      json['crypto_wallet_address'] = cryptoWalletAddress;
+    if (cryptoNetwork != null) json['crypto_network'] = cryptoNetwork;
 
     return json;
   }

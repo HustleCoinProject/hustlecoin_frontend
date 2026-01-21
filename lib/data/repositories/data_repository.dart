@@ -191,8 +191,8 @@ class DataRepository {
         'phone_number': user.phoneNumber,
         'full_name': user.fullName,
         'national_id': user.nationalId,
-        'bank_iban': user.bankIban,
-        'bank_name': user.bankName,
+        'crypto_wallet_address': user.cryptoWalletAddress,
+        'crypto_network': user.cryptoNetwork,
       },
     );
   }
@@ -528,8 +528,8 @@ class DataRepository {
         'phone_number': info.phoneNumber,
         'full_name': info.fullName,
         'national_id': info.nationalId,
-        'bank_iban': info.bankIban,
-        'bank_name': info.bankName,
+        'crypto_wallet_address': info.cryptoWalletAddress,
+        'crypto_network': info.cryptoNetwork,
       },
     );
   }
@@ -538,15 +538,15 @@ class DataRepository {
     String? phoneNumber,
     String? fullName,
     String? nationalId,
-    String? bankIban,
-    String? bankName,
+    String? cryptoWalletAddress,
+    String? cryptoNetwork,
   }) async {
     await _apiRepository.updatePayoutInfo(
       phoneNumber: phoneNumber,
       fullName: fullName,
       nationalId: nationalId,
-      bankIban: bankIban,
-      bankName: bankName,
+      cryptoWalletAddress: cryptoWalletAddress,
+      cryptoNetwork: cryptoNetwork,
     );
     // Invalidate payout info cache
     await _cacheManager.delete('payout_info');

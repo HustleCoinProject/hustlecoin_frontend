@@ -148,11 +148,14 @@ class LocalizationKeys {
   // Payout
   static const String getPaid = 'get_paid';
   static const String selectPayoutMethod = 'select_payout_method';
-  static const String multicaixaExpressDetails = 'multicaixa_express_details';
-  static const String bankDetails = 'bank_details';
   static const String phoneNumber = 'phone_number';
   static const String accountHolderName = 'account_holder_name';
-  static const String bankName = 'bank_name';
+  static const String multicaixaExpressDetails = 'multicaixa_express_details';
+  static const String cryptoDetails = 'crypto_details';
+  static const String walletAddress = 'wallet_address';
+  static const String cryptoNetwork = 'crypto_network';
+  static const String selectNetwork = 'select_network';
+  static const String enterWalletAddress = 'enter_wallet_address';
   static const String selectBank = 'select_bank';
   static const String enterFullName = 'enter_full_name';
   static const String enterBankName = 'enter_bank_name';
@@ -161,8 +164,8 @@ class LocalizationKeys {
   static const String phoneNumberRequired = 'phone_number_required';
   static const String accountHolderNameRequired =
       'account_holder_name_required';
-  static const String bankNameRequired = 'bank_name_required';
-  static const String ibanRequired = 'iban_required';
+  static const String networkRequired = 'network_required';
+  static const String walletAddressRequired = 'wallet_address_required';
   static const String amountRequired = 'amount_required';
   static const String enterValidAmount = 'enter_valid_amount';
   static const String rewardsHistory = 'rewards_history';
@@ -452,21 +455,22 @@ class _Translations {
       // Payout
       LocalizationKeys.getPaid: 'Claim Prize',
       LocalizationKeys.selectPayoutMethod: 'Select Prize Delivery',
-      LocalizationKeys.multicaixaExpressDetails: 'Multicaixa Express Details',
-      LocalizationKeys.bankDetails: 'Bank Details',
       LocalizationKeys.phoneNumber: 'Phone Number',
       LocalizationKeys.accountHolderName: 'Account Holder Name',
-      LocalizationKeys.bankName: 'Bank Name',
-      LocalizationKeys.selectBank: 'Select bank',
+      LocalizationKeys.multicaixaExpressDetails: 'Multicaixa Express Details',
+      LocalizationKeys.cryptoDetails: 'Crypto Transfer Details',
+      LocalizationKeys.walletAddress: 'Wallet Address',
+      LocalizationKeys.cryptoNetwork: 'Network',
+      LocalizationKeys.selectNetwork: 'Select Network',
+      LocalizationKeys.enterWalletAddress: 'Enter your wallet address',
       LocalizationKeys.enterFullName: 'Enter your full name',
-      LocalizationKeys.enterBankName: 'Enter bank name',
       LocalizationKeys.payoutAmount: 'Prize Value (HC)',
       LocalizationKeys.requestPayout: 'Claim Prize',
       LocalizationKeys.phoneNumberRequired: 'Phone number is required',
       LocalizationKeys.accountHolderNameRequired:
           'Account holder name is required',
-      LocalizationKeys.bankNameRequired: 'Bank name is required',
-      LocalizationKeys.ibanRequired: 'IBAN is required',
+      LocalizationKeys.networkRequired: 'Network is required',
+      LocalizationKeys.walletAddressRequired: 'Wallet address is required',
       LocalizationKeys.amountRequired: 'Amount is required',
       LocalizationKeys.enterValidAmount: 'Enter a valid amount',
       LocalizationKeys.rewardsHistory: 'Rewards History',
@@ -769,13 +773,15 @@ class _Translations {
       // Payout
       LocalizationKeys.getPaid: 'Reclamar Prêmio',
       LocalizationKeys.selectPayoutMethod: 'Selecionar Entrega de Prêmio',
+      LocalizationKeys.phoneNumber: 'Número de Telefone',
+      LocalizationKeys.accountHolderName: 'Nome do Titular',
       LocalizationKeys.multicaixaExpressDetails:
           'Detalhes do Multicaixa Express',
-      LocalizationKeys.bankDetails: 'Detalhes Bancários',
-      LocalizationKeys.phoneNumber: 'Número de Telefone',
-      LocalizationKeys.accountHolderName: 'Nome do Titular da Conta',
-      LocalizationKeys.bankName: 'Nome do Banco',
-      LocalizationKeys.selectBank: 'Selecionar banco',
+      LocalizationKeys.cryptoDetails: 'Detalhes da Transferência Cripto',
+      LocalizationKeys.walletAddress: 'Endereço da Carteira',
+      LocalizationKeys.cryptoNetwork: 'Rede',
+      LocalizationKeys.selectNetwork: 'Selecionar Rede',
+      LocalizationKeys.enterWalletAddress: 'Digite o endereço da sua carteira',
       LocalizationKeys.enterFullName: 'Digite seu nome completo',
       LocalizationKeys.enterBankName: 'Digite o nome do banco',
       LocalizationKeys.payoutAmount: 'Valor do Prêmio (HC)',
@@ -783,8 +789,10 @@ class _Translations {
       LocalizationKeys.phoneNumberRequired: 'Número de telefone é obrigatório',
       LocalizationKeys.accountHolderNameRequired:
           'Nome do titular da conta é obrigatório',
-      LocalizationKeys.bankNameRequired: 'Nome do banco é obrigatório',
-      LocalizationKeys.ibanRequired: 'IBAN é obrigatório',
+
+      LocalizationKeys.networkRequired: 'Rede é obrigatória',
+      LocalizationKeys.walletAddressRequired:
+          'Endereço da carteira é obrigatório',
       LocalizationKeys.amountRequired: 'Valor é obrigatório',
       LocalizationKeys.enterValidAmount: 'Digite um valor válido',
       LocalizationKeys.rewardsHistory: 'Histórico de Recompensas',

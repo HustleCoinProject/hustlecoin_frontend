@@ -9,8 +9,8 @@ class PayoutInfo {
   final String? phoneNumber;
   final String? fullName;
   final String? nationalId;
-  final String? bankIban;
-  final String? bankName;
+  final String? cryptoWalletAddress;
+  final String? cryptoNetwork;
 
   const PayoutInfo({
     required this.availableHc,
@@ -20,8 +20,8 @@ class PayoutInfo {
     this.phoneNumber,
     this.fullName,
     this.nationalId,
-    this.bankIban,
-    this.bankName,
+    this.cryptoWalletAddress,
+    this.cryptoNetwork,
   });
 
   factory PayoutInfo.fromJson(Map<String, dynamic> json) {
@@ -33,14 +33,14 @@ class PayoutInfo {
       phoneNumber: json['phone_number'],
       fullName: json['full_name'],
       nationalId: json['national_id'],
-      bankIban: json['bank_iban'],
-      bankName: json['bank_name'],
+      cryptoWalletAddress: json['crypto_wallet_address'],
+      cryptoNetwork: json['crypto_network'],
     );
   }
 
   double get availableKwanza => availableHc / conversionRate;
   double get minimumPayoutKwanza => minimumPayoutHc / conversionRate;
-  
+
   bool get canPayout => availableHc >= minimumPayoutHc && !hasPendingPayout;
 }
 
@@ -61,6 +61,8 @@ class PayoutMethods {
     );
   }
 
-  bool get supportsMulticaixaExpress => availableMethods.contains('multicaixa_express');
-  bool get supportsBankTransfer => availableMethods.contains('bank_transfer');
+  bool get supportsMulticaixaExpress =>
+      availableMethods.contains('multicaixa_express');
+  bool get supportsCryptoTransfer =>
+      availableMethods.contains('crypto_transfer');
 }

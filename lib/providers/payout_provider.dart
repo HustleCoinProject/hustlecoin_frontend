@@ -18,13 +18,22 @@ final payoutMethodsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
 });
 
 // Provider for payout history
-final payoutHistoryProvider = FutureProvider.family<List<Payout>, PayoutHistoryParams>((ref, params) async {
-  final dataRepository = ref.read(dataRepositoryProvider);
-  return dataRepository.getPayoutHistory(limit: params.limit, offset: params.offset);
-});
+final payoutHistoryProvider =
+    FutureProvider.family<List<Payout>, PayoutHistoryParams>((
+      ref,
+      params,
+    ) async {
+      final dataRepository = ref.read(dataRepositoryProvider);
+      return dataRepository.getPayoutHistory(
+        limit: params.limit,
+        offset: params.offset,
+      );
+    });
 
 // Provider for system status
-final payoutSystemStatusProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+final payoutSystemStatusProvider = FutureProvider<Map<String, dynamic>>((
+  ref,
+) async {
   final dataRepository = ref.read(dataRepositoryProvider);
   return dataRepository.getPayoutSystemStatus();
 });
@@ -39,8 +48,8 @@ class PayoutNotifier extends StateNotifier<PayoutState> {
     String? phoneNumber,
     String? fullName,
     String? nationalId,
-    String? bankIban,
-    String? bankName,
+    String? cryptoWalletAddress,
+    String? cryptoNetwork,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
 
@@ -49,8 +58,8 @@ class PayoutNotifier extends StateNotifier<PayoutState> {
         phoneNumber: phoneNumber,
         fullName: fullName,
         nationalId: nationalId,
-        bankIban: bankIban,
-        bankName: bankName,
+        cryptoWalletAddress: cryptoWalletAddress,
+        cryptoNetwork: cryptoNetwork,
       );
       state = state.copyWith(isLoading: false, updateSuccess: true);
     } catch (error) {
@@ -85,7 +94,9 @@ class PayoutNotifier extends StateNotifier<PayoutState> {
 }
 
 // StateNotifier provider
-final payoutProvider = StateNotifierProvider<PayoutNotifier, PayoutState>((ref) {
+final payoutProvider = StateNotifierProvider<PayoutNotifier, PayoutState>((
+  ref,
+) {
   final dataRepository = ref.read(dataRepositoryProvider);
   return PayoutNotifier(dataRepository);
 });

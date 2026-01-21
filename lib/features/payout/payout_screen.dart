@@ -16,7 +16,7 @@ import 'package:hustlecoin/features/payout/payout_history_screen.dart'
 import 'package:hustlecoin/providers/time_provider.dart';
 import 'package:hustlecoin/services/remote_config_service.dart';
 
-enum PayoutMethod { multicaixaExpress, bank }
+enum PayoutMethod { multicaixaExpress, crypto }
 
 class PayoutScreen extends ConsumerStatefulWidget {
   const PayoutScreen({super.key});
@@ -30,8 +30,8 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
   final _phoneController = TextEditingController();
   final _accountHolderController = TextEditingController();
   final _nationalIdController = TextEditingController();
-  String? _selectedBank;
-  final _ibanController = TextEditingController();
+  final _walletAddressController = TextEditingController();
+  final String _selectedNetwork = 'Base'; // Default network
   final _amountController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -94,49 +94,13 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
     return null;
   }
 
-  String? _validateIban(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'IBAN is required';
-    }
-
-    final cleanIban = value.replaceAll(' ', '').toUpperCase();
-
-    if (cleanIban.length < 15 || cleanIban.length > 34) {
-      return 'IBAN must be 15-34 characters';
-    }
-
-    // Angolan IBAN starts with AO
-    if (!cleanIban.startsWith('AO')) {
-      return 'Angolan IBAN must start with AO';
-    }
-
-    return null;
-  }
-
-  final List<String> _angolanBanks = [
-    'Banco Angolano de Investimentos (BAI)',
-    'Banco de Fomento Angola (BFA)',
-    'Banco Millennium Atlântico',
-    'Standard Bank Angola',
-    'Banco Económico',
-    'Banco BIC',
-    'Banco de Poupança e Crédito (BPC)',
-    'Banco Caixa Geral Angola',
-    'Banco Keve',
-    'Banco Prestígio',
-    'Banco Regional do Keve',
-    'Banco Yetu',
-    'Finibanco Angola',
-    'Banco Sol',
-    'Banco Valor',
-  ];
-
   @override
   void dispose() {
     _phoneController.dispose();
     _accountHolderController.dispose();
     _nationalIdController.dispose();
-    _ibanController.dispose();
+
+    _walletAddressController.dispose();
     _amountController.dispose();
     super.dispose();
   }
@@ -171,17 +135,10 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
       shouldRebuild = true;
     }
 
-    if (_ibanController.text.isEmpty &&
-        payoutInfo.bankIban != null &&
-        payoutInfo.bankIban!.isNotEmpty) {
-      _ibanController.text = payoutInfo.bankIban!;
-      shouldRebuild = true;
-    }
-
-    if (_selectedBank == null &&
-        payoutInfo.bankName != null &&
-        payoutInfo.bankName!.isNotEmpty) {
-      _selectedBank = payoutInfo.bankName!;
+    if (_walletAddressController.text.isEmpty &&
+        payoutInfo.cryptoWalletAddress != null &&
+        payoutInfo.cryptoWalletAddress!.isNotEmpty) {
+      _walletAddressController.text = payoutInfo.cryptoWalletAddress!;
       shouldRebuild = true;
     }
 
@@ -212,10 +169,10 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
             nationalId: _nationalIdController.text.trim().isNotEmpty
                 ? _nationalIdController.text.trim()
                 : null,
-            bankIban: _ibanController.text.trim().isNotEmpty
-                ? _ibanController.text.trim()
+            cryptoWalletAddress: _walletAddressController.text.trim().isNotEmpty
+                ? _walletAddressController.text.trim()
                 : null,
-            bankName: _selectedBank,
+            cryptoNetwork: _selectedNetwork,
           );
     } catch (e) {
       // Don't show error to user as this is a background operation
@@ -288,7 +245,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
 
       final payoutMethod = _selectedMethod == PayoutMethod.multicaixaExpress
           ? 'multicaixa_express'
-          : 'bank_transfer';
+          : 'crypto_transfer';
 
       final payoutRequest = PayoutRequest(
         amountHc: amountHc,
@@ -300,10 +257,12 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
         nationalId: _nationalIdController.text.trim().isNotEmpty
             ? _nationalIdController.text.trim()
             : null,
-        bankIban: _selectedMethod == PayoutMethod.bank
-            ? _ibanController.text.trim()
+        cryptoWalletAddress: _selectedMethod == PayoutMethod.crypto
+            ? _walletAddressController.text.trim()
             : null,
-        bankName: _selectedMethod == PayoutMethod.bank ? _selectedBank : null,
+        cryptoNetwork: _selectedMethod == PayoutMethod.crypto
+            ? _selectedNetwork
+            : null,
       );
 
       // Check if provider is available
@@ -508,9 +467,9 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
             SizedBox(width: 15.s),
             Expanded(
               child: _buildMethodCard(
-                PayoutMethod.bank,
-                'Bank',
-                FontAwesomeIcons.university,
+                PayoutMethod.crypto,
+                'Crypto (HC)',
+                FontAwesomeIcons.bitcoin,
               ),
             ),
           ],
@@ -575,7 +534,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
     if (_selectedMethod == PayoutMethod.multicaixaExpress) {
       return _buildMulticaixaExpressFields();
     } else {
-      return _buildBankFields();
+      return _buildCryptoFields();
     }
   }
 
@@ -623,12 +582,12 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
     );
   }
 
-  Widget _buildBankFields() {
+  Widget _buildCryptoFields() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          ref.t(LocalizationKeys.bankDetails),
+          ref.t(LocalizationKeys.cryptoDetails),
           style: TextStyle(
             color: AppColors.textLight,
             fontSize: 16.f,
@@ -637,33 +596,98 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
           ),
         ),
         SizedBox(height: 15.s),
-        _buildTextField(
-          controller: _accountHolderController,
-          label: ref.t(LocalizationKeys.accountHolderName),
-          icon: FontAwesomeIcons.user,
-          hintText: ref.t(LocalizationKeys.enterFullName),
-          validator: _validateFullName,
-          onChanged: (_) => setState(() {}),
+        Container(
+          padding: ResponsiveUtils.p(12),
+          decoration: BoxDecoration(
+            color: AppColors.angolaYellow.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: AppColors.angolaYellow.withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              FaIcon(
+                FontAwesomeIcons.triangleExclamation,
+                color: AppColors.angolaYellow,
+                size: 16.s,
+              ),
+              SizedBox(width: 10.s),
+              Expanded(
+                child: Text(
+                  'Only use Base Network address. Other networks may result in loss of funds.',
+                  style: TextStyle(color: AppColors.textLight, fontSize: 12.f),
+                ),
+              ),
+            ],
+          ),
         ),
         SizedBox(height: 15.s),
         _buildTextField(
-          controller: _nationalIdController,
-          label: 'National ID',
-          icon: FontAwesomeIcons.idCard,
-          hintText: '123456789LA041',
-          validator: _validateAngolanNationalId,
+          controller: _walletAddressController,
+          label: ref.t(LocalizationKeys.walletAddress),
+          icon: FontAwesomeIcons.wallet,
+          hintText: '0x...',
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return ref.t(LocalizationKeys.walletAddressRequired);
+            }
+            if (!value.trim().startsWith('0x') || value.trim().length != 42) {
+              return 'Invalid EVM wallet address';
+            }
+            return null;
+          },
           onChanged: (_) => setState(() {}),
         ),
         SizedBox(height: 15.s),
-        _buildBankDropdown(),
-        SizedBox(height: 15.s),
-        _buildTextField(
-          controller: _ibanController,
-          label: 'IBAN',
-          icon: FontAwesomeIcons.creditCard,
-          hintText: 'AO06000000123456789101112',
-          validator: _validateIban,
-          onChanged: (_) => setState(() {}),
+        // Network is locked to Base, but displayed for clarity
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              ref.t(LocalizationKeys.cryptoNetwork),
+              style: TextStyle(
+                color: AppColors.textLight,
+                fontSize: 14.f,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.5,
+              ),
+            ),
+            SizedBox(height: 8.s),
+            GlassContainer(
+              child: Container(
+                width: double.infinity,
+                padding: ResponsiveUtils.pSymmetric(
+                  horizontal: 15,
+                  vertical: 15,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16.r),
+                ),
+                child: Row(
+                  children: [
+                    FaIcon(
+                      FontAwesomeIcons.networkWired,
+                      color: AppColors.angolaYellow,
+                      size: 18.s,
+                    ),
+                    SizedBox(width: 15.s),
+                    Text(
+                      'Base',
+                      style: TextStyle(
+                        color: AppColors.textLight,
+                        fontSize: 16.f,
+                      ),
+                    ),
+                    const Spacer(),
+                    FaIcon(
+                      FontAwesomeIcons.lock,
+                      color: AppColors.textGrey,
+                      size: 14.s,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -713,72 +737,6 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
             ),
             validator: validator,
             onChanged: onChanged,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBankDropdown() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          ref.t(LocalizationKeys.bankName),
-          style: TextStyle(
-            color: AppColors.textLight,
-            fontSize: 14.f,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.5,
-          ),
-        ),
-        SizedBox(height: 8.s),
-        GlassContainer(
-          child: DropdownButtonFormField<String>(
-            value: _selectedBank,
-            style: TextStyle(color: AppColors.textLight, fontSize: 16.f),
-            dropdownColor: AppColors.uiDarkBg,
-            decoration: InputDecoration(
-              hintText: ref.t(LocalizationKeys.selectBank),
-              hintStyle: TextStyle(color: AppColors.textGrey, fontSize: 14.f),
-              prefixIcon: Container(
-                width: 50.s,
-                alignment: Alignment.center,
-                child: FaIcon(
-                  FontAwesomeIcons.university,
-                  color: AppColors.angolaYellow,
-                  size: 18.s,
-                ),
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16.r),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: ResponsiveUtils.pSymmetric(
-                horizontal: 15,
-                vertical: 15,
-              ),
-            ),
-            items: _angolanBanks.map((String bank) {
-              return DropdownMenuItem<String>(
-                value: bank,
-                child: Text(
-                  bank,
-                  style: TextStyle(color: AppColors.textLight, fontSize: 14.f),
-                ),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                _selectedBank = newValue;
-              });
-            },
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return ref.t(LocalizationKeys.bankNameRequired);
-              }
-              return null;
-            },
           ),
         ),
       ],
@@ -1179,12 +1137,9 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
             _phoneController.text.isNotEmpty &&
             _accountHolderController.text.isNotEmpty &&
             _nationalIdController.text.isNotEmpty;
-      } else if (_selectedMethod == PayoutMethod.bank) {
-        // For Bank Transfer: need IBAN, bank name, and account holder name
-        isFormValid =
-            _ibanController.text.isNotEmpty &&
-            _selectedBank != null &&
-            _accountHolderController.text.isNotEmpty;
+      } else if (_selectedMethod == PayoutMethod.crypto) {
+        // For Crypto Transfer: need wallet address
+        isFormValid = _walletAddressController.text.isNotEmpty;
       }
     }
 

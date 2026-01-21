@@ -584,16 +584,17 @@ class ApiRepository {
     String? phoneNumber,
     String? fullName,
     String? nationalId,
-    String? bankIban,
-    String? bankName,
+    String? cryptoWalletAddress,
+    String? cryptoNetwork,
   }) async {
     final Map<String, dynamic> body = {};
 
     if (phoneNumber != null) body['phone_number'] = phoneNumber;
     if (fullName != null) body['full_name'] = fullName;
     if (nationalId != null) body['national_id'] = nationalId;
-    if (bankIban != null) body['bank_iban'] = bankIban;
-    if (bankName != null) body['bank_name'] = bankName;
+    if (cryptoWalletAddress != null)
+      body['crypto_wallet_address'] = cryptoWalletAddress;
+    if (cryptoNetwork != null) body['crypto_network'] = cryptoNetwork;
 
     final response = await _makeAuthenticatedRequest(
       () => http.put(
