@@ -130,7 +130,6 @@ class _GameListScreenState extends ConsumerState<GameListScreen> {
                             MaterialPageRoute(
                               builder: (_) => RunnerGameScreen(
                                 rewardTask: _miniGameTask,
-                                targetScore: 1800,
                                 dataRepository: dataRepo,
                               ),
                             ),
@@ -154,7 +153,6 @@ class _GameListScreenState extends ConsumerState<GameListScreen> {
                             MaterialPageRoute(
                               builder: (_) => SnakeGameScreen(
                                 rewardTask: _miniGameTask,
-                                targetScore: 150,
                                 dataRepository: dataRepo,
                               ),
                             ),
@@ -178,7 +176,6 @@ class _GameListScreenState extends ConsumerState<GameListScreen> {
                             MaterialPageRoute(
                               builder: (_) => SeagullGameScreen(
                                 rewardTask: _miniGameTask,
-                                targetScore: 150,
                                 dataRepository: dataRepo,
                               ),
                             ),

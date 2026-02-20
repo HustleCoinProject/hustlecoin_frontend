@@ -1,14 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hustlecoin/data/models/mission.dart';
 
 import 'package:hustlecoin/data/repositories/mission_repository.dart';
 import 'package:hustlecoin/data/repositories/api_repository.dart';
 import 'package:hustlecoin/providers/foundational_providers.dart';
+import 'package:hustlecoin/providers/time_provider.dart';
 
 // State class for Mission flow
 class MissionState {
   final Mission? currentMission;
-  final int currentGameIndex;
+  final DateTime? missionStartTime;
   final bool isMissionActive;
   final bool isMissionCompleted;
   final bool isLoading;
@@ -21,7 +23,7 @@ class MissionState {
 
   const MissionState({
     this.currentMission,
-    this.currentGameIndex = 0,
+    this.missionStartTime,
     this.isMissionActive = false,
     this.isMissionCompleted = false,
     this.isLoading = false,
@@ -33,7 +35,7 @@ class MissionState {
 
   MissionState copyWith({
     Mission? currentMission,
-    int? currentGameIndex,
+    DateTime? missionStartTime,
     bool? isMissionActive,
     bool? isMissionCompleted,
     bool? isLoading,
@@ -44,7 +46,7 @@ class MissionState {
   }) {
     return MissionState(
       currentMission: currentMission ?? this.currentMission,
-      currentGameIndex: currentGameIndex ?? this.currentGameIndex,
+      missionStartTime: missionStartTime ?? this.missionStartTime,
       isMissionActive: isMissionActive ?? this.isMissionActive,
       isMissionCompleted: isMissionCompleted ?? this.isMissionCompleted,
       isLoading: isLoading ?? this.isLoading,
@@ -59,8 +61,9 @@ class MissionState {
 class MissionNotifier extends StateNotifier<MissionState> {
   final ApiRepository _apiRepository;
   final MissionRepository _missionRepository;
+  final Ref _ref;
 
-  MissionNotifier(this._apiRepository, this._missionRepository)
+  MissionNotifier(this._apiRepository, this._missionRepository, this._ref)
     : super(const MissionState());
 
   Future<void> fetchActiveMission() async {
@@ -91,15 +94,6 @@ class MissionNotifier extends StateNotifier<MissionState> {
       }
 
       if (selectedMission == null) {
-        // All on cooldown?
-        // Check if we should show the first one's cooldown or a "All Done" state.
-        // Let's assume generic "All Done" state, but we might want to show when M1 resets.
-        // For now, if all are cooldown, we set allMissionsCompleted = true.
-        // Exception: If M1 is available, we show it. If M1 is cooldown, we check M2.
-        // If ALL are cooldown, then truly all done.
-
-        // Find the mission with the earliest cooldown expiry to maybe show a timer?
-        // For now, simply:
         state = state.copyWith(
           isLoading: false,
           currentMission: null,
@@ -107,14 +101,27 @@ class MissionNotifier extends StateNotifier<MissionState> {
           isAvailable: false,
         );
       } else {
+        // Check if there is a saved start time for this mission
+        final prefs = await SharedPreferences.getInstance();
+        final savedStartTimeStr = prefs.getString(
+          'missionStartTime_${selectedMission.id}',
+        );
+        DateTime? savedStartTime;
+        bool isActive = false;
+
+        if (savedStartTimeStr != null) {
+          savedStartTime = DateTime.parse(savedStartTimeStr);
+          isActive = true;
+        }
+
         state = state.copyWith(
           isLoading: false,
           currentMission: selectedMission,
           isAvailable: true,
           allMissionsCompleted: false,
           cooldownExpiresAt: null, // It is available
-          currentGameIndex: 0,
-          isMissionActive: false,
+          missionStartTime: savedStartTime,
+          isMissionActive: isActive,
           isMissionCompleted: false,
         );
       }
@@ -123,29 +130,46 @@ class MissionNotifier extends StateNotifier<MissionState> {
     }
   }
 
-  void startMission() {
+  Future<void> startMission() async {
     if (state.currentMission == null || !state.isAvailable) return;
+
+    final currentServerTime = _ref
+        .read(serverTimeProvider.notifier)
+        .currentServerTime;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      'missionStartTime_${state.currentMission!.id}',
+      currentServerTime.toIso8601String(),
+    );
+
     state = state.copyWith(
       isMissionActive: true,
-      currentGameIndex: 0,
+      missionStartTime: currentServerTime,
       isMissionCompleted: false,
     );
   }
 
-  void completeCurrentGame() {
-    if (!state.isMissionActive || state.currentMission == null) return;
+  Future<void> speedupMission(int secondsToReduce) async {
+    if (!state.isMissionActive ||
+        state.currentMission == null ||
+        state.missionStartTime == null)
+      return;
 
-    final nextIndex = state.currentGameIndex + 1;
-    if (nextIndex < state.currentMission!.games.length) {
-      // Proceed to next game
-      state = state.copyWith(currentGameIndex: nextIndex);
-    } else {
-      // Mission Completed locally
-      _completeMissionOnBackend();
-    }
+    final newStartTime = state.missionStartTime!.subtract(
+      Duration(seconds: secondsToReduce),
+    );
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      'missionStartTime_${state.currentMission!.id}',
+      newStartTime.toIso8601String(),
+    );
+
+    state = state.copyWith(missionStartTime: newStartTime);
   }
 
-  Future<void> _completeMissionOnBackend() async {
+  Future<void> completeMissionOnBackend() async {
     final missionId = state.currentMission?.id;
     if (missionId == null) return;
 
@@ -154,25 +178,20 @@ class MissionNotifier extends StateNotifier<MissionState> {
     try {
       await _apiRepository.completeTask(missionId);
 
+      // Clear the saved start time
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('missionStartTime_$missionId');
+
       // Success
       state = state.copyWith(
         isLoading: false,
         isMissionActive: false,
         isMissionCompleted: true,
       );
-
-      // Refresh to get next mission
-      // await fetchActiveMission(); // Removed: Let UI trigger this to keep "Completed" state visible
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Failed to claim reward: $e',
-        // In case of error, we stay in active state or?
-        // User likely wants to retry. But game is done.
-        // We'll mark completed locally but show error?
-        // Let's just return to completed state so they can try "Claim" again if we had a button,
-        // but here it's auto.
-        // For safety, if error, we might need a manual "Retry" button or just Fetch again.
         isMissionActive: false,
         isMissionCompleted: true, // UI will show "Next" or "Error"
       );
@@ -195,5 +214,5 @@ final activeMissionProvider =
     StateNotifierProvider<MissionNotifier, MissionState>((ref) {
       final apiRepo = ref.watch(apiRepositoryProvider);
       final missionRepo = ref.watch(missionRepositoryProvider);
-      return MissionNotifier(apiRepo, missionRepo);
+      return MissionNotifier(apiRepo, missionRepo, ref);
     });

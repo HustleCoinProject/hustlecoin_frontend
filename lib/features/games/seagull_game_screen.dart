@@ -52,19 +52,9 @@ class FoodItem {
 
 class SeagullGameScreen extends ConsumerStatefulWidget {
   final Task? rewardTask;
-  final int targetScore;
   final DataRepository? dataRepository;
-  final bool isMissionMode;
-  final VoidCallback? onMissionCompleted;
 
-  const SeagullGameScreen({
-    super.key,
-    this.rewardTask,
-    this.targetScore = 50,
-    this.dataRepository,
-    this.isMissionMode = false,
-    this.onMissionCompleted,
-  });
+  const SeagullGameScreen({super.key, this.rewardTask, this.dataRepository});
 
   @override
   ConsumerState<SeagullGameScreen> createState() => _SeagullGameScreenState();
@@ -138,13 +128,6 @@ class _SeagullGameScreenState extends ConsumerState<SeagullGameScreen>
       _lastNpcSpawnTime = now;
     });
     _ticker.start();
-  }
-
-  void _stopGame() {
-    _ticker.stop();
-    setState(() {
-      _isPlaying = false;
-    });
   }
 
   void _onTick(Duration elapsed) {
@@ -321,20 +304,7 @@ class _SeagullGameScreenState extends ConsumerState<SeagullGameScreen>
           food.state = FoodState.eaten; // Mark for removal
           if (entity.isPlayer) {
             _score += 10;
-            if (widget.isMissionMode && _score >= widget.targetScore) {
-              _isPlaying = false; // Stop updates
-              // Trigger success overlay (Seagull uses overlay logic based on isMissionMode)
-              // Wait, Seagull uses _isPlaying to toggle HUD. But it doesn't auto-stop in original logic?
-              // Original logic doesn't stop. We should force stop or show overlay.
-              // Re-using _stopGame is tricky because it stops ticker.
-              // Let's call _stopGame(won: true) but wait... this file doesn't have _stopGame(won) signature like BalloonPop.
-              // It has no-arg _stopGame().
-              // And overlay logic is "if (!_isPlaying)".
-              // So stopping game will show overlay.
-              _stopGame();
-            } else {
-              _checkReward();
-            }
+            _checkReward();
           }
         }
       }
@@ -344,13 +314,12 @@ class _SeagullGameScreenState extends ConsumerState<SeagullGameScreen>
   bool _rewardClaimed = false;
 
   Future<void> _checkReward() async {
-    // Only verify reward in normal mode
-    if (widget.isMissionMode) return;
+    const int targetScore = 50;
 
     if (!_rewardClaimed &&
         widget.rewardTask != null &&
         widget.dataRepository != null &&
-        _score >= widget.targetScore) {
+        _score >= targetScore) {
       _rewardClaimed = true;
       try {
         await widget.dataRepository!.completeTask(widget.rewardTask!.taskId);
@@ -526,12 +495,7 @@ class _SeagullGameScreenState extends ConsumerState<SeagullGameScreen>
                             Center(
                               child: GestureDetector(
                                 onTap: () {
-                                  if (widget.isMissionMode &&
-                                      _score >= widget.targetScore) {
-                                    widget.onMissionCompleted?.call();
-                                  } else {
-                                    _startGame();
-                                  }
+                                  _startGame();
                                 },
                                 child: Container(
                                   padding: EdgeInsets.symmetric(
@@ -552,15 +516,9 @@ class _SeagullGameScreenState extends ConsumerState<SeagullGameScreen>
                                   child: Text(
                                     _isPlaying
                                         ? ""
-                                        : (widget.isMissionMode &&
-                                                  _score >= widget.targetScore
-                                              ? "NEXT TASK"
-                                              : ref
-                                                    .t(
-                                                      LocalizationKeys
-                                                          .startGame,
-                                                    )
-                                                    .toUpperCase()),
+                                        : ref
+                                              .t(LocalizationKeys.startGame)
+                                              .toUpperCase(),
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontSize: 24.f,

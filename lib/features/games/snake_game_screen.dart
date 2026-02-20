@@ -16,20 +16,9 @@ import 'package:hustlecoin/utils/ad_helper.dart';
 
 class SnakeGameScreen extends ConsumerStatefulWidget {
   final Task? rewardTask;
-  final int targetScore;
   final DataRepository? dataRepository;
 
-  const SnakeGameScreen({
-    super.key,
-    this.rewardTask,
-    this.targetScore = 50,
-    this.dataRepository,
-    this.isMissionMode = false,
-    this.onMissionCompleted,
-  });
-
-  final bool isMissionMode;
-  final VoidCallback? onMissionCompleted;
+  const SnakeGameScreen({super.key, this.rewardTask, this.dataRepository});
 
   @override
   ConsumerState<SnakeGameScreen> createState() => _SnakeGameScreenState();
@@ -150,12 +139,7 @@ class _SnakeGameScreenState extends ConsumerState<SnakeGameScreen> {
       if (newHead == _food) {
         _score += 10;
         _generateFood();
-
-        if (widget.isMissionMode && _score >= widget.targetScore) {
-          _stopGame();
-        } else {
-          _checkReward(); // Check if threshold met
-        }
+        _checkReward(); // Check if threshold met
         // Just grow (don't remove tail)
       } else {
         _snake.removeLast();
@@ -168,13 +152,13 @@ class _SnakeGameScreenState extends ConsumerState<SnakeGameScreen> {
   bool _rewardClaimed = false;
 
   Future<void> _checkReward() async {
-    // Only verify reward in normal mode
-    if (widget.isMissionMode) return;
+    // Standard target score for normal reward
+    const int targetScore = 50;
 
     if (!_rewardClaimed &&
         widget.rewardTask != null &&
         widget.dataRepository != null &&
-        _score >= widget.targetScore) {
+        _score >= targetScore) {
       _rewardClaimed = true;
       try {
         await widget.dataRepository!.completeTask(widget.rewardTask!.taskId);
@@ -379,18 +363,7 @@ class _SnakeGameScreenState extends ConsumerState<SnakeGameScreen> {
                                         SizedBox(height: 24.s),
                                         PressableScaleWidget(
                                           onTap: () {
-                                            if (widget.isMissionMode &&
-                                                _isGameOver) {
-                                              if (_score >=
-                                                  widget.targetScore) {
-                                                widget.onMissionCompleted
-                                                    ?.call();
-                                              } else {
-                                                _startGame();
-                                              }
-                                            } else {
-                                              _startGame();
-                                            }
+                                            _startGame();
                                           },
                                           child: Container(
                                             padding: EdgeInsets.symmetric(
@@ -404,16 +377,10 @@ class _SnakeGameScreenState extends ConsumerState<SnakeGameScreen> {
                                             ),
                                             child: Text(
                                               _isGameOver
-                                                  ? (widget.isMissionMode
-                                                        ? (_score >=
-                                                                  widget
-                                                                      .targetScore
-                                                              ? "Next Task"
-                                                              : "Try Again")
-                                                        : ref.t(
-                                                            LocalizationKeys
-                                                                .playAgain,
-                                                          ))
+                                                  ? ref.t(
+                                                      LocalizationKeys
+                                                          .playAgain,
+                                                    )
                                                   : ref.t(
                                                       LocalizationKeys.play,
                                                     ),

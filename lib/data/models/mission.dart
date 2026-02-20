@@ -3,7 +3,7 @@ class Mission {
   final String title;
   final String description;
   final int rewardAmount;
-  final List<String> games; // List of game IDs (e.g., 'balloon_pop', 'snake')
+  final int durationSeconds; // Duration of the mission in seconds
   final String difficulty;
 
   const Mission({
@@ -11,7 +11,7 @@ class Mission {
     required this.title,
     required this.description,
     required this.rewardAmount,
-    required this.games,
+    required this.durationSeconds,
     required this.difficulty,
   });
 }

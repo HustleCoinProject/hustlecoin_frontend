@@ -15,16 +15,8 @@ import 'package:hustlecoin/utils/ad_helper.dart';
 class PongGameScreen extends ConsumerStatefulWidget {
   final Task? rewardTask;
   final DataRepository? dataRepository;
-  final bool isMissionMode;
-  final VoidCallback? onMissionCompleted;
 
-  const PongGameScreen({
-    super.key,
-    this.rewardTask,
-    this.dataRepository,
-    this.isMissionMode = false,
-    this.onMissionCompleted,
-  });
+  const PongGameScreen({super.key, this.rewardTask, this.dataRepository});
 
   @override
   ConsumerState<PongGameScreen> createState() => _PongGameScreenState();
@@ -123,9 +115,6 @@ class _PongGameScreenState extends ConsumerState<PongGameScreen>
   bool _rewardClaimed = false;
 
   Future<void> _checkReward() async {
-    // Only verify reward in normal mode
-    if (widget.isMissionMode) return;
-
     if (!_rewardClaimed &&
         widget.rewardTask != null &&
         widget.dataRepository != null) {
@@ -422,18 +411,7 @@ class _PongGameScreenState extends ConsumerState<PongGameScreen>
                                             SizedBox(height: 40.s),
                                             ElevatedButton(
                                               onPressed: () {
-                                                if (widget.isMissionMode &&
-                                                    _isGameOver &&
-                                                    _winnerMessage.contains(
-                                                      ref.t(
-                                                        LocalizationKeys.youWin,
-                                                      ),
-                                                    )) {
-                                                  widget.onMissionCompleted
-                                                      ?.call();
-                                                } else {
-                                                  _startGame();
-                                                }
+                                                _startGame();
                                               },
                                               style: ElevatedButton.styleFrom(
                                                 backgroundColor:
@@ -445,18 +423,10 @@ class _PongGameScreenState extends ConsumerState<PongGameScreen>
                                               ),
                                               child: Text(
                                                 _isGameOver
-                                                    ? (widget.isMissionMode &&
-                                                              _winnerMessage.contains(
-                                                                ref.t(
-                                                                  LocalizationKeys
-                                                                      .youWin,
-                                                                ),
-                                                              )
-                                                          ? "Next Task"
-                                                          : ref.t(
-                                                              LocalizationKeys
-                                                                  .rematch,
-                                                            ))
+                                                    ? ref.t(
+                                                        LocalizationKeys
+                                                            .rematch,
+                                                      )
                                                     : ref.t(
                                                         LocalizationKeys.serve,
                                                       ),

@@ -15,20 +15,9 @@ import 'package:hustlecoin/utils/ad_helper.dart';
 
 class RunnerGameScreen extends ConsumerStatefulWidget {
   final Task? rewardTask;
-  final int targetScore;
   final DataRepository? dataRepository;
 
-  const RunnerGameScreen({
-    super.key,
-    this.rewardTask,
-    this.targetScore = 600,
-    this.dataRepository,
-    this.isMissionMode = false,
-    this.onMissionCompleted,
-  });
-
-  final bool isMissionMode;
-  final VoidCallback? onMissionCompleted;
+  const RunnerGameScreen({super.key, this.rewardTask, this.dataRepository});
 
   @override
   ConsumerState<RunnerGameScreen> createState() => _RunnerGameScreenState();
@@ -110,13 +99,12 @@ class _RunnerGameScreenState extends ConsumerState<RunnerGameScreen>
   }
 
   Future<void> _checkReward() async {
-    // Only verify reward in normal mode
-    if (widget.isMissionMode) return;
+    const int targetScore = 600;
 
     if (!_rewardClaimed &&
         widget.rewardTask != null &&
         widget.dataRepository != null &&
-        _score >= widget.targetScore) {
+        _score >= targetScore) {
       _rewardClaimed = true;
       try {
         await widget.dataRepository!.completeTask(widget.rewardTask!.taskId);
@@ -190,11 +178,7 @@ class _RunnerGameScreenState extends ConsumerState<RunnerGameScreen>
       // Score
       _score += 0.1;
 
-      if (widget.isMissionMode && _score >= widget.targetScore) {
-        _stopGame(); // Stop cleanly at win condition
-      } else {
-        _checkReward(); // Check if threshold met
-      }
+      _checkReward(); // Check if threshold met
 
       // Progressive Speed Increase
       // Base speed 5.0, adds +1 speed for every 300 points
@@ -353,15 +337,7 @@ class _RunnerGameScreenState extends ConsumerState<RunnerGameScreen>
                               ],
                               PressableScaleWidget(
                                 onTap: () {
-                                  if (widget.isMissionMode && _isGameOver) {
-                                    if (_score >= widget.targetScore) {
-                                      widget.onMissionCompleted?.call();
-                                    } else {
-                                      _startGame();
-                                    }
-                                  } else {
-                                    _startGame();
-                                  }
+                                  _startGame();
                                 },
                                 child: Container(
                                   padding: EdgeInsets.symmetric(
@@ -373,13 +349,7 @@ class _RunnerGameScreenState extends ConsumerState<RunnerGameScreen>
                                   ),
                                   child: Text(
                                     _isGameOver
-                                        ? (widget.isMissionMode
-                                              ? (_score >= widget.targetScore
-                                                    ? "Next Task"
-                                                    : "Try Again")
-                                              : ref.t(
-                                                  LocalizationKeys.playAgain,
-                                                ))
+                                        ? ref.t(LocalizationKeys.playAgain)
                                         : ref.t(LocalizationKeys.play),
                                     style: TextStyle(
                                       color: Colors.white,
