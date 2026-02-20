@@ -13,6 +13,7 @@ import 'package:hustlecoin/widgets/glass_container.dart';
 import 'package:hustlecoin/widgets/primary_action_button.dart';
 import 'package:hustlecoin/widgets/screen_background.dart';
 import 'package:hustlecoin/widgets/screen_header.dart';
+import 'package:hustlecoin/widgets/global_reward_popup.dart';
 
 class SafeLockScreen extends ConsumerStatefulWidget {
   const SafeLockScreen({super.key});
@@ -161,89 +162,13 @@ class _SafeLockScreenState extends ConsumerState<SafeLockScreen> {
   }
 
   void _showRewardDialog(SafeLockClaimResponse response) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.uiDarkBg,
-        title: Column(
-          children: [
-            Icon(
-              response.reward.isItemReward
-                  ? FontAwesomeIcons.gift
-                  : FontAwesomeIcons.coins,
-              color: AppColors.angolaYellow,
-              size: 48.s,
-            ),
-            SizedBox(height: 12.h),
-            Text(
-              ref.t(LocalizationKeys.congratulationsExclaim),
-              style: const TextStyle(color: AppColors.textLight),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '${ref.t(LocalizationKeys.returned)} ${response.returnedAmount} HC',
-              style: TextStyle(
-                color: AppColors.angolaYellow,
-                fontSize: 18.f,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 16.h),
-            if (response.reward.isHcReward) ...[
-              Text(
-                '${ref.t(LocalizationKeys.reward)} ${response.reward.hcAmount} HC',
-                style: TextStyle(
-                  color: Colors.green,
-                  fontSize: 20.f,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ] else ...[
-              Text(
-                ref.t(LocalizationKeys.youReceivedAnItem),
-                style: TextStyle(color: AppColors.textLight, fontSize: 16.f),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                response.reward.itemName ?? 'Unknown Item',
-                style: TextStyle(
-                  color: AppColors.angolaYellow,
-                  fontSize: 18.f,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (response.reward.itemDescription != null) ...[
-                SizedBox(height: 4.h),
-                Text(
-                  response.reward.itemDescription!,
-                  style: TextStyle(color: AppColors.textGrey, fontSize: 14.f),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ],
-            SizedBox(height: 16.h),
-            Text(
-              '${ref.t(LocalizationKeys.newBalance)} ${response.newBalance} HC',
-              style: TextStyle(color: AppColors.textLight, fontSize: 16.f),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              ref.t(LocalizationKeys.awesome),
-              style: const TextStyle(color: AppColors.angolaYellow),
-            ),
-          ),
-        ],
-      ),
+    GlobalRewardPopup.show(
+      context,
+      ref,
+      response.reward,
+      returnedAmount: response.returnedAmount,
+      newBalance: response.newBalance,
+      source: "Safe Lock",
     );
   }
 

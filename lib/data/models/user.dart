@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'pending_reward.dart';
 
 @immutable
 class User {
@@ -26,6 +27,9 @@ class User {
   final String? cryptoWalletAddress;
   final String? cryptoNetwork;
 
+  // Pending Rewards
+  final List<PendingReward> pendingRewards;
+
   const User({
     required this.id,
     required this.username,
@@ -47,6 +51,7 @@ class User {
     this.nationalId,
     this.cryptoWalletAddress,
     this.cryptoNetwork,
+    this.pendingRewards = const [],
   });
 
   // A factory constructor for creating a new User instance from a map.
@@ -76,6 +81,11 @@ class User {
       nationalId: json['national_id'],
       cryptoWalletAddress: json['crypto_wallet_address'],
       cryptoNetwork: json['crypto_network'],
+      pendingRewards: json['pending_rewards'] != null
+          ? (json['pending_rewards'] as List)
+                .map((r) => PendingReward.fromJson(r))
+                .toList()
+          : [],
     );
   }
 
@@ -101,6 +111,7 @@ class User {
     String? nationalId,
     String? cryptoWalletAddress,
     String? cryptoNetwork,
+    List<PendingReward>? pendingRewards,
   }) {
     return User(
       id: id ?? this.id,
@@ -123,6 +134,7 @@ class User {
       nationalId: nationalId ?? this.nationalId,
       cryptoWalletAddress: cryptoWalletAddress ?? this.cryptoWalletAddress,
       cryptoNetwork: cryptoNetwork ?? this.cryptoNetwork,
+      pendingRewards: pendingRewards ?? this.pendingRewards,
     );
   }
 

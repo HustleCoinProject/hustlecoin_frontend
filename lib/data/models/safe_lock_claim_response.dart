@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
-import 'safe_lock_reward.dart';
+import 'app_reward.dart';
 
 @immutable
 class SafeLockClaimResponse {
   final bool success;
   final String message;
   final int returnedAmount;
-  final SafeLockReward reward;
+  final AppReward reward;
   final int newBalance;
   final int newSafeLockAmount;
 
@@ -24,7 +24,7 @@ class SafeLockClaimResponse {
       success: json['success'] ?? false,
       message: json['message'] ?? '',
       returnedAmount: json['returned_amount'] ?? 0,
-      reward: SafeLockReward.fromJson(json['reward']),
+      reward: AppReward.fromJson(json['reward']),
       newBalance: json['new_balance'] ?? 0,
       newSafeLockAmount: json['new_safe_lock_amount'] ?? 0,
     );

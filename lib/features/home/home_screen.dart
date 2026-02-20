@@ -918,7 +918,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // Uncomment the line below to re-enable the central tap button functionality
           // _buildMainTapButton(),
           _buildPlayGameButton(),
-          Positioned(bottom: 100.h, child: _buildDailyRewardButton()),
+          Positioned(bottom: 140.h, child: _buildDailyRewardButton()),
           if (nextMission != null)
             Positioned(
               bottom: 0,

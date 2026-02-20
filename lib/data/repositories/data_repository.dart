@@ -695,6 +695,13 @@ class DataRepository {
     );
   }
 
+  // --- Rewards API Methods ---
+  Future<void> claimPendingReward(String rewardId) async {
+    await _apiRepository.claimPendingReward(rewardId);
+    // Invalidate user cache to refresh balance & pending_rewards array
+    await _cacheManager.delete('user_me');
+  }
+
   // --- Notification System ---
 
   Future<List<NotificationModel>> getNotifications({

@@ -881,4 +881,18 @@ class ApiRepository {
       throw Exception('Failed to fetch event leaderboard: ${response.body}');
     }
   }
+
+  // --- Rewards System ---
+
+  Future<void> claimPendingReward(String rewardId) async {
+    final response = await _makeAuthenticatedRequest(
+      () => http.post(
+        Uri.parse('$_baseUrl/api/rewards/claim/$rewardId'),
+        headers: _headers,
+      ),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to claim reward: ${response.body}');
+    }
+  }
 }

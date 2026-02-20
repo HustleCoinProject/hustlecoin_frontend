@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 @immutable
-class SafeLockReward {
+class AppReward {
   final String rewardType; // "HC" or "ITEM"
   final int? hcAmount;
   final String? itemId;
@@ -9,7 +9,7 @@ class SafeLockReward {
   final String? itemDescription;
   final int quantity;
 
-  const SafeLockReward({
+  const AppReward({
     required this.rewardType,
     this.hcAmount,
     this.itemId,
@@ -18,8 +18,8 @@ class SafeLockReward {
     required this.quantity,
   });
 
-  factory SafeLockReward.fromJson(Map<String, dynamic> json) {
-    return SafeLockReward(
+  factory AppReward.fromJson(Map<String, dynamic> json) {
+    return AppReward(
       rewardType: json['reward_type'] ?? 'HC',
       hcAmount: json['hc_amount'],
       itemId: json['item_id'],

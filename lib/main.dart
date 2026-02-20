@@ -10,6 +10,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 import 'package:hustlecoin/features/home/home_screen.dart';
+import 'package:hustlecoin/widgets/global_reward_listener.dart';
 
 import 'package:hustlecoin/providers/auth_provider.dart';
 import 'package:hustlecoin/providers/foundational_providers.dart';
@@ -203,7 +204,9 @@ class MyApp extends StatelessWidget {
       builder: (context) => MaterialApp(
         title: 'Hustle Coin',
         theme: ResponsiveTheme.buildTheme(context),
-        home: const ServerTimeInitializer(child: AuthWrapper()),
+        home: const ServerTimeInitializer(
+          child: GlobalRewardListener(child: AuthWrapper()),
+        ),
         debugShowCheckedModeBanner: false,
       ),
     );
