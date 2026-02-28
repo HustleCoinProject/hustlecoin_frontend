@@ -14,9 +14,9 @@ import 'game_avatar_widget.dart';
 class TopBar extends ConsumerWidget {
   final void Function()
   onToggleLanguage; // Kept for interface compatibility but unused in UI
-  final GlobalKey? hcBalanceKey;
+  final GlobalKey? hpScoreKey;
 
-  const TopBar({super.key, required this.onToggleLanguage, this.hcBalanceKey});
+  const TopBar({super.key, required this.onToggleLanguage, this.hpScoreKey});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,7 +37,7 @@ class TopBar extends ConsumerWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: GlassContainer(
-                key: hcBalanceKey,
+                key: hpScoreKey,
                 borderRadius: 12,
                 child: Padding(
                   padding: ResponsiveUtils.p(8.0),
@@ -70,7 +70,7 @@ class TopBar extends ConsumerWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            '${user.hcBalance} HC',
+                            '${user.hpScore} HP',
                             style: TextStyle(
                               fontSize: 16.f,
                               fontWeight: FontWeight.w700,
@@ -81,9 +81,9 @@ class TopBar extends ConsumerWidget {
                             builder: (context) {
                               final rate = RemoteConfigService.instance
                                   .getHcToKzRate();
-                              // Calculate Kz - user.hcBalance (int) / rate (double)
+                              // Calculate Kz - user.hpScore (int) / rate (double)
                               // floor() used to match previous behavior
-                              final kzBalance = (user.hcBalance / rate).floor();
+                              final kzBalance = (user.hpScore / rate).floor();
                               return Text(
                                 '≈ Kz $kzBalance', // Using calculated local value
                                 style: TextStyle(

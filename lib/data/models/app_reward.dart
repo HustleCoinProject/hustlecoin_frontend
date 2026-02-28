@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 
 @immutable
 class AppReward {
-  final String rewardType; // "HC" or "ITEM"
-  final int? hcAmount;
+  final String rewardType; // "HP" or "ITEM"
+  final int? hpAmount;
   final String? itemId;
   final String? itemName;
   final String? itemDescription;
@@ -11,7 +11,7 @@ class AppReward {
 
   const AppReward({
     required this.rewardType,
-    this.hcAmount,
+    this.hpAmount,
     this.itemId,
     this.itemName,
     this.itemDescription,
@@ -20,8 +20,8 @@ class AppReward {
 
   factory AppReward.fromJson(Map<String, dynamic> json) {
     return AppReward(
-      rewardType: json['reward_type'] ?? 'HC',
-      hcAmount: json['hc_amount'],
+      rewardType: json['reward_type'] ?? 'HP',
+      hpAmount: json['hp_amount'],
       itemId: json['item_id'],
       itemName: json['item_name'],
       itemDescription: json['item_description'],
@@ -32,7 +32,7 @@ class AppReward {
   Map<String, dynamic> toJson() {
     return {
       'reward_type': rewardType,
-      'hc_amount': hcAmount,
+      'hp_amount': hpAmount,
       'item_id': itemId,
       'item_name': itemName,
       'item_description': itemDescription,
@@ -40,6 +40,6 @@ class AppReward {
     };
   }
 
-  bool get isHcReward => rewardType == 'HC';
+  bool get isHcReward => rewardType == 'HP';
   bool get isItemReward => rewardType == 'ITEM';
 }

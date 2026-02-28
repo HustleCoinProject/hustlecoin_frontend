@@ -5,14 +5,14 @@ class LeaderboardEntry {
   final String username;
   final int rankPoints;
   final int level;
-  final int hcBalance; // Still included for reference
+  final int hpScore; // Still included for reference
   final String currentHustle;
 
   const LeaderboardEntry({
     required this.username,
     required this.rankPoints,
     required this.level,
-    required this.hcBalance,
+    required this.hpScore,
     required this.currentHustle,
   });
 
@@ -31,7 +31,7 @@ class LeaderboardEntry {
       username: json['username'],
       rankPoints: json['rank_points'] ?? 0,
       level: json['level'] ?? 0,
-      hcBalance: json['hc_balance'] ?? 0,
+      hpScore: json['hp_score'] ?? 0,
       currentHustle: _parseCurrentHustle(json['current_hustle']),
     );
   }

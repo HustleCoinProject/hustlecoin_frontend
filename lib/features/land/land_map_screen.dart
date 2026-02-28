@@ -568,7 +568,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
                           ),
                           SizedBox(width: 8.s),
                           Text(
-                            '${ref.t(LocalizationKeys.sell)} $_landSellPrice HC',
+                            '${ref.t(LocalizationKeys.sell)} $_landSellPrice HP',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
@@ -584,7 +584,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
       );
     } else {
       // Show purchase panel for unowned land
-      final canAfford = user != null && user.hcBalance >= _landPrice;
+      final canAfford = user != null && user.hpScore >= _landPrice;
 
       return GlassContainer(
         key: const ValueKey('purchase_panel'),
@@ -656,7 +656,7 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
                           ),
                           SizedBox(width: 8.s),
                           Text(
-                            '${_landPrice} HC',
+                            '${_landPrice} HP',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
@@ -694,9 +694,9 @@ class _LandMapScreenState extends ConsumerState<LandMapScreen> {
     Color textColor = Colors.white;
 
     if (_isOwnedLand) {
-      priceText = '${_landSellPrice} HC';
+      priceText = '${_landSellPrice} HP';
     } else {
-      priceText = '${_landPrice} HC';
+      priceText = '${_landPrice} HP';
     }
 
     return MarkerLayer(

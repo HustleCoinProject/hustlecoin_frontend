@@ -64,7 +64,7 @@ class UpdateDialog extends StatelessWidget {
 
               // Content
               Text(
-                'A new version of Hustle Coin is available. Update now for the latest features!',
+                'A new version of Hustle Points is available. Update now for the latest features!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'monospace',

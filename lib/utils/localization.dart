@@ -26,7 +26,6 @@ class LocalizationKeys {
   static const String tap = 'tap';
   static const String logIn = 'log_in';
   static const String signUp = 'sign_up';
-  static const String createAccount = 'create_account';
   static const String updateProfile = 'update_profile';
   static const String upgradeLevel = 'upgrade_level';
   static const String dailyReward = 'daily_reward';
@@ -73,21 +72,14 @@ class LocalizationKeys {
   static const String earnByHustlingDaily = 'earn_by_hustling_daily';
   static const String startMyHustle = 'start_my_hustle';
   static const String logInToContinue = 'log_in_to_continue';
-  static const String chooseYourNewHustle = 'choose_your_new_hustle';
-  static const String selectHustleToReflect = 'select_hustle_to_reflect';
   static const String congratulations = 'congratulations';
-  static const String youveBeenPromoted = 'youve_been_promoted';
 
   // Shop and Items
   static const String boosters = 'boosters';
   static const String boosts = 'boosts';
   static const String keys = 'keys';
-  static const String chatBot = 'chat_bot';
   static const String inventory = 'inventory';
-  static const String failedToLoadShopItems = 'failed_to_load_shop_items';
   static const String noItemsAvailable = 'no_items_available';
-  static const String successfullyPurchased = 'successfully_purchased';
-  static const String failedToPurchase = 'failed_to_purchase';
   static const String failedToLoadLeaderboard = 'failed_to_load_leaderboard';
 
   // Land Map
@@ -105,7 +97,6 @@ class LocalizationKeys {
   static const String landIncomeClaimedSuccessfully =
       'land_income_claimed_successfully';
   static const String landIncomeClaimFailed = 'land_income_claim_failed';
-  static const String claimReady = 'claim_ready';
   static const String claimCooldown = 'claim_cooldown';
   static const String claimAvailable = 'claim_available';
   static const String nextClaimIn = 'next_claim_in';
@@ -118,10 +109,8 @@ class LocalizationKeys {
 
   // Errors and Validation
   static const String error = 'error';
-  static const String statsLoading = 'stats_loading';
   static const String forgotPassword = 'forgot_password';
   static const String dontHaveAccount = 'dont_have_account';
-  static const String alreadyHaveAccount = 'already_have_account';
   static const String emailIsRequired = 'email_is_required';
   static const String pleaseEnterValidEmail = 'please_enter_valid_email';
   static const String adNotReadyTryAgain = 'ad_not_ready_try_again';
@@ -139,10 +128,6 @@ class LocalizationKeys {
   // Access Control
   static const String unlockFeature = 'unlock_feature';
   static const String bronzeKey = 'bronze_key';
-  static const String getBronzeKeyMessage = 'get_bronze_key_message';
-  static const String keysExpireMessage = 'keys_expire_message';
-  static const String getFromShop = 'get_from_shop';
-  static const String unlockExcitingFeature = 'unlock_exciting_feature';
   static const String needItemForFeature = 'need_item_for_feature';
 
   // Payout
@@ -154,17 +139,9 @@ class LocalizationKeys {
   static const String cryptoDetails = 'crypto_details';
   static const String walletAddress = 'wallet_address';
   static const String cryptoNetwork = 'crypto_network';
-  static const String selectNetwork = 'select_network';
-  static const String enterWalletAddress = 'enter_wallet_address';
-  static const String selectBank = 'select_bank';
   static const String enterFullName = 'enter_full_name';
-  static const String enterBankName = 'enter_bank_name';
   static const String payoutAmount = 'payout_amount';
   static const String requestPayout = 'request_payout';
-  static const String phoneNumberRequired = 'phone_number_required';
-  static const String accountHolderNameRequired =
-      'account_holder_name_required';
-  static const String networkRequired = 'network_required';
   static const String walletAddressRequired = 'wallet_address_required';
   static const String amountRequired = 'amount_required';
   static const String enterValidAmount = 'enter_valid_amount';
@@ -195,9 +172,6 @@ class LocalizationKeys {
   static const String madeWithLove = 'made_with_love';
 
   // Events
-  static const String noEventsYet = 'no_events_yet';
-  static const String eventsComingSoon = 'events_coming_soon';
-  static const String comingSoon = 'coming_soon';
 
   // Safe Lock
   static const String safeLock = 'safe_lock';
@@ -259,35 +233,6 @@ class LocalizationKeys {
   static const String stillNeed = 'still_need';
 
   // Games
-  static const String miniGames = 'mini_games';
-  static const String gameRunnerTitle = 'game_runner_title';
-  static const String gameSnakeTitle = 'game_snake_title';
-  static const String gameSeagullTitle = 'game_seagull_title';
-  static const String gamePongTitle = 'game_pong_title';
-  static const String runnerInstruction = 'runner_instruction';
-  static const String snakeInstruction = 'snake_instruction';
-  static const String seagullInstruction = 'seagull_instruction';
-  static const String pongInstruction = 'pong_instruction';
-  static const String gameBalloonPopTitle = 'game_balloon_pop_title';
-  static const String balloonPopInstruction = 'balloon_pop_instruction';
-  static const String play = 'play';
-  static const String playAgain = 'play_again';
-  static const String tapToJump = 'tap_to_jump';
-  static const String swipeToMove = 'swipe_to_move';
-  static const String tapToFlap = 'tap_to_flap';
-  static const String serve = 'serve';
-  static const String rematch = 'rematch';
-  static const String exit = 'exit';
-  static const String startGame = 'start_game';
-  static const String gameOver = 'game_over';
-  static const String score = 'score';
-  static const String youWin = 'you_win';
-  static const String aiWins = 'ai_wins';
-  static const String firstTo5 = 'first_to_5';
-  static const String winner = 'winner';
-  static const String goal = 'goal';
-  static const String winMatch = 'winMatch';
-  static const String playGames = 'playGames';
 
   // Level Benefits
   static const String levelBenefits = 'level_benefits';
@@ -322,12 +267,11 @@ class _Translations {
       LocalizationKeys.submit: 'Submit',
       LocalizationKeys.tutorialPlayGamesTitle: 'Play & Earn',
       LocalizationKeys.tutorialPlayGamesDesc:
-          'Play mini-games to earn extra HustleCoins (HC) while your tasks are on cooldown!',
+          'Play mini-games to earn extra HustleCoins (HP) while your tasks are on cooldown!',
       LocalizationKeys.submitAnswer: 'Submit Answer',
       LocalizationKeys.tap: 'TAP',
       LocalizationKeys.logIn: 'Log In',
       LocalizationKeys.signUp: 'Sign Up',
-      LocalizationKeys.createAccount: 'Create Account',
       LocalizationKeys.updateProfile: 'Update Profile',
       LocalizationKeys.upgradeLevel: 'Upgrade Level',
       LocalizationKeys.dailyReward: 'Daily Reward',
@@ -360,7 +304,7 @@ class _Translations {
       LocalizationKeys.confirmNewPasswordHint: 'Confirm new password',
 
       // Game Elements
-      LocalizationKeys.hustleCoin: 'Hustle Coin',
+      LocalizationKeys.hustleCoin: 'Hustle Points',
       LocalizationKeys.hustleLevel: 'HUSTLE LEVEL',
       LocalizationKeys.level: 'Level',
       LocalizationKeys.nextLevel: 'NEXT LEVEL',
@@ -369,26 +313,18 @@ class _Translations {
 
       // Greetings and Messages
       LocalizationKeys.welcomeBack: 'Welcome Back!',
-      LocalizationKeys.welcomeToHustleCoin: 'Welcome to Hustle Coin',
+      LocalizationKeys.welcomeToHustleCoin: 'Welcome to Hustle Points',
       LocalizationKeys.earnByHustlingDaily: 'Earn by Hustling Daily!',
       LocalizationKeys.startMyHustle: 'START MY HUSTLE',
       LocalizationKeys.logInToContinue: 'Log in to continue your hustle.',
-      LocalizationKeys.chooseYourNewHustle: 'Choose Your New Hustle',
-      LocalizationKeys.selectHustleToReflect:
-          'Select a hustle to reflect your new status',
       LocalizationKeys.congratulations: '🎉 CONGRATULATIONS! 🎉',
-      LocalizationKeys.youveBeenPromoted: 'You\'ve been promoted to Level',
 
       // Shop and Items
       LocalizationKeys.boosters: 'Boosters',
       LocalizationKeys.boosts: 'Boosts',
       LocalizationKeys.keys: 'Keys',
-      LocalizationKeys.chatBot: 'Chat Bot',
       LocalizationKeys.inventory: 'Inventory',
-      LocalizationKeys.failedToLoadShopItems: 'Failed to load shop items',
       LocalizationKeys.noItemsAvailable: 'No items available',
-      LocalizationKeys.successfullyPurchased: 'Successfully purchased',
-      LocalizationKeys.failedToPurchase: 'Failed to purchase',
       LocalizationKeys.failedToLoadLeaderboard: 'Failed to load leaderboard',
 
       // Land Map
@@ -402,13 +338,12 @@ class _Translations {
       LocalizationKeys.purchaseFailed: 'Purchase failed',
       LocalizationKeys.saleFailed: 'Sale failed',
       LocalizationKeys.landDailyIncomeInfo:
-          'Purchasing land gives 50 HC daily income that you can claim every 24 hours',
+          'Purchasing land gives 50 HP daily income that you can claim every 24 hours',
 
       // Land Income Claim
       LocalizationKeys.landIncomeClaimedSuccessfully:
           'Land income claimed successfully!',
       LocalizationKeys.landIncomeClaimFailed: 'Failed to claim land income',
-      LocalizationKeys.claimReady: 'Ready!',
       LocalizationKeys.claimCooldown: 'Cooldown',
       LocalizationKeys.claimAvailable: 'Available to claim',
       LocalizationKeys.nextClaimIn: 'Next claim in',
@@ -421,10 +356,8 @@ class _Translations {
 
       // Errors and Validation
       LocalizationKeys.error: 'Error',
-      LocalizationKeys.statsLoading: 'Stats loading...',
       LocalizationKeys.forgotPassword: 'Forgot Password?',
       LocalizationKeys.dontHaveAccount: 'Don\'t have an account?',
-      LocalizationKeys.alreadyHaveAccount: 'Already have an account?',
       LocalizationKeys.emailIsRequired: 'Email is required',
       LocalizationKeys.pleaseEnterValidEmail: 'Please enter a valid email',
       LocalizationKeys.adNotReadyTryAgain:
@@ -444,11 +377,6 @@ class _Translations {
       // Access Control
       LocalizationKeys.unlockFeature: 'Unlock Feature',
       LocalizationKeys.bronzeKey: 'Bronze Key',
-      LocalizationKeys.getBronzeKeyMessage:
-          'Get your Bronze Key from the shop to unlock this exciting feature!',
-      LocalizationKeys.keysExpireMessage: 'Keys give you 3 hours of access.',
-      LocalizationKeys.getFromShop: 'get from shop',
-      LocalizationKeys.unlockExcitingFeature: 'unlock this exciting feature',
       LocalizationKeys.needItemForFeature:
           'You need a {item} for this feature.',
 
@@ -461,15 +389,9 @@ class _Translations {
       LocalizationKeys.cryptoDetails: 'Crypto Transfer Details',
       LocalizationKeys.walletAddress: 'Wallet Address',
       LocalizationKeys.cryptoNetwork: 'Network',
-      LocalizationKeys.selectNetwork: 'Select Network',
-      LocalizationKeys.enterWalletAddress: 'Enter your wallet address',
       LocalizationKeys.enterFullName: 'Enter your full name',
-      LocalizationKeys.payoutAmount: 'Prize Value (HC)',
+      LocalizationKeys.payoutAmount: 'Prize Value (HP)',
       LocalizationKeys.requestPayout: 'Claim Prize',
-      LocalizationKeys.phoneNumberRequired: 'Phone number is required',
-      LocalizationKeys.accountHolderNameRequired:
-          'Account holder name is required',
-      LocalizationKeys.networkRequired: 'Network is required',
       LocalizationKeys.walletAddressRequired: 'Wallet address is required',
       LocalizationKeys.amountRequired: 'Amount is required',
       LocalizationKeys.enterValidAmount: 'Enter a valid amount',
@@ -503,35 +425,31 @@ class _Translations {
       LocalizationKeys.madeWithLove: 'Made with ❤️',
 
       // Events
-      LocalizationKeys.noEventsYet: 'No Events Yet',
-      LocalizationKeys.eventsComingSoon:
-          'Exciting events are coming soon!\nStay tuned for updates.',
-      LocalizationKeys.comingSoon: 'Coming Soon',
 
       // Safe Lock
       LocalizationKeys.safeLock: 'Safe Lock',
       LocalizationKeys.safeLockSavings: 'Safe Lock Savings',
       LocalizationKeys.lockYourHcForRewards:
-          'Lock your HC for 7 days and earn rewards!',
+          'Lock your HP for 7 days and earn rewards!',
       LocalizationKeys.minimumRewardGuaranteed:
-          'Minimum reward: 30 HC + possible item bonus',
+          'Minimum reward: 30 HP + possible item bonus',
       LocalizationKeys.yourBalance: 'Your Balance:',
       LocalizationKeys.lockedAmount: 'Locked Amount:',
       LocalizationKeys.locked: 'Locked',
       LocalizationKeys.timeRemaining: 'Time Remaining:',
       LocalizationKeys.claimRewards: 'Claim Rewards',
       LocalizationKeys.depositAmount: 'Deposit Amount',
-      LocalizationKeys.enterHcAmount: 'Enter HC amount',
+      LocalizationKeys.enterHcAmount: 'Enter HP amount',
       LocalizationKeys.depositToSafeLock: 'Deposit to Safe Lock',
       LocalizationKeys.addMoreTimerResets: 'Add More (Timer Resets)',
       LocalizationKeys.depositingAgainResetsTimer:
           '⚠️ Depositing again will reset the 7-day timer',
       LocalizationKeys.howItWorks: 'How It Works',
-      LocalizationKeys.safeLockInfo1: 'Deposit HC and lock it for 7 days',
+      LocalizationKeys.safeLockInfo1: 'Deposit HP and lock it for 7 days',
       LocalizationKeys.safeLockInfo2: 'Timer resets if you deposit again',
       LocalizationKeys.safeLockInfo3: 'Earn rewards based on your activity',
       LocalizationKeys.safeLockInfo4: 'Active users may receive bonus items',
-      LocalizationKeys.safeLockInfo5: 'Minimum 30 HC reward guaranteed',
+      LocalizationKeys.safeLockInfo5: 'Minimum 30 HP reward guaranteed',
       LocalizationKeys.success: 'Success!',
       LocalizationKeys.congratulationsExclaim: '🎉 Congratulations! 🎉',
       LocalizationKeys.returned: 'Returned:',
@@ -543,18 +461,18 @@ class _Translations {
       LocalizationKeys.insufficientBalance: 'Insufficient balance',
 
       // Tutorial
-      LocalizationKeys.tutorialHcBalanceTitle: 'Your HC Balance',
+      LocalizationKeys.tutorialHcBalanceTitle: 'Your HP Balance',
       LocalizationKeys.tutorialHcBalanceDesc:
-          'This shows your HustleCoin (HC) balance and potential prize value in Kwanza. Complete tasks to earn more HC!',
-      LocalizationKeys.tutorialEarnTasksTitle: 'Earn HC Tasks',
+          'This shows your HustleCoin (HP) balance and potential prize value in Kwanza. Complete tasks to earn more HP!',
+      LocalizationKeys.tutorialEarnTasksTitle: 'Earn HP Tasks',
       LocalizationKeys.tutorialEarnTasksDesc:
           'Tap these buttons to complete tasks and earn HustleCoins! Daily Tap, Watch Ads, and Play Quiz are great ways to earn.',
       LocalizationKeys.tutorialPremiumFeaturesTitle: 'Premium Features',
       LocalizationKeys.tutorialPremiumFeaturesDesc:
-          'Access premium features here! Explore Land, Safe Lock for storing HC, and Events for special opportunities.',
+          'Access premium features here! Explore Land, Safe Lock for storing HP, and Events for special opportunities.',
       LocalizationKeys.tutorialGetPaidTitle: 'Claim Prizes',
       LocalizationKeys.tutorialGetPaidDesc:
-          'Once you\'ve earned enough HC, tap here to claim your prizes!',
+          'Once you\'ve earned enough HP, tap here to claim your prizes!',
       LocalizationKeys.tutorialProfileTitle: 'Your Profile',
       LocalizationKeys.tutorialProfileDesc:
           'Tap here to update your profile information, check your hustle stats, and view your inventory of items!',
@@ -572,43 +490,11 @@ class _Translations {
       LocalizationKeys.stillNeed: 'Still need',
 
       // Games
-      LocalizationKeys.miniGames: 'Play Games to Earn HC',
-      LocalizationKeys.gameRunnerTitle: 'Hustle Run',
-      LocalizationKeys.gameSnakeTitle: 'Retro Snake',
-      LocalizationKeys.gameSeagullTitle: 'Seagull Scramble',
-      LocalizationKeys.gamePongTitle: 'Pixel Pong',
-      LocalizationKeys.runnerInstruction: 'Dodge obstacles and collect coins!',
-      LocalizationKeys.snakeInstruction:
-          'Classic snake game. Eat food to grow!',
-      LocalizationKeys.seagullInstruction: 'Tap to fly and avoid collisions',
-      LocalizationKeys.pongInstruction:
-          'Beat the AI in this classic tennis game',
-      LocalizationKeys.gameBalloonPopTitle: 'Balloon Pop',
-      LocalizationKeys.balloonPopInstruction:
-          'Pop balloons to score points! Don\'t let them fly away.',
-      LocalizationKeys.play: 'PLAY',
-      LocalizationKeys.playAgain: 'PLAY AGAIN',
-      LocalizationKeys.tapToJump: 'Tap to Jump',
-      LocalizationKeys.swipeToMove: 'Swipe to Move',
-      LocalizationKeys.tapToFlap: 'Tap to Flap',
-      LocalizationKeys.serve: 'SERVE',
-      LocalizationKeys.rematch: 'REMATCH',
-      LocalizationKeys.exit: 'EXIT',
-      LocalizationKeys.startGame: 'START GAME',
-      LocalizationKeys.gameOver: 'GAME OVER',
-      LocalizationKeys.score: 'Score',
-      LocalizationKeys.youWin: 'YOU WIN!',
-      LocalizationKeys.aiWins: 'AI WINS!',
-      LocalizationKeys.firstTo5: 'FIRST TO 5',
-      LocalizationKeys.winner: 'WINNER',
-      LocalizationKeys.goal: 'Goal',
-      LocalizationKeys.winMatch: 'Win Match',
-      LocalizationKeys.playGames: 'PLAY GAMES',
 
       // Level Benefits
       LocalizationKeys.levelBenefits: 'LEVEL BENEFITS',
       LocalizationKeys.multiplierTitle: 'MULTIPLIER',
-      LocalizationKeys.multiplierDesc: 'Boosts HC earnings from all tasks.',
+      LocalizationKeys.multiplierDesc: 'Boosts HP earnings from all tasks.',
       LocalizationKeys.landTitle: 'LAND',
       LocalizationKeys.landDesc: 'Unlocks more plots for your empire.',
       LocalizationKeys.legacyTitle: 'LEGACY',
@@ -635,12 +521,11 @@ class _Translations {
       LocalizationKeys.submit: 'Enviar',
       LocalizationKeys.tutorialPlayGamesTitle: 'Jogue e Ganhe',
       LocalizationKeys.tutorialPlayGamesDesc:
-          'Jogue minijogos para ganhar HustleCoins (HC) extras enquanto suas tarefas estão em recarga!',
+          'Jogue minijogos para ganhar HustleCoins (HP) extras enquanto suas tarefas estão em recarga!',
       LocalizationKeys.submitAnswer: 'Enviar Resposta',
       LocalizationKeys.tap: 'TOCAR',
       LocalizationKeys.logIn: 'Entrar',
       LocalizationKeys.signUp: 'Cadastrar',
-      LocalizationKeys.createAccount: 'Criar Conta',
       LocalizationKeys.updateProfile: 'Atualizar Perfil',
       LocalizationKeys.upgradeLevel: 'Subir de Nível',
       LocalizationKeys.dailyReward: 'Recompensa Diária',
@@ -673,7 +558,7 @@ class _Translations {
       LocalizationKeys.confirmNewPasswordHint: 'Confirme a nova senha',
 
       // Game Elements
-      LocalizationKeys.hustleCoin: 'Hustle Coin',
+      LocalizationKeys.hustleCoin: 'Hustle Points',
       LocalizationKeys.hustleLevel: 'NÍVEL DE TRABALHO',
       LocalizationKeys.level: 'Nível',
       LocalizationKeys.nextLevel: 'PRÓXIMO NÍVEL',
@@ -683,27 +568,19 @@ class _Translations {
 
       // Greetings and Messages
       LocalizationKeys.welcomeBack: 'Bem-vindo de Volta!',
-      LocalizationKeys.welcomeToHustleCoin: 'Bem-vindo ao Hustle Coin',
+      LocalizationKeys.welcomeToHustleCoin: 'Bem-vindo ao Hustle Points',
       LocalizationKeys.earnByHustlingDaily: 'Ganhe Trabalhando Diariamente!',
       LocalizationKeys.startMyHustle: 'COMEÇAR MEU TRABALHO',
       LocalizationKeys.logInToContinue:
           'Faça login para continuar seu trabalho.',
-      LocalizationKeys.chooseYourNewHustle: 'Escolha Seu Novo Trabalho',
-      LocalizationKeys.selectHustleToReflect:
-          'Selecione um trabalho para refletir seu novo status',
       LocalizationKeys.congratulations: '🎉 PARABÉNS! 🎉',
-      LocalizationKeys.youveBeenPromoted: 'Você foi promovido para o Nível',
 
       // Shop and Items
       LocalizationKeys.boosters: 'Impulsionadores',
       LocalizationKeys.boosts: 'Impulsos',
       LocalizationKeys.keys: 'Chaves',
-      LocalizationKeys.chatBot: 'Robô de Chat',
       LocalizationKeys.inventory: 'Inventário',
-      LocalizationKeys.failedToLoadShopItems: 'Falha ao carregar itens da loja',
       LocalizationKeys.noItemsAvailable: 'Nenhum item disponível',
-      LocalizationKeys.successfullyPurchased: 'Comprado com sucesso',
-      LocalizationKeys.failedToPurchase: 'Falha na compra',
       LocalizationKeys.failedToLoadLeaderboard:
           'Falha ao carregar classificação',
 
@@ -717,14 +594,13 @@ class _Translations {
       LocalizationKeys.purchaseFailed: 'Falha na compra',
       LocalizationKeys.saleFailed: 'Falha na venda',
       LocalizationKeys.landDailyIncomeInfo:
-          'Comprar terra dá renda diária de 50 HC que você pode reivindicar a cada 24 horas',
+          'Comprar terra dá renda diária de 50 HP que você pode reivindicar a cada 24 horas',
 
       // Land Income Claim
       LocalizationKeys.landIncomeClaimedSuccessfully:
           'Renda da terra reivindicada com sucesso!',
       LocalizationKeys.landIncomeClaimFailed:
           'Falha ao reivindicar renda da terra',
-      LocalizationKeys.claimReady: 'Pronto!',
       LocalizationKeys.claimCooldown: 'Tempo de Espera',
       LocalizationKeys.claimAvailable: 'Disponível para reivindicar',
       LocalizationKeys.nextClaimIn: 'Próxima reivindicação em',
@@ -737,10 +613,8 @@ class _Translations {
 
       // Errors and Validation
       LocalizationKeys.error: 'Erro',
-      LocalizationKeys.statsLoading: 'Carregando estatísticas...',
       LocalizationKeys.forgotPassword: 'Esqueceu a Senha?',
       LocalizationKeys.dontHaveAccount: 'Não tem uma conta?',
-      LocalizationKeys.alreadyHaveAccount: 'Já tem uma conta?',
       LocalizationKeys.emailIsRequired: 'Email é obrigatório',
       LocalizationKeys.pleaseEnterValidEmail:
           'Por favor, insira um email válido',
@@ -761,12 +635,6 @@ class _Translations {
       // Access Control
       LocalizationKeys.unlockFeature: 'Desbloquear Recurso',
       LocalizationKeys.bronzeKey: 'Chave de Bronze',
-      LocalizationKeys.getBronzeKeyMessage:
-          'Obtenha sua Chave de Bronze na loja para desbloquear este recurso incrível!',
-      LocalizationKeys.keysExpireMessage: 'As chaves dão 3 horas de acesso.',
-      LocalizationKeys.getFromShop: 'obter na loja',
-      LocalizationKeys.unlockExcitingFeature:
-          'desbloquear este recurso incrível',
       LocalizationKeys.needItemForFeature:
           'Você precisa de uma {item} para este recurso.',
 
@@ -780,17 +648,10 @@ class _Translations {
       LocalizationKeys.cryptoDetails: 'Detalhes da Transferência Cripto',
       LocalizationKeys.walletAddress: 'Endereço da Carteira',
       LocalizationKeys.cryptoNetwork: 'Rede',
-      LocalizationKeys.selectNetwork: 'Selecionar Rede',
-      LocalizationKeys.enterWalletAddress: 'Digite o endereço da sua carteira',
       LocalizationKeys.enterFullName: 'Digite seu nome completo',
-      LocalizationKeys.enterBankName: 'Digite o nome do banco',
-      LocalizationKeys.payoutAmount: 'Valor do Prêmio (HC)',
+      LocalizationKeys.payoutAmount: 'Valor do Prêmio (HP)',
       LocalizationKeys.requestPayout: 'Reclamar Prêmio',
-      LocalizationKeys.phoneNumberRequired: 'Número de telefone é obrigatório',
-      LocalizationKeys.accountHolderNameRequired:
-          'Nome do titular da conta é obrigatório',
 
-      LocalizationKeys.networkRequired: 'Rede é obrigatória',
       LocalizationKeys.walletAddressRequired:
           'Endereço da carteira é obrigatório',
       LocalizationKeys.amountRequired: 'Valor é obrigatório',
@@ -820,44 +681,39 @@ class _Translations {
 
       // Credits
       LocalizationKeys.founderVisionary: 'Fundador e Visionário',
-      LocalizationKeys.development: 'DESENVOLVIMENTO',
       LocalizationKeys.leadDeveloper: 'Desenvolvedor Principal',
       LocalizationKeys.madeWithLove: 'Feito com ❤️',
 
       // Events
-      LocalizationKeys.noEventsYet: 'Ainda Sem Eventos',
-      LocalizationKeys.eventsComingSoon:
-          'Eventos emocionantes em breve!\nFique atento às atualizações.',
-      LocalizationKeys.comingSoon: 'Em Breve',
 
       // Safe Lock
       LocalizationKeys.safeLock: 'Cofre Seguro',
       LocalizationKeys.safeLockSavings: 'Poupança de Cofre Seguro',
       LocalizationKeys.lockYourHcForRewards:
-          'Bloqueie seu HC por 7 dias e ganhe recompensas!',
+          'Bloqueie seu HP por 7 dias e ganhe recompensas!',
       LocalizationKeys.minimumRewardGuaranteed:
-          'Recompensa mínima: 30 HC + possível bônus de item',
+          'Recompensa mínima: 30 HP + possível bônus de item',
       LocalizationKeys.yourBalance: 'Seu Saldo:',
       LocalizationKeys.lockedAmount: 'Valor Bloqueado:',
       LocalizationKeys.locked: 'Bloqueado',
       LocalizationKeys.timeRemaining: 'Tempo Restante:',
       LocalizationKeys.claimRewards: 'Reivindicar Recompensas',
       LocalizationKeys.depositAmount: 'Valor do Depósito',
-      LocalizationKeys.enterHcAmount: 'Digite a quantidade de HC',
+      LocalizationKeys.enterHcAmount: 'Digite a quantidade de HP',
       LocalizationKeys.depositToSafeLock: 'Depositar no Cofre Seguro',
       LocalizationKeys.addMoreTimerResets:
           'Adicionar Mais (Temporizador Reinicia)',
       LocalizationKeys.depositingAgainResetsTimer:
-          '⚠️ Depositar novamente reiniciará o temporizador de 7 dias',
+          '⚠️ Depositar novamente reiniciará o tempo de 7 dias',
       LocalizationKeys.howItWorks: 'Como Funciona',
-      LocalizationKeys.safeLockInfo1: 'Deposite HC e bloqueie por 7 dias',
+      LocalizationKeys.safeLockInfo1: 'Deposite HP e bloqueie por 7 dias',
       LocalizationKeys.safeLockInfo2:
           'O temporizador reinicia se você depositar novamente',
       LocalizationKeys.safeLockInfo3:
           'Ganhe recompensas com base na sua atividade',
       LocalizationKeys.safeLockInfo4:
           'Usuários ativos podem receber itens bônus',
-      LocalizationKeys.safeLockInfo5: 'Recompensa mínima de 30 HC garantida',
+      LocalizationKeys.safeLockInfo5: 'Recompensa mínima de 30 HP garantida',
       LocalizationKeys.success: 'Sucesso!',
       LocalizationKeys.congratulationsExclaim: '🎉 Parabéns! 🎉',
       LocalizationKeys.returned: 'Devolvido:',
@@ -870,18 +726,18 @@ class _Translations {
       LocalizationKeys.insufficientBalance: 'Saldo insuficiente',
 
       // Tutorial
-      LocalizationKeys.tutorialHcBalanceTitle: 'Seu Saldo HC',
+      LocalizationKeys.tutorialHcBalanceTitle: 'Seu Saldo HP',
       LocalizationKeys.tutorialHcBalanceDesc:
-          'Isso mostra seu saldo de HustleCoin (HC) e valor potencial de prêmio em Kwanza. Complete tarefas para ganhar mais HC!',
-      LocalizationKeys.tutorialEarnTasksTitle: 'Tarefas para Ganhar HC',
+          'Isso mostra seu saldo de HustleCoin (HP) e valor potencial de prêmio em Kwanza. Complete tarefas para ganhar mais HP!',
+      LocalizationKeys.tutorialEarnTasksTitle: 'Tarefas para Ganhar HP',
       LocalizationKeys.tutorialEarnTasksDesc:
           'Toque nesses botões para completar tarefas e ganhar HustleCoins! Toque Diário, Ver Anúncios e Quiz são ótimas formas de ganhar.',
       LocalizationKeys.tutorialPremiumFeaturesTitle: 'Recursos Premium',
       LocalizationKeys.tutorialPremiumFeaturesDesc:
-          'Acesse recursos premium aqui! Explore Terra, Cofre Seguro para armazenar HC e Eventos para oportunidades especiais.',
+          'Acesse recursos premium aqui! Explore Terra, Cofre Seguro para armazenar HP e Eventos para oportunidades especiais.',
       LocalizationKeys.tutorialGetPaidTitle: 'Reclamar Prêmios',
       LocalizationKeys.tutorialGetPaidDesc:
-          'Quando você tiver ganhado HC suficiente, toque aqui para reclamar seus prêmios!',
+          'Quando você tiver ganhado HP suficiente, toque aqui para reclamar seus prêmios!',
       LocalizationKeys.tutorialProfileTitle: 'Seu Perfil',
       LocalizationKeys.tutorialProfileDesc:
           'Toque aqui para atualizar suas informações de perfil, verificar suas estatísticas de trabalho e ver seu inventário de itens!',
@@ -899,44 +755,11 @@ class _Translations {
       LocalizationKeys.stillNeed: 'Ainda precisa',
 
       // Games
-      LocalizationKeys.miniGames: 'Jogue para Ganhar HC',
-      LocalizationKeys.gameRunnerTitle: 'Corrida Hustle',
-      LocalizationKeys.gameSnakeTitle: 'Cobra Retro',
-      LocalizationKeys.gameSeagullTitle: 'Disputa de Gaivotas',
-      LocalizationKeys.gamePongTitle: 'Pong Pixel',
-      LocalizationKeys.runnerInstruction:
-          'Desvie de obstáculos e colete moedas!',
-      LocalizationKeys.snakeInstruction:
-          'Clássico jogo da cobrinha. Coma para crescer!',
-      LocalizationKeys.seagullInstruction: 'Toque para voar e evite colisões',
-      LocalizationKeys.pongInstruction:
-          'Vença a IA neste clássico jogo de tênis',
-      LocalizationKeys.gameBalloonPopTitle: 'Estourar Balões',
-      LocalizationKeys.balloonPopInstruction:
-          'Estoure balões para pontuar! Não deixe eles voarem.',
-      LocalizationKeys.play: 'JOGAR',
-      LocalizationKeys.playAgain: 'JOGAR NOVAMENTE',
-      LocalizationKeys.tapToJump: 'Toque para Pular',
-      LocalizationKeys.swipeToMove: 'Deslize para Mover',
-      LocalizationKeys.tapToFlap: 'Toque para Voar',
-      LocalizationKeys.serve: 'SACAR',
-      LocalizationKeys.rematch: 'REVANCHE',
-      LocalizationKeys.exit: 'SAIR',
-      LocalizationKeys.startGame: 'INICIAR JOGO',
-      LocalizationKeys.gameOver: 'FIM DE JOGO',
-      LocalizationKeys.score: 'Pontuação',
-      LocalizationKeys.youWin: 'VOCÊ VENCEU!',
-      LocalizationKeys.aiWins: 'IA VENCEU!',
-      LocalizationKeys.firstTo5: 'PRIMEIRO A 5',
-      LocalizationKeys.winner: 'VENCEDOR',
-      LocalizationKeys.goal: 'Objetivo',
-      LocalizationKeys.winMatch: 'Vencer Partida',
-      LocalizationKeys.playGames: 'JOGAR',
 
       // Level Benefits
       LocalizationKeys.levelBenefits: 'BENEFÍCIOS DE NÍVEL',
       LocalizationKeys.multiplierTitle: 'MULTIPLICADOR',
-      LocalizationKeys.multiplierDesc: 'Aumenta ganhos de HC em todas tarefas.',
+      LocalizationKeys.multiplierDesc: 'Aumenta ganhos de HP em todas tarefas.',
       LocalizationKeys.landTitle: 'TERRA',
       LocalizationKeys.landDesc: 'Desbloqueia mais lotes para seu império.',
       LocalizationKeys.legacyTitle: 'LEGADO',

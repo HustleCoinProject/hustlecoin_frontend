@@ -7,8 +7,8 @@ class LevelStatus {
   currentHustle; // Can be String (old format) or Map<String, String> (new format)
   final double daysInLevelProgress;
   final int daysInLevelRequired;
-  final int hcEarnedInLevelProgress;
-  final int hcEarnedInLevelRequired;
+  final int hpEarnedInLevelProgress;
+  final int hpEarnedInLevelRequired;
   final int upgradeFee;
   final bool isEligibleForUpgrade;
 
@@ -17,8 +17,8 @@ class LevelStatus {
     required this.currentHustle,
     required this.daysInLevelProgress,
     required this.daysInLevelRequired,
-    required this.hcEarnedInLevelProgress,
-    required this.hcEarnedInLevelRequired,
+    required this.hpEarnedInLevelProgress,
+    required this.hpEarnedInLevelRequired,
     required this.upgradeFee,
     required this.isEligibleForUpgrade,
   });
@@ -29,8 +29,8 @@ class LevelStatus {
       currentHustle: json['current_hustle'],
       daysInLevelProgress: (json['days_in_level_progress'] as num).toDouble(),
       daysInLevelRequired: json['days_in_level_required'],
-      hcEarnedInLevelProgress: json['hc_earned_in_level_progress'],
-      hcEarnedInLevelRequired: json['hc_earned_in_level_required'],
+      hpEarnedInLevelProgress: json['hp_earned_in_level_progress'],
+      hpEarnedInLevelRequired: json['hp_earned_in_level_required'],
       upgradeFee: json['upgrade_fee'],
       isEligibleForUpgrade: json['is_eligible_for_upgrade'],
     );

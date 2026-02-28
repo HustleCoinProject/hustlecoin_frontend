@@ -714,7 +714,7 @@ class ApiRepository {
     }
   }
 
-  /// Deposit HC to safe lock
+  /// Deposit HP to safe lock
   Future<SafeLockDepositResponse> depositToSafeLock(int amount) async {
     final response = await _makeAuthenticatedRequest(
       () => http.post(

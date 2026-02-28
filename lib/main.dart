@@ -202,7 +202,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ResponsiveBuilder(
       builder: (context) => MaterialApp(
-        title: 'Hustle Coin',
+        title: 'Hustle Points',
         theme: ResponsiveTheme.buildTheme(context),
         home: const ServerTimeInitializer(
           child: GlobalRewardListener(child: AuthWrapper()),

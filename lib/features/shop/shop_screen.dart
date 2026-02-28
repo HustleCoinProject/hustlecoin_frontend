@@ -35,7 +35,7 @@ class ShopScreen extends ConsumerStatefulWidget {
 class _ShopScreenState extends ConsumerState<ShopScreen> {
   @override
   Widget build(BuildContext context) {
-    // Get the user data to display the HC balance
+    // Get the user data to display the HP balance
     final userState = ref.watch(userControllerProvider);
     final user = userState.when(
       data: (user) => user,
@@ -79,7 +79,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${user?.hcBalance ?? 0} HC',
+                              '${user?.hpScore ?? 0} HP',
                               style: TextStyle(
                                 fontSize: 14.f,
                                 fontWeight: FontWeight.w700,
@@ -91,7 +91,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                                   return const SizedBox.shrink();
                                 final rate = RemoteConfigService.instance
                                     .getHcToKzRate();
-                                final kzBalance = (user.hcBalance / rate)
+                                final kzBalance = (user.hpScore / rate)
                                     .floor();
                                 return Text(
                                   '≈ Kz $kzBalance',
@@ -231,7 +231,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final isPurchasing = ref.watch(itemPurchasingProvider(item.itemId));
 
     final user = ref.watch(userControllerProvider).value;
-    final userBalance = user?.hcBalance ?? 0;
+    final userBalance = user?.hpScore ?? 0;
     final bool canAfford = userBalance >= item.price;
 
     return GlassContainer(
@@ -278,7 +278,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               SizedBox(
                 width: double.infinity,
                 child: PrimaryActionButton(
-                  text: '${item.price} HC',
+                  text: '${item.price} HP',
                   isLoading: isPurchasing,
                   padding: ResponsiveUtils.pSymmetric(
                     vertical: 12,

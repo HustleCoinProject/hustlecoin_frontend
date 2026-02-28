@@ -200,13 +200,13 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
       return;
     }
 
-    // Validate amount is within allowed range (10,000 - 30,000 HC)
-    final amountHc = int.tryParse(_amountController.text) ?? 0;
-    if (amountHc < 10000 || amountHc > 30000) {
+    // Validate amount is within allowed range (10,000 - 30,000 HP)
+    final amountHp = int.tryParse(_amountController.text) ?? 0;
+    if (amountHp < 10000 || amountHp > 30000) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
-            'Payout amount must be between 10,000 HC and 30,000 HC',
+            'Payout amount must be between 10,000 HP and 30,000 HP',
           ),
           backgroundColor: Colors.red.withValues(alpha: 0.9),
         ),
@@ -241,14 +241,14 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
     });
 
     try {
-      final amountHc = int.tryParse(_amountController.text) ?? 0;
+      final amountHp = int.tryParse(_amountController.text) ?? 0;
 
       final payoutMethod = _selectedMethod == PayoutMethod.multicaixaExpress
           ? 'multicaixa_express'
           : 'crypto_transfer';
 
       final payoutRequest = PayoutRequest(
-        amountHc: amountHc,
+        amountHp: amountHp,
         payoutMethod: payoutMethod,
         phoneNumber: _selectedMethod == PayoutMethod.multicaixaExpress
             ? _phoneController.text.trim()
@@ -277,7 +277,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Payout request submitted successfully!\nAmount: $amountHc HC (${payout.amountKwanza.toStringAsFixed(2)} AOA)\nStatus: ${payout.statusDisplayText}',
+              'Payout request submitted successfully!\nAmount: $amountHp HP (${payout.amountKwanza.toStringAsFixed(2)} AOA)\nStatus: ${payout.statusDisplayText}',
             ),
             backgroundColor: AppColors.angolaYellow.withValues(alpha: 0.9),
             behavior: SnackBarBehavior.floating,
@@ -468,7 +468,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
             Expanded(
               child: _buildMethodCard(
                 PayoutMethod.crypto,
-                'Crypto (HC)',
+                'Crypto (HP)',
                 FontAwesomeIcons.bitcoin,
               ),
             ),
@@ -809,7 +809,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
                     ),
                     SizedBox(width: 8.s),
                     Text(
-                      'HC',
+                      'HP',
                       style: TextStyle(
                         color: AppColors.angolaYellow,
                         fontSize: 16.f,
@@ -837,12 +837,12 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
                 return ref.t(LocalizationKeys.enterValidAmount);
               }
 
-              // Enforce prize range (10,000 - 30,000 HC)
+              // Enforce prize range (10,000 - 30,000 HP)
               if (amount < 10000) {
-                return 'Minimum prize value is 10,000 HC';
+                return 'Minimum prize value is 10,000 HP';
               }
               if (amount > 30000) {
-                return 'Maximum prize value is 30,000 HC';
+                return 'Maximum prize value is 30,000 HP';
               }
 
               // Check against minimum prize value from API
@@ -850,7 +850,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
               return payoutInfoAsync.maybeWhen(
                 data: (payoutInfo) {
                   if (amount > payoutInfo.availableHc) {
-                    return 'Insufficient balance. Available: ${payoutInfo.availableHc} HC';
+                    return 'Insufficient balance. Available: ${payoutInfo.availableHc} HP';
                   }
                   return null;
                 },
@@ -893,7 +893,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
                 ],
               ),
               SizedBox(height: 8.s),
-              _buildRestrictionRow('Amount: 10,000 - 30,000 HC'),
+              _buildRestrictionRow('Amount: 10,000 - 30,000 HP'),
               SizedBox(height: 4.s),
               Consumer(
                 builder: (context, ref, child) {
@@ -968,7 +968,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
                             ),
                             SizedBox(width: 8.s),
                             Text(
-                              '${payoutInfo.availableHc} HC',
+                              '${payoutInfo.availableHc} HP',
                               style: TextStyle(
                                 color: AppColors.angolaYellow,
                                 fontSize: 18.f,
@@ -999,7 +999,7 @@ class _PayoutScreenState extends ConsumerState<PayoutScreen> {
                           ),
                         ),
                         Text(
-                          '${payoutInfo.minimumPayoutHc} HC (${minPayoutKz.toStringAsFixed(2)} AOA)',
+                          '${payoutInfo.minimumPayoutHc} HP (${minPayoutKz.toStringAsFixed(2)} AOA)',
                           style: TextStyle(
                             color: AppColors.textLight,
                             fontSize: 14.f,

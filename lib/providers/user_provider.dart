@@ -90,7 +90,7 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
 
           state = AsyncValue.data(
             currentUser.copyWith(
-              hcBalance: response.newBalance,
+              hpScore: response.newBalance,
               rankPoints: response.newRankPoints,
               taskCooldowns: updatedCooldowns,
             ),
@@ -182,15 +182,15 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
         id: currentUser.id,
         username: currentUser.username,
         email: currentUser.email,
-        hcBalance:
-            currentUser.hcBalance + amountGained, // The optimistic update
+        hpScore:
+            currentUser.hpScore + amountGained, // The optimistic update
         rankPoints:
             currentUser.rankPoints + rankPointsGained, // Add rank points update
         level: currentUser.level,
         currentHustle: currentUser.currentHustle,
         levelEntryDate: currentUser.levelEntryDate,
-        hcEarnedInLevel:
-            currentUser.hcEarnedInLevel + amountGained, // Also update this
+        hpEarnedInLevel:
+            currentUser.hpEarnedInLevel + amountGained, // Also update this
         language: currentUser.language,
         taskCooldowns: currentUser.taskCooldowns,
         dailyStreak: currentUser.dailyStreak,

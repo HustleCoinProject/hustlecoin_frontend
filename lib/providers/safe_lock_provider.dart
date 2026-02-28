@@ -47,7 +47,7 @@ class SafeLockController extends StateNotifier<AsyncValue<SafeLockStatus>> {
     }
   }
 
-  /// Deposit HC to safe lock
+  /// Deposit HP to safe lock
   Future<SafeLockDepositResponse> deposit(int amount) async {
     try {
       final response = await _api.depositToSafeLock(amount);

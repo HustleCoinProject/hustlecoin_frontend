@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 @immutable
 class PayoutRequest {
-  final int amountHc;
+  final int amountHp;
   final String payoutMethod;
   final String? phoneNumber;
   final String? fullName;
@@ -11,7 +11,7 @@ class PayoutRequest {
   final String? cryptoNetwork;
 
   const PayoutRequest({
-    required this.amountHc,
+    required this.amountHp,
     required this.payoutMethod,
     this.phoneNumber,
     this.fullName,
@@ -22,7 +22,7 @@ class PayoutRequest {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> json = {
-      'amount_hc': amountHc,
+      'amount_hp': amountHp,
       'payout_method': payoutMethod,
     };
 

@@ -58,7 +58,7 @@ class _SafeLockScreenState extends ConsumerState<SafeLockScreen> {
     }
 
     final user = ref.read(userControllerProvider).value;
-    if (user == null || user.hcBalance < amount) {
+    if (user == null || user.hpScore < amount) {
       _showErrorDialog(ref.t(LocalizationKeys.insufficientBalance));
       return;
     }
@@ -312,7 +312,7 @@ class _SafeLockScreenState extends ConsumerState<SafeLockScreen> {
                                 ),
                               ),
                               Text(
-                                '${user?.hcBalance ?? 0} HC',
+                                '${user?.hpScore ?? 0} HP',
                                 style: TextStyle(
                                   color: AppColors.angolaYellow,
                                   fontSize: 18.f,
@@ -350,7 +350,7 @@ class _SafeLockScreenState extends ConsumerState<SafeLockScreen> {
                                     ),
                                   ),
                                   Text(
-                                    '${status.safeLockAmount} HC',
+                                    '${status.safeLockAmount} HP',
                                     style: TextStyle(
                                       color: status.safeLockAmount > 0
                                           ? Colors.green
@@ -492,7 +492,7 @@ class _SafeLockScreenState extends ConsumerState<SafeLockScreen> {
                                           fontSize: 16.f,
                                         ),
                                         border: InputBorder.none,
-                                        suffixText: 'HC',
+                                        suffixText: 'HP',
                                         suffixStyle: TextStyle(
                                           color: AppColors.angolaYellow,
                                           fontSize: 16.f,

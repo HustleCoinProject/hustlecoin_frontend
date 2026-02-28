@@ -54,7 +54,7 @@ class GlobalRewardPopup {
           children: [
             if (returnedAmount != null) ...[
               Text(
-                '${ref.t(LocalizationKeys.returned)} $returnedAmount HC',
+                '${ref.t(LocalizationKeys.returned)} $returnedAmount HP',
                 style: TextStyle(
                   color: AppColors.angolaYellow,
                   fontSize: 18.f,
@@ -65,7 +65,7 @@ class GlobalRewardPopup {
             ],
             if (reward.isHcReward) ...[
               Text(
-                '${ref.t(LocalizationKeys.reward)} ${reward.hcAmount} HC',
+                '${ref.t(LocalizationKeys.reward)} ${reward.hpAmount} HP',
                 style: TextStyle(
                   color: Colors.green,
                   fontSize: 20.f,
@@ -98,7 +98,7 @@ class GlobalRewardPopup {
             if (newBalance != null) ...[
               SizedBox(height: 16.h),
               Text(
-                '${ref.t(LocalizationKeys.newBalance)} $newBalance HC',
+                '${ref.t(LocalizationKeys.newBalance)} $newBalance HP',
                 style: TextStyle(color: AppColors.textLight, fontSize: 16.f),
               ),
             ],

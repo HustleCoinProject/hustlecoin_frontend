@@ -13,7 +13,8 @@ import 'package:hustlecoin/features/profile/edit_profile.dart';
 import 'package:hustlecoin/features/quiz/quiz_screen.dart';
 import 'package:hustlecoin/features/safe_lock/safe_lock_screen.dart';
 import 'package:hustlecoin/features/settings/settings_screen.dart';
-import 'package:hustlecoin/features/games/game_list_screen.dart';
+
+import 'package:hustlecoin/features/home/widgets/resource_bars_widget.dart';
 import 'package:hustlecoin/features/missions/widgets/mission_card.dart';
 import 'package:hustlecoin/providers/mission_provider.dart';
 
@@ -24,7 +25,6 @@ import 'package:hustlecoin/providers/tapping_status_provider.dart';
 import 'package:hustlecoin/services/admob_service.dart';
 import 'package:hustlecoin/services/sound_service.dart';
 import 'package:hustlecoin/services/tutorial_service.dart';
-import 'package:hustlecoin/widgets/banner_ad_widget.dart';
 import 'package:hustlecoin/widgets/access_controlled_widget.dart';
 import 'package:hustlecoin/utils/ad_helper.dart';
 import 'package:hustlecoin/utils/localization.dart';
@@ -222,7 +222,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   List<TargetFocus> _createTutorialTargets() {
     return [
       TargetFocus(
-        identify: 'hcBalance',
+        identify: 'hpScore',
         keyTarget: _hcBalanceKey,
         alignSkip: Alignment.topRight,
         contents: [
@@ -590,29 +590,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: SafeArea(
             child: Column(
               children: [
-                // Banner ad at the top
-                BannerAdWidget(
-                  margin: ResponsiveUtils.pSymmetric(
-                    horizontal: 15,
-                    vertical: 5,
-                  ),
-                ),
                 TopBar(
                   onToggleLanguage: _toggleLanguage,
-                  hcBalanceKey: _hcBalanceKey,
+                  hpScoreKey: _hcBalanceKey,
                 ),
-                Text(
-                  ref.t(LocalizationKeys.hustleCoin),
-                  style: TextStyle(
-                    color: AppColors.textGrey,
-                    fontSize: 14.f,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 3,
-                    shadows: [
-                      const Shadow(blurRadius: 4, color: Colors.black87),
-                    ],
-                  ),
-                ),
+                const ResourceBarsWidget(),
+                SizedBox(height: 24.h),
                 Expanded(child: _buildGameArea(user, ref)),
 
                 // Show mission card just above upgrades/inventory
@@ -773,15 +756,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Align(
             alignment: Alignment.topCenter,
             child: Padding(
-              padding: EdgeInsets.only(top: 20.s),
+              padding: EdgeInsets.only(top: 0),
               child: Column(children: [StatsContainer(user: user)]),
             ),
           ),
           Positioned(
             key: _leftTasksKey,
             left: 0,
-            top: 140.h,
-            bottom: 150.h,
+            top: 100.h,
+            bottom: 160.h,
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -861,8 +844,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Positioned(
             key: _rightFeaturesKey,
             right: 0,
-            top: 140.h,
-            bottom: 150.h,
+            top: 100.h,
+            bottom: 160.h,
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -914,11 +897,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ),
+
           // NOTE: Main "Tap"/"Tocar" button temporarily disabled for Home screen
           // Uncomment the line below to re-enable the central tap button functionality
           // _buildMainTapButton(),
-          _buildPlayGameButton(),
-          Positioned(bottom: 140.h, child: _buildDailyRewardButton()),
+          Positioned(bottom: 180.h, child: _buildDailyRewardButton()),
           if (nextMission != null)
             Positioned(
               bottom: 0,
@@ -939,76 +922,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       builder: (context, ref, child) {
         return const _MainTapButton();
       },
-    );
-  }
-
-  Widget _buildPlayGameButton() {
-    return PressableScaleWidget(
-      key: _playGameKey,
-      onTap: () {
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => const GameListScreen()));
-      },
-      child: GlassContainer(
-        borderRadius: 64.r,
-        child: SizedBox(
-          width: 160.s,
-          height: 160.s,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FaIcon(
-                FontAwesomeIcons.gamepad,
-                size: 50.s,
-                color: AppColors.angolaYellow,
-                shadows: [
-                  const Shadow(color: AppColors.glowYellow, blurRadius: 15),
-                ],
-              ),
-              SizedBox(height: 10.s),
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Text(
-                    ref.t(LocalizationKeys.playGames),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18.f,
-                      letterSpacing: 1,
-                      color: AppColors.textLight,
-                    ),
-                  ),
-                  Positioned(
-                    top: -8.s,
-                    right: -20.s,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        FaIcon(
-                          FontAwesomeIcons.coins,
-                          size: 8.s,
-                          color: AppColors.angolaYellow,
-                        ),
-                        SizedBox(width: 2.s),
-                        Text(
-                          '+HC',
-                          style: TextStyle(
-                            color: AppColors.angolaYellow,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 8.f,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 

@@ -6,13 +6,13 @@ class User {
   final String id;
   final String username;
   final String email;
-  final int hcBalance;
+  final int hpScore;
   final int rankPoints;
   final int level;
   final dynamic
   currentHustle; // Can be String (old format) or Map<String, String> (new format)
   final DateTime levelEntryDate;
-  final int hcEarnedInLevel;
+  final int hpEarnedInLevel;
   final String language;
   final Map<String, DateTime> taskCooldowns;
   final int dailyStreak;
@@ -34,12 +34,12 @@ class User {
     required this.id,
     required this.username,
     required this.email,
-    required this.hcBalance,
+    required this.hpScore,
     required this.rankPoints,
     required this.level,
     required this.currentHustle,
     required this.levelEntryDate,
-    required this.hcEarnedInLevel,
+    required this.hpEarnedInLevel,
     required this.language,
     required this.taskCooldowns,
     required this.dailyStreak,
@@ -60,12 +60,12 @@ class User {
       id: json['id'],
       username: json['username'],
       email: json['email'],
-      hcBalance: json['hc_balance'],
+      hpScore: json['hp_score'],
       rankPoints: json['rank_points'] ?? 0,
       level: json['level'],
       currentHustle: json['current_hustle'],
       levelEntryDate: DateTime.parse(json['level_entry_date']),
-      hcEarnedInLevel: json['hc_earned_in_level'],
+      hpEarnedInLevel: json['hp_earned_in_level'],
       language: json['language'],
       taskCooldowns: (json['task_cooldowns'] as Map<String, dynamic>).map(
         (key, value) => MapEntry(key, DateTime.parse(value)),
@@ -94,12 +94,12 @@ class User {
     String? id,
     String? username,
     String? email,
-    int? hcBalance,
+    int? hpScore,
     int? rankPoints,
     int? level,
     dynamic currentHustle,
     DateTime? levelEntryDate,
-    int? hcEarnedInLevel,
+    int? hpEarnedInLevel,
     String? language,
     Map<String, DateTime>? taskCooldowns,
     int? dailyStreak,
@@ -117,12 +117,12 @@ class User {
       id: id ?? this.id,
       username: username ?? this.username,
       email: email ?? this.email,
-      hcBalance: hcBalance ?? this.hcBalance,
+      hpScore: hpScore ?? this.hpScore,
       rankPoints: rankPoints ?? this.rankPoints,
       level: level ?? this.level,
       currentHustle: currentHustle ?? this.currentHustle,
       levelEntryDate: levelEntryDate ?? this.levelEntryDate,
-      hcEarnedInLevel: hcEarnedInLevel ?? this.hcEarnedInLevel,
+      hpEarnedInLevel: hpEarnedInLevel ?? this.hpEarnedInLevel,
       language: language ?? this.language,
       taskCooldowns: taskCooldowns ?? this.taskCooldowns,
       dailyStreak: dailyStreak ?? this.dailyStreak,
@@ -139,5 +139,5 @@ class User {
   }
 
   // Visual-only Kwanza balance - DEPRECATED/REMOVED to use RemoteConfig rate
-  // int get kzBalance => (hcBalance / 8).floor();
+  // int get kzBalance => (hpScore / 8).floor();
 }

@@ -46,8 +46,8 @@ class StatsContainer extends ConsumerWidget {
     const textShadow = [
       Shadow(color: Colors.black87, blurRadius: 4, offset: Offset(1, 1)),
     ];
-    final progress = status.hcEarnedInLevelProgress.toDouble();
-    final required = status.hcEarnedInLevelRequired.toDouble();
+    final progress = status.hpEarnedInLevelProgress.toDouble();
+    final required = status.hpEarnedInLevelRequired.toDouble();
     final progressValue = required > 0
         ? (progress / required).clamp(0.0, 1.0)
         : 0.0;
@@ -156,7 +156,7 @@ class StatsContainer extends ConsumerWidget {
               ),
               SizedBox(height: 4.s),
               Text(
-                '${status.hcEarnedInLevelProgress} / ${status.hcEarnedInLevelRequired} HC',
+                '${status.hpEarnedInLevelProgress} / ${status.hpEarnedInLevelRequired} HP',
                 style: TextStyle(
                   fontSize: 11.f,
                   color: AppColors.textGrey,
@@ -236,14 +236,14 @@ class StatsContainer extends ConsumerWidget {
                                 : () {
                                     // Show info popup when not eligible
                                     final daysRemaining = (status.daysInLevelRequired - status.daysInLevelProgress).clamp(0, double.infinity);
-                                    final hcRemaining = (status.hcEarnedInLevelRequired - status.hcEarnedInLevelProgress).clamp(0, double.infinity);
+                                    final hpRemaining = (status.hpEarnedInLevelRequired - status.hpEarnedInLevelProgress).clamp(0, double.infinity);
                                     
-                                    String description = '${ref.t(LocalizationKeys.current)}: ${status.hcEarnedInLevelProgress} HC, ${status.daysInLevelProgress.toStringAsFixed(1)} ${ref.t(LocalizationKeys.days)}. '
-                                        '${ref.t(LocalizationKeys.required)}: ${status.hcEarnedInLevelRequired} HC, ${status.daysInLevelRequired} ${ref.t(LocalizationKeys.days)}, ${status.upgradeFee} HC ${ref.t(LocalizationKeys.fee)}. '
+                                    String description = '${ref.t(LocalizationKeys.current)}: ${status.hpEarnedInLevelProgress} HP, ${status.daysInLevelProgress.toStringAsFixed(1)} ${ref.t(LocalizationKeys.days)}. '
+                                        '${ref.t(LocalizationKeys.required)}: ${status.hpEarnedInLevelRequired} HP, ${status.daysInLevelRequired} ${ref.t(LocalizationKeys.days)}, ${status.upgradeFee} HP ${ref.t(LocalizationKeys.fee)}. '
                                         '${ref.t(LocalizationKeys.stillNeed)}:';
                                     
-                                    if (hcRemaining > 0) description += ' ${hcRemaining.toInt()} HC';
-                                    if (hcRemaining > 0 && daysRemaining > 0) description += ',';
+                                    if (hpRemaining > 0) description += ' ${hpRemaining.toInt()} HP';
+                                    if (hpRemaining > 0 && daysRemaining > 0) description += ',';
                                     if (daysRemaining > 0) description += ' ${daysRemaining.toStringAsFixed(1)} ${ref.t(LocalizationKeys.days)}';
                                     description += '.';
                                     
@@ -265,7 +265,7 @@ class StatsContainer extends ConsumerWidget {
                                 vertical: 8,
                               ),
                               child: Text(
-                                '${status.upgradeFee} HC',
+                                '${status.upgradeFee} HP',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 14.f,

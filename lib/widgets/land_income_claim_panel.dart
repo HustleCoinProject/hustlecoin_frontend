@@ -296,11 +296,11 @@ class _LandIncomeClaimPanelState extends ConsumerState<LandIncomeClaimPanel> {
     bool hasIncome,
   ) {
     if (canClaim && hasIncome) {
-      return '${claimStatus.availableIncome} HC ${ref.t(LocalizationKeys.readyToClaim)}!';
+      return '${claimStatus.availableIncome} HP ${ref.t(LocalizationKeys.readyToClaim)}!';
     } else if (claimStatus.availableIncome == 0 && claimStatus.tilesCount > 0) {
       return ref.t(LocalizationKeys.noIncomeAvailable);
     } else if (claimStatus.availableIncome > 0 && !canClaim) {
-      return '${claimStatus.availableIncome} HC ${ref.t(LocalizationKeys.claimAvailable)}';
+      return '${claimStatus.availableIncome} HP ${ref.t(LocalizationKeys.claimAvailable)}';
     } else {
       return '${claimStatus.tilesCount} ${ref.t(LocalizationKeys.landTiles)}';
     }
@@ -316,7 +316,7 @@ class _LandIncomeClaimPanelState extends ConsumerState<LandIncomeClaimPanel> {
     } else if (claimStatus.availableIncome > 0 &&
         !claimStatus.canClaim &&
         !onCooldown) {
-      return '${claimStatus.availableIncome} HC ${ref.t(LocalizationKeys.claimAvailable)}';
+      return '${claimStatus.availableIncome} HP ${ref.t(LocalizationKeys.claimAvailable)}';
     } else if (claimStatus.tilesCount > 0 && claimStatus.availableIncome == 0) {
       return '${claimStatus.tilesCount} ${ref.t(LocalizationKeys.landTiles)} ${ref.t(LocalizationKeys.generatingIncome)}';
     }

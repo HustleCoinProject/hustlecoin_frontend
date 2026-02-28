@@ -160,7 +160,7 @@ class EventsScreen extends ConsumerWidget {
               ),
               SizedBox(width: 4.s),
               Text(
-                "${event.entryFee} HC",
+                "${event.entryFee} HP",
                 style: TextStyle(color: AppColors.textGrey, fontSize: 12.f),
               ),
               Spacer(),
@@ -281,7 +281,7 @@ class EventsScreen extends ConsumerWidget {
                                       ),
                                     ),
                                     content: Text(
-                                      "Entry fee is ${event.entryFee} HC. Do you want to join?",
+                                      "Entry fee is ${event.entryFee} HP. Do you want to join?",
                                       style: TextStyle(
                                         color: AppColors.textGrey,
                                       ),
@@ -319,7 +319,7 @@ class EventsScreen extends ConsumerWidget {
                                       .joinEvent(event.eventId);
                                 }
                               },
-                        label: "JOIN (${event.entryFee} HC)",
+                        label: "JOIN (${event.entryFee} HP)",
                         icon: FontAwesomeIcons.rightToBracket,
                         isPrimary: true,
                       );

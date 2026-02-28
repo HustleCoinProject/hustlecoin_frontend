@@ -244,7 +244,7 @@ class PayoutHistoryScreen extends ConsumerWidget {
                       Row(
                         children: [
                           Text(
-                            '${payout.amountHc} HC',
+                            '${payout.amountHp} HP',
                             style: TextStyle(
                               color: AppColors.angolaYellow,
                               fontSize: 16.f,

@@ -143,7 +143,7 @@ class _PendingRewardDialogContent extends ConsumerWidget {
         children: [
           if (reward.reward.isHcReward) ...[
             Text(
-              '${ref.t(LocalizationKeys.reward)} ${reward.reward.hcAmount} HC',
+              '${ref.t(LocalizationKeys.reward)} ${reward.reward.hpAmount} HP',
               style: TextStyle(
                 color: Colors.green,
                 fontSize: 20.f,

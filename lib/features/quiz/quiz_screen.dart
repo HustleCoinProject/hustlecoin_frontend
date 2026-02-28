@@ -59,7 +59,7 @@ class QuizScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${user?.hcBalance ?? 0} HC',
+                            '${user?.hpScore ?? 0} HP',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
@@ -70,7 +70,7 @@ class QuizScreen extends ConsumerWidget {
                               if (user == null) return const SizedBox.shrink();
                               final rate = RemoteConfigService.instance
                                   .getHcToKzRate();
-                              final kzBalance = (user.hcBalance / rate).floor();
+                              final kzBalance = (user.hpScore / rate).floor();
                               return Text(
                                 '≈ Kz $kzBalance',
                                 style: const TextStyle(

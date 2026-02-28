@@ -31,7 +31,7 @@ class UpdateRequiredScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'A new version of Hustle Coin is available. Please update to continue playing.',
+                'A new version of Hustle Points is available. Please update to continue playing.',
                 style: Theme.of(
                   context,
                 ).textTheme.bodyLarge?.copyWith(color: AppColors.textGrey),

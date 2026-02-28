@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 class TapResponse {
   final bool success;
   final String message;
-  final int hcEarned;
+  final int hpEarned;
   final int rankPointsEarned;
   final int newBalance;
   final int newRankPoints;
@@ -16,7 +16,7 @@ class TapResponse {
   const TapResponse({
     required this.success,
     required this.message,
-    required this.hcEarned,
+    required this.hpEarned,
     required this.rankPointsEarned,
     required this.newBalance,
     required this.newRankPoints,
@@ -30,7 +30,7 @@ class TapResponse {
     return TapResponse(
       success: json['success'] ?? false,
       message: json['message'] ?? '',
-      hcEarned: json['hc_earned'] ?? 0,
+      hpEarned: json['hp_earned'] ?? 0,
       rankPointsEarned: json['rank_points_earned'] ?? 0,
       newBalance: json['new_balance'] ?? 0,
       newRankPoints: json['new_rank_points'] ?? 0,

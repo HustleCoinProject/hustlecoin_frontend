@@ -8,7 +8,7 @@ enum PayoutMethodType { multicaixaExpress, cryptoTransfer }
 class Payout {
   final String id;
   final String userId;
-  final int amountHc;
+  final int amountHp;
   final double amountKwanza;
   final double conversionRate;
   final PayoutMethodType payoutMethod;
@@ -26,7 +26,7 @@ class Payout {
   const Payout({
     required this.id,
     required this.userId,
-    required this.amountHc,
+    required this.amountHp,
     required this.amountKwanza,
     required this.conversionRate,
     required this.payoutMethod,
@@ -46,7 +46,7 @@ class Payout {
     return Payout(
       id: json['id'].toString(), // Handle PydanticObjectId as string
       userId: json['user_id']?.toString() ?? '', // Backend may not include this
-      amountHc: json['amount_hc'] ?? 0,
+      amountHp: json['amount_hp'] ?? 0,
       amountKwanza: (json['amount_kwanza'] as num?)?.toDouble() ?? 0.0,
       conversionRate:
           (json['conversion_rate'] as num?)?.toDouble() ??
@@ -83,7 +83,7 @@ class Payout {
     return {
       'id': id,
       'user_id': userId,
-      'amount_hc': amountHc,
+      'amount_hp': amountHp,
       'amount_kwanza': amountKwanza,
       'conversion_rate': conversionRate,
       'payout_method': payoutMethod == PayoutMethodType.multicaixaExpress
