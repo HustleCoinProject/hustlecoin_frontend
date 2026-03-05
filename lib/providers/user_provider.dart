@@ -93,6 +93,8 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
               hpScore: response.newBalance,
               rankPoints: response.newRankPoints,
               taskCooldowns: updatedCooldowns,
+              energy: response.newEnergy ?? currentUser.energy,
+              activity: response.newActivity ?? currentUser.activity,
             ),
           );
         }
@@ -100,6 +102,7 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
     } catch (e) {
       // Only refetch on error as fallback
       await _fetchUser();
+      rethrow;
     }
   }
 
@@ -182,8 +185,7 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
         id: currentUser.id,
         username: currentUser.username,
         email: currentUser.email,
-        hpScore:
-            currentUser.hpScore + amountGained, // The optimistic update
+        hpScore: currentUser.hpScore + amountGained, // The optimistic update
         rankPoints:
             currentUser.rankPoints + rankPointsGained, // Add rank points update
         level: currentUser.level,
@@ -202,6 +204,12 @@ class UserController extends StateNotifier<AsyncValue<User?>> {
         nationalId: currentUser.nationalId,
         cryptoWalletAddress: currentUser.cryptoWalletAddress,
         cryptoNetwork: currentUser.cryptoNetwork,
+        energy: currentUser.energy,
+        maxEnergy: currentUser.maxEnergy,
+        energyUpdatedAt: currentUser.energyUpdatedAt,
+        activity: currentUser.activity,
+        maxActivity: currentUser.maxActivity,
+        activityUpdatedAt: currentUser.activityUpdatedAt,
       );
       // Update the state with the new user object without a server call
       state = AsyncValue.data(updatedUser);

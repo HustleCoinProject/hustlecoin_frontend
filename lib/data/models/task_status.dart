@@ -8,6 +8,8 @@ class TaskStatus {
   final int rankPoints;
   final String type;
   final int cooldownSeconds;
+  final int energyCost;
+  final int activityReward;
   final bool isAvailable;
   final DateTime? cooldownExpiresAt;
   final int? secondsUntilAvailable;
@@ -19,6 +21,8 @@ class TaskStatus {
     required this.rankPoints,
     required this.type,
     required this.cooldownSeconds,
+    required this.energyCost,
+    required this.activityReward,
     required this.isAvailable,
     this.cooldownExpiresAt,
     this.secondsUntilAvailable,
@@ -32,6 +36,8 @@ class TaskStatus {
       rankPoints: json['rank_points'] ?? 0,
       type: json['type'],
       cooldownSeconds: json['cooldown_seconds'],
+      energyCost: json['energy_cost'] ?? 0,
+      activityReward: json['activity_reward'] ?? 0,
       isAvailable: json['is_available'],
       cooldownExpiresAt: json['cooldown_expires_at'] != null
           ? DateTime.parse(json['cooldown_expires_at'])

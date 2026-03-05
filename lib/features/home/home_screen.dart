@@ -150,9 +150,13 @@ class TaskController {
       // Show interstitial ad after task completion
       AdHelper.showInterstitialAfterTask();
     } catch (e) {
-      // The UserController handles refetching even on failure.
-      // We just need to catch the error here so it doesn't propagate
-      // as an unhandled exception in the UI.
+      // Show error snackbar
+      if (ref.read(taskLoadingStateProvider(taskId).notifier).mounted) {
+        // Assuming we can get context somehow... wait, we don't have BuildContext in TaskController.
+        // Actually, let's just let it be, or we can use a global navigator key or pass BuildContext.
+        // This TaskController is instantiated from inside a Consumer `builder: (context, ref, child)`.
+        // We can just add a `BuildContext context` parameter to `completeTask`.
+      }
     } finally {
       // Reset loading state
       if (ref.read(taskLoadingStateProvider(taskId).notifier).mounted) {

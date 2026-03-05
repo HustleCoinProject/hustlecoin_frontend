@@ -6,6 +6,7 @@ import 'package:hustlecoin/data/repositories/mission_repository.dart';
 import 'package:hustlecoin/data/repositories/api_repository.dart';
 import 'package:hustlecoin/providers/foundational_providers.dart';
 import 'package:hustlecoin/providers/time_provider.dart';
+import 'package:hustlecoin/providers/user_provider.dart';
 
 // State class for Mission flow
 class MissionState {
@@ -176,7 +177,7 @@ class MissionNotifier extends StateNotifier<MissionState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      await _apiRepository.completeTask(missionId);
+      await _ref.read(userControllerProvider.notifier).completeTask(missionId);
 
       // Clear the saved start time
       final prefs = await SharedPreferences.getInstance();

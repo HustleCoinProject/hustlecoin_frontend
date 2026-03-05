@@ -20,6 +20,14 @@ class User {
   final int dailyTapEarnings;
   final DateTime? lastTapResetDate;
 
+  // Energy and Activity Systems
+  final int energy;
+  final int maxEnergy;
+  final DateTime energyUpdatedAt;
+  final int activity;
+  final int maxActivity;
+  final DateTime activityUpdatedAt;
+
   // Payout-related fields
   final String? phoneNumber;
   final String? fullName;
@@ -46,6 +54,12 @@ class User {
     required this.createdAt,
     required this.dailyTapEarnings,
     this.lastTapResetDate,
+    required this.energy,
+    required this.maxEnergy,
+    required this.energyUpdatedAt,
+    required this.activity,
+    required this.maxActivity,
+    required this.activityUpdatedAt,
     this.phoneNumber,
     this.fullName,
     this.nationalId,
@@ -76,6 +90,16 @@ class User {
       lastTapResetDate: json['last_tap_reset_date'] != null
           ? DateTime.parse(json['last_tap_reset_date'])
           : null,
+      energy: json['energy'] ?? 100,
+      maxEnergy: json['max_energy'] ?? 100,
+      energyUpdatedAt: json['energy_updated_at'] != null
+          ? DateTime.parse(json['energy_updated_at'])
+          : DateTime.now(),
+      activity: json['activity'] ?? 0,
+      maxActivity: json['max_activity'] ?? 100,
+      activityUpdatedAt: json['activity_updated_at'] != null
+          ? DateTime.parse(json['activity_updated_at'])
+          : DateTime.now(),
       phoneNumber: json['phone_number'],
       fullName: json['full_name'],
       nationalId: json['national_id'],
@@ -106,6 +130,12 @@ class User {
     DateTime? createdAt,
     int? dailyTapEarnings,
     DateTime? lastTapResetDate,
+    int? energy,
+    int? maxEnergy,
+    DateTime? energyUpdatedAt,
+    int? activity,
+    int? maxActivity,
+    DateTime? activityUpdatedAt,
     String? phoneNumber,
     String? fullName,
     String? nationalId,
@@ -129,6 +159,12 @@ class User {
       createdAt: createdAt ?? this.createdAt,
       dailyTapEarnings: dailyTapEarnings ?? this.dailyTapEarnings,
       lastTapResetDate: lastTapResetDate ?? this.lastTapResetDate,
+      energy: energy ?? this.energy,
+      maxEnergy: maxEnergy ?? this.maxEnergy,
+      energyUpdatedAt: energyUpdatedAt ?? this.energyUpdatedAt,
+      activity: activity ?? this.activity,
+      maxActivity: maxActivity ?? this.maxActivity,
+      activityUpdatedAt: activityUpdatedAt ?? this.activityUpdatedAt,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       fullName: fullName ?? this.fullName,
       nationalId: nationalId ?? this.nationalId,

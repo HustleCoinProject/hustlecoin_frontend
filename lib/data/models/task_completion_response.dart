@@ -7,6 +7,8 @@ class TaskCompletionResponse {
   final int newRankPoints;
   final int rankPointsEarned;
   final DateTime? cooldownExpiresAt;
+  final int? newEnergy;
+  final int? newActivity;
 
   const TaskCompletionResponse({
     required this.message,
@@ -14,6 +16,8 @@ class TaskCompletionResponse {
     required this.newRankPoints,
     required this.rankPointsEarned,
     this.cooldownExpiresAt,
+    this.newEnergy,
+    this.newActivity,
   });
 
   factory TaskCompletionResponse.fromJson(Map<String, dynamic> json) {
@@ -25,6 +29,8 @@ class TaskCompletionResponse {
       cooldownExpiresAt: json['cooldown_expires_at'] != null
           ? DateTime.parse(json['cooldown_expires_at']).toLocal()
           : null,
+      newEnergy: json['new_energy'],
+      newActivity: json['new_activity'],
     );
   }
 
@@ -35,6 +41,8 @@ class TaskCompletionResponse {
       'new_rank_points': newRankPoints,
       'rank_points_earned': rankPointsEarned,
       'cooldown_expires_at': cooldownExpiresAt?.toIso8601String(),
+      'new_energy': newEnergy,
+      'new_activity': newActivity,
     };
   }
 }
